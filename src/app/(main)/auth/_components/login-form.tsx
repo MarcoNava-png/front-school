@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { login } from "@/services/auth-service";
 
 const FormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -31,19 +32,13 @@ export function LoginForm() {
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
-      if (!res.ok) throw new Error("Login failed");
-      // Aquí podrías guardar el token, etc.
+      const res = await login({ email: data.email, password: data.password });
+      if (!res.success) throw new Error(res.error ?? "Login failed");
       router.push("/dashboard");
-    } catch (error: any) {
-      toast("Login error", { description: error.message });
+    } catch (error: unknown) {
+      let message = "Unknown error";
+      if (error instanceof Error) message = error.message;
+      toast("Login error", { description: message });
     }
   };
 
