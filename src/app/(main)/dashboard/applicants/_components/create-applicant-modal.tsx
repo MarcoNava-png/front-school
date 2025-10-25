@@ -68,14 +68,12 @@ export function CreateApplicantModal({
 
   const onSubmit = async (data: PayloadCreateApplicant) => {
     try {
-      console.log(data);
       await createApplicant(data);
       toast.success("Aspirante creado correctamente");
       form.reset();
       onOpenChange(false);
-    } catch (error) {
-      const err = error as { message?: string };
-      toast.error("Error al crear aspirante", { description: err.message ?? "Intenta nuevamente." });
+    } catch (error: any) {
+      toast.error("Error al crear aspirante", { description: error.response.data ?? "Intenta nuevamente." });
     }
   };
 
