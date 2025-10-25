@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { useReactTable, getCoreRowModel, getPaginationRowModel, ColumnDef } from "@tanstack/react-table";
 
-import { CustomModalDialog } from "@/app/(main)/dashboard/applicants/_components/create-applicant-modal";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
@@ -12,6 +11,8 @@ import { withDndColumn } from "@/components/data-table/table-utils";
 import { Button } from "@/components/ui/button";
 import { getApplicantsList } from "@/services/applicants-service";
 import { Applicant } from "@/types/applicant";
+
+import { CreateApplicantModal } from "./_components/create-applicant-modal";
 
 const columns: ColumnDef<Applicant>[] = withDndColumn([
   {
@@ -84,14 +85,7 @@ export default function Page() {
         <Button onClick={() => setOpen(true)} variant="default">
           Crear aspirante
         </Button>
-        <CustomModalDialog
-          open={open}
-          setOpen={setOpen}
-          title="Crear aspirante"
-          description="Aquí puedes crear un nuevo aspirante."
-          actionText="Aceptar"
-          cancelText="Cancelar"
-        />
+        <CreateApplicantModal open={open} onOpenChange={setOpen} />
       </div>
       <DataTable table={table} columns={columns} />
       <DataTablePagination table={table} />

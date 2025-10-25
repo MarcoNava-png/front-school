@@ -1,43 +1,78 @@
-import React from "react";
+"use client";
 
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-interface CustomModalDialogProps {
-  open?: boolean;
-  setOpen?: (open: boolean) => void;
-  title?: string;
-  description?: string;
-  actionText?: string;
-  cancelText?: string;
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { createApplicant } from "@/services/applicants-service";
+import { PayloadCreateApplicant } from "@/types/applicant";
+
+import { ApplicantCreateForm } from "./applicant-create-form";
+import { createApplicantSchema } from "./schema-create-applicant";
+
+interface CreateApplicantModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const CustomModalDialog: React.FC<CustomModalDialogProps> = ({
-  open = false,
-  setOpen,
-  title = "Modal de ejemplo",
-  description = "Aquí puedes mostrar información personalizada en el modal.",
-  actionText = "Aceptar",
-  cancelText = "Cerrar",
-}) => (
-  <AlertDialog open={open} onOpenChange={setOpen}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>{title}</AlertDialogTitle>
-        <AlertDialogDescription>{description}</AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>{cancelText}</AlertDialogCancel>
-        <AlertDialogAction>{actionText}</AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
+export function CreateApplicantModal({ open, onOpenChange }: CreateApplicantModalProps) {
+  const form = useForm({
+    resolver: zodResolver(createApplicantSchema),
+    defaultValues: {
+      nombre: "",
+      apellidoPaterno: "",
+      apellidoMaterno: "",
+      fechaNacimiento: "",
+      generoId: 0,
+      correo: "",
+      telefono: "",
+      curp: "",
+      calle: "",
+      numeroExterior: "",
+      numeroInterior: "",
+      codigoPostalId: 0,
+      idEstadoCivil: 0,
+      campusId: 0,
+      planEstudiosId: 0,
+      aspiranteStatusId: 0,
+      medioContactoId: 0,
+      notas: "",
+      atendidoPorUsuarioId: "",
+      horarioId: 0,
+    },
+  });
+
+  const onSubmit = async (data: PayloadCreateApplicant) => {
+    try {
+      await createApplicant(data);
+      toast.success("Aspirante creado correctamente");
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      const err = error as { message?: string };
+      toast.error("Error al crear aspirante", { description: err.message ?? "Intenta nuevamente." });
+    }
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset();
+    }
+    onOpenChange(newOpen);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl" aria-describedby="create-applicant-description">
+        <DialogHeader>
+          <DialogTitle>Crear aspirante</DialogTitle>
+        </DialogHeader>
+        <div id="create-applicant-description" className="sr-only">
+          Complete el formulario para crear un nuevo aspirante.
+        </div>
+        <ApplicantCreateForm form={form} onSubmit={onSubmit} onCancel={() => handleOpenChange(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+}
