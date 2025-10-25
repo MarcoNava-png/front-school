@@ -10,6 +10,7 @@ export async function login({ email, password }: { email: string; password: stri
     const { data }: { data: LoginResponse } = await apiClient.post("/auth/login", { email, password });
     if (data.isSuccess && data.data?.token) {
       localStorage.setItem("access_token", data.data.token);
+      localStorage.setItem("user", JSON.stringify(data.data));
       document.cookie = `access_token=${data.data.token}; path=/; max-age=86400; SameSite=Lax`;
       return { success: true, token: data.data.token, user: data.data };
     }
@@ -20,17 +21,14 @@ export async function login({ email, password }: { email: string; password: stri
 }
 
 export function logout() {
-  // Limpiar localStorage
   localStorage.removeItem("access_token");
-
-  // Limpiar cookie
+  localStorage.removeItem("user");
   document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
 }
 
 export async function register({ name, email, password }: { name: string; email: string; password: string }) {
   await new Promise((resolve) => setTimeout(resolve, 700));
   if (name && email && password) {
-    // Simula registro exitoso
     return { success: true };
   }
   return { success: false, error: "Invalid registration data" };
@@ -39,7 +37,6 @@ export async function register({ name, email, password }: { name: string; email:
 export async function forgotPassword({ email }: { email: string }) {
   await new Promise((resolve) => setTimeout(resolve, 700));
   if (email) {
-    // Simula envío de email de recuperación
     return { success: true };
   }
   return { success: false, error: "Email required" };
