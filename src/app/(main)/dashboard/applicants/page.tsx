@@ -177,9 +177,6 @@ export default function Page() {
       <div className="flex items-center gap-4">
         <h2 className="text-xl font-bold">Aspirantes</h2>
         <DataTableViewOptions table={table} />
-        <Button onClick={() => setOpen(true)} variant="default">
-          Crear aspirante
-        </Button>
         <input
           type="text"
           value={filter}
@@ -187,6 +184,9 @@ export default function Page() {
           placeholder="Filtrar por nombre o email"
           className="rounded border px-2 py-1 text-sm"
         />
+        <Button onClick={() => setOpen(true)} variant="default">
+          Crear aspirante
+        </Button>
         <CreateApplicantModal
           open={open}
           genres={genres}
