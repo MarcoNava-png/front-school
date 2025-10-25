@@ -7,10 +7,6 @@ export async function login({ email, password }: { email: string; password: stri
     return { success: false, error: "Invalid credentials" };
   }
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!baseUrl) {
-      throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
-    }
     const { data }: { data: LoginResponse } = await apiClient.post("/auth/login", { email, password });
     if (data.isSuccess && data.data?.token) {
       localStorage.setItem("access_token", data.data.token);
