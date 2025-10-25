@@ -6,12 +6,12 @@ import { DataTablePagination } from "@/components/data-table/data-table-paginati
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { getCampusList } from "@/services/campus-service";
-import { CampusData } from "@/types/campus";
+import { CampusResponse } from "@/types/campus";
 
 import { campusColumns } from "./_components/columns";
 
 export default function Page() {
-  const [campus, setCampus] = useState<CampusData | null>(null);
+  const [campus, setCampus] = useState<CampusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

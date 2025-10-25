@@ -4,9 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CampusItem } from "@/types/campus";
+import { Campus } from "@/types/campus";
 
-export const campusColumns: ColumnDef<CampusItem>[] = [
+export const campusColumns: ColumnDef<Campus>[] = [
   {
     id: "select",
     header: ({ table }) => (
