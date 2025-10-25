@@ -53,7 +53,7 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/default",
         icon: LayoutDashboard,
       },
-      {
+      /* {
         title: "CRM",
         url: "/dashboard/crm",
         icon: ChartBar,
@@ -62,13 +62,13 @@ export const sidebarItems: NavGroup[] = [
         title: "Finance",
         url: "/dashboard/finance",
         icon: Banknote,
-      },
+      },*/
       {
         title: "Campus",
         url: "/dashboard/campus",
-        icon: Banknote,
+        icon: GraduationCap,
       },
-      {
+      /* {
         title: "Analytics",
         url: "/dashboard/coming-soon",
         icon: Gauge,
@@ -91,14 +91,14 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/coming-soon",
         icon: Forklift,
         comingSoon: true,
-      },
+      },*/
     ],
   },
   {
     id: 2,
     label: "Pages",
     items: [
-      {
+      /* {
         title: "Email",
         url: "/dashboard/coming-soon",
         icon: Mail,
@@ -150,10 +150,10 @@ export const sidebarItems: NavGroup[] = [
           { title: "Register v1", url: "/auth/v1/register", newTab: true },
           { title: "Register v2", url: "/auth/v2/register", newTab: true },
         ],
-      },
+      },*/
     ],
   },
-  {
+  /* {
     id: 3,
     label: "Misc",
     items: [
@@ -164,5 +164,5 @@ export const sidebarItems: NavGroup[] = [
         comingSoon: true,
       },
     ],
-  },
+  },*/
 ];

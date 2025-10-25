@@ -1,9 +1,14 @@
 "use client";
-
 import { useEffect, useState } from "react";
 
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
+import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
+import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { getCampusList } from "@/services/campus-service";
 import { CampusData } from "@/types/campus";
+
+import { campusColumns } from "./_components/columns";
 
 export default function Page() {
   const [campus, setCampus] = useState<CampusData | null>(null);
@@ -23,32 +28,38 @@ export default function Page() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div>Cargando campus...</div>;
-  if (error) return <div>{error}</div>;
+  const table = useDataTableInstance({
+    data: campus?.items ?? [],
+    columns: campusColumns,
+    getRowId: (row) => row.idCampus.toString(),
+  });
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-muted-foreground">Cargando campus...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-destructive">{error}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
-      <h1>Campus</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Dirección</th>
-            <th>Clave campus</th>
-          </tr>
-        </thead>
-        <tbody>
-          {campus?.items.map((c) => (
-            <tr key={c.idCampus}>
-              <td>{c.idCampus}</td>
-              <td>{c.nombre}</td>
-              <td>{c.direccion}</td>
-              <td>{c.claveCampus}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="@container/main flex flex-col gap-4 md:gap-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Campus</h1>
+        <DataTableViewOptions table={table} />
+      </div>
+      <div className="overflow-hidden rounded-lg border">
+        <DataTable table={table} columns={campusColumns} />
+      </div>
+      <DataTablePagination table={table} />
     </div>
   );
 }
