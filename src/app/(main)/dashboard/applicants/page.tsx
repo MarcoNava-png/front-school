@@ -26,10 +26,12 @@ import {
   getGenresList,
   getSchedules,
 } from "@/services/catalogs-service";
+import { getStates } from "@/services/location-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
 import { Applicant, ApplicantsResponse } from "@/types/applicant";
 import { Campus, CampusResponse } from "@/types/campus";
 import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { State } from "@/types/location";
 import { StudyPlan, StudyPlansResponse } from "@/types/study-plan";
 
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
@@ -70,6 +72,7 @@ export default function Page() {
   const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [applicantStatus, setApplicantStatus] = useState<ApplicantStatus[]>([]);
+  const [states, setStates] = useState<State[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -141,6 +144,12 @@ export default function Page() {
         setApplicantStatus(res);
       })
       .finally(() => setLoading(false));
+
+    getStates()
+      .then((res: State[]) => {
+        setStates(res);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const table: Table<Applicant> = useReactTable<Applicant>({
@@ -187,6 +196,7 @@ export default function Page() {
           contactMethods={contactMethods}
           schedules={schedules}
           applicantStatus={applicantStatus}
+          states={states}
           onOpenChange={setOpen}
         />
       </div>

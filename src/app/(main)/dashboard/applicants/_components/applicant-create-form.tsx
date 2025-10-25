@@ -11,6 +11,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { PayloadCreateApplicant } from "@/types/applicant";
 import { Campus } from "@/types/campus";
 import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { State } from "@/types/location";
 import { StudyPlan } from "@/types/study-plan";
 
 interface ApplicantFormProps {
@@ -23,6 +24,7 @@ interface ApplicantFormProps {
   contactMethods: ContactMethod[];
   schedules: Schedule[];
   applicantStatus: ApplicantStatus[];
+  states: State[];
   onSubmit: (data: PayloadCreateApplicant) => void;
   onCancel: () => void;
 }
@@ -36,6 +38,7 @@ export function ApplicantCreateForm({
   contactMethods,
   schedules,
   applicantStatus,
+  states,
   onSubmit,
   onCancel,
 }: ApplicantFormProps) {

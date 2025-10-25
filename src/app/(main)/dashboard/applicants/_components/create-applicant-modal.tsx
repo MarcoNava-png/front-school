@@ -9,6 +9,7 @@ import { createApplicant } from "@/services/applicants-service";
 import { PayloadCreateApplicant } from "@/types/applicant";
 import { Campus } from "@/types/campus";
 import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { State } from "@/types/location";
 import { StudyPlan } from "@/types/study-plan";
 
 import { ApplicantCreateForm } from "./applicant-create-form";
@@ -23,6 +24,7 @@ interface CreateApplicantModalProps {
   contactMethods: ContactMethod[];
   schedules: Schedule[];
   applicantStatus: ApplicantStatus[];
+  states: State[];
   onOpenChange: (open: boolean) => void;
 }
 
@@ -36,6 +38,7 @@ export function CreateApplicantModal({
   contactMethods,
   schedules,
   applicantStatus,
+  states,
 }: CreateApplicantModalProps) {
   const form = useForm({
     resolver: zodResolver(createApplicantSchema),
@@ -106,6 +109,7 @@ export function CreateApplicantModal({
           contactMethods={contactMethods}
           schedules={schedules}
           applicantStatus={applicantStatus}
+          states={states}
           onSubmit={onSubmit}
           onCancel={() => handleOpenChange(false)}
         />
