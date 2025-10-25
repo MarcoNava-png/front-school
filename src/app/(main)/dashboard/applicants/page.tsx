@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import { useReactTable, getCoreRowModel, getPaginationRowModel, ColumnDef, Table } from "@tanstack/react-table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  ColumnDef,
+  Table,
+  Updater,
+  PaginationState,
+} from "@tanstack/react-table";
 
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
@@ -13,10 +21,10 @@ import { getApplicantsList } from "@/services/applicants-service";
 import { getCampusList } from "@/services/campus-service";
 import { getCivilStatus, getContactMethods, getGenresList, getSchedules } from "@/services/catalogs-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
-import { Applicant } from "@/types/applicant";
-import { Campus } from "@/types/campus";
+import { Applicant, ApplicantsResponse } from "@/types/applicant";
+import { Campus, CampusResponse } from "@/types/campus";
 import { CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
-import { StudyPlan } from "@/types/study-plan";
+import { StudyPlan, StudyPlansResponse } from "@/types/study-plan";
 
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
 
@@ -60,14 +68,30 @@ export default function Page() {
   const [pageSize, setPageSize] = useState(10);
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
+  const [debouncedFilter, setDebouncedFilter] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedFilter(filter);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [filter]);
+
+  useEffect(() => {
+    const handler: NodeJS.Timeout = setTimeout(() => {
+      const filterToSend: string | undefined = debouncedFilter.trim() === "" ? undefined : debouncedFilter;
+      setLoading(true);
+      getApplicantsList({ page: pageIndex + 1, pageSize, filter: filterToSend })
+        .then((res: ApplicantsResponse) => {
+          setData(res.items);
+        })
+        .finally(() => setLoading(false));
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [pageIndex, pageSize, debouncedFilter]);
 
   useEffect(() => {
     setLoading(true);
-    getApplicantsList({ page: pageIndex + 1, pageSize, filter: "" })
-      .then((res) => {
-        setData(res.items);
-      })
-      .finally(() => setLoading(false));
 
     getGenresList()
       .then((res: Genres[]) => {
@@ -76,53 +100,45 @@ export default function Page() {
       .finally(() => setLoading(false));
 
     getCivilStatus()
-      .then((res) => {
+      .then((res: CivilStatus[]) => {
         setCivilStatus(res);
       })
       .finally(() => setLoading(false));
 
     getCampusList()
-      .then((res) => {
+      .then((res: CampusResponse) => {
         setCampus(res.items);
       })
       .finally(() => setLoading(false));
 
     getStudyPlansList()
-      .then((res) => {
+      .then((res: StudyPlansResponse) => {
         setStudyPlans(res.items);
       })
       .finally(() => setLoading(false));
 
     getContactMethods()
-      .then((res) => {
+      .then((res: ContactMethod[]) => {
         setContactMethods(res);
       })
       .finally(() => setLoading(false));
 
     getSchedules()
-      .then((res) => {
+      .then((res: Schedule[]) => {
         setSchedules(res);
       })
       .finally(() => setLoading(false));
-  }, [pageIndex, pageSize]);
-
-  const filteredData: Applicant[] = filter
-    ? data.filter(
-        (item) =>
-          item.nombreCompleto?.toLowerCase().includes(filter.toLowerCase()) ||
-          item.email?.toLowerCase().includes(filter.toLowerCase()),
-      )
-    : data;
+  }, []);
 
   const table: Table<Applicant> = useReactTable<Applicant>({
-    data: filteredData,
+    data,
     columns,
     state: {
       pagination: { pageIndex, pageSize },
     },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: (updater) => {
+    onPaginationChange: (updater: Updater<PaginationState>) => {
       if (typeof updater === "function") {
         const next = updater({ pageIndex, pageSize });
         setPageIndex(next.pageIndex);
