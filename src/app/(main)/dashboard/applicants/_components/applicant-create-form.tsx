@@ -48,7 +48,6 @@ export function ApplicantCreateForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4 py-4">
-        {/* Campos del formulario */}
         <FormField
           control={form.control}
           name="nombre"
@@ -353,7 +352,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
-        {/* El campo atendidoPorUsuarioId se setea internamente con el usuario autenticado */}
+
         <FormField
           control={form.control}
           name="horarioId"
@@ -381,6 +380,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <div className="col-span-2 flex justify-end gap-2 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar

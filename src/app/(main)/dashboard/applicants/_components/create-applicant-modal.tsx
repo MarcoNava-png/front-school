@@ -63,6 +63,7 @@ export function CreateApplicantModal({
 
   const onSubmit = async (data: PayloadCreateApplicant) => {
     try {
+      console.log(data);
       await createApplicant(data);
       toast.success("Aspirante creado correctamente");
       form.reset();
