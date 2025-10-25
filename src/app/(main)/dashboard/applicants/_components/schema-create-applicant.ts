@@ -19,6 +19,5 @@ export const createApplicantSchema = z.object({
   aspiranteStatusId: z.coerce.number().int().positive(),
   medioContactoId: z.coerce.number().int().positive(),
   notas: z.string().optional(),
-  atendidoPorUsuarioId: z.string().min(1),
   horarioId: z.coerce.number().int().positive(),
 });

@@ -9,13 +9,13 @@ import {
 
 import apiClient from "./api-client";
 
-export async function getApplicantsList(
-  page?: number,
-  pageSize?: number,
-  filter?: string,
-): Promise<ApplicantsResponse> {
+export async function getApplicantsList(dataOptions: {
+  page?: number;
+  pageSize?: number;
+  filter?: string;
+}): Promise<ApplicantsResponse> {
   const { data } = await apiClient.get<ApplicantsResponse>(
-    `/Aspirante?page=${page ?? 1}&pageSize=${pageSize ?? 20}&filter=${filter ?? ""}`,
+    `/Aspirante?page=${dataOptions.page ?? 1}&pageSize=${dataOptions.pageSize ?? 20}&filter=${dataOptions.filter ?? ""}`,
   );
   return data;
 }

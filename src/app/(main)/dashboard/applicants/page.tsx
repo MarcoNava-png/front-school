@@ -59,10 +59,11 @@ export default function Page() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     setLoading(true);
-    getApplicantsList(pageIndex + 1, pageSize)
+    getApplicantsList({ page: pageIndex + 1, pageSize, filter: "" })
       .then((res) => {
         setData(res.items);
       })
@@ -105,8 +106,16 @@ export default function Page() {
       .finally(() => setLoading(false));
   }, [pageIndex, pageSize]);
 
+  const filteredData: Applicant[] = filter
+    ? data.filter(
+        (item) =>
+          item.nombreCompleto?.toLowerCase().includes(filter.toLowerCase()) ||
+          item.email?.toLowerCase().includes(filter.toLowerCase()),
+      )
+    : data;
+
   const table: Table<Applicant> = useReactTable<Applicant>({
-    data,
+    data: filteredData,
     columns,
     state: {
       pagination: { pageIndex, pageSize },
@@ -133,6 +142,13 @@ export default function Page() {
         <Button onClick={() => setOpen(true)} variant="default">
           Crear aspirante
         </Button>
+        <input
+          type="text"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Filtrar por nombre o email"
+          className="rounded border px-2 py-1 text-sm"
+        />
         <CreateApplicantModal
           open={open}
           genres={genres}
