@@ -1,5 +1,7 @@
 import { LoginResponse } from "@/types/auth";
 
+import apiClient from "./api-client";
+
 export async function login({ email, password }: { email: string; password: string }) {
   if (!email || !password) {
     return { success: false, error: "Invalid credentials" };
@@ -9,15 +11,8 @@ export async function login({ email, password }: { email: string; password: stri
     if (!baseUrl) {
       throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
     }
-    const response = await fetch(`${baseUrl}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    const data: LoginResponse = await response.json();
-    if (response.ok && data.data?.token) {
+    const { data }: { data: LoginResponse } = await apiClient.post("/auth/login", { email, password });
+    if (data.isSuccess && data.data?.token) {
       localStorage.setItem("access_token", data.data.token);
       document.cookie = `access_token=${data.data.token}; path=/; max-age=86400; SameSite=Lax`;
       return { success: true, token: data.data.token, user: data.data };
