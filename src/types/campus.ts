@@ -1,14 +1,24 @@
-export interface CampusData {
-  items: CampusItem[];
-  totalItems: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-}
+import { PaginatedResponse } from "./paginated-response";
 
-export interface CampusItem {
+export interface Campus {
   idCampus: number;
   claveCampus: string;
   nombre: string;
   direccion: string;
 }
+
+export interface PayloadCreateCampus {
+  claveCampus: string;
+  nombre: string;
+  calle: string;
+  numeroExterior: string;
+  numeroInterior: string;
+  codigoPostalId: number;
+}
+
+export interface PayloadUpdateCampus extends PayloadCreateCampus {
+  idCampus: number;
+  status: number;
+}
+
+export type CampusResponse = PaginatedResponse<Campus>;
