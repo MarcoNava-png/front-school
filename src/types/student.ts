@@ -8,4 +8,16 @@ export interface Student {
   planEstudios: string;
 }
 
+export interface StudentDetails extends Student {
+  materias: string[];
+}
+
+export interface PayloadCreateStudent {
+  matricula: string;
+  idPersona: number;
+  fechaIngreso: string;
+  idPlanActual: number;
+  activo: boolean;
+}
+
 export type StudentsResponse = PaginatedResponse<Student>;
