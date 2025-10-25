@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { getMunicipalities, getTownships } from "@/services/location-service";
 import { PayloadCreateApplicant } from "@/types/applicant";
 import { Campus } from "@/types/campus";
 import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
-import { State } from "@/types/location";
+import { State, Municipality, Township } from "@/types/location";
 import { StudyPlan } from "@/types/study-plan";
 
 interface ApplicantFormProps {
@@ -49,6 +50,31 @@ export function ApplicantCreateForm({
       form.setValue("atendidoPorUsuarioId", user.id);
     }
   }, [user, form]);
+
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+  const [townships, setTownships] = useState<Township[]>([]);
+
+  useEffect(() => {
+    const stateId: string | undefined = form.watch("stateId");
+    if (stateId) {
+      getMunicipalities(stateId).then(setMunicipalities);
+    } else {
+      setMunicipalities([]);
+    }
+    form.setValue("municipalityId", "");
+    form.setValue("codigoPostalId", 0);
+  }, [form.watch("stateId")]);
+
+  // Cargar townships al seleccionar municipio
+  useEffect(() => {
+    const municipalityId = form.watch("municipalityId");
+    if (municipalityId) {
+      getTownships(municipalityId).then(setTownships);
+    } else {
+      setTownships([]);
+    }
+    form.setValue("codigoPostalId", 0);
+  }, [form.watch("municipalityId")]);
 
   return (
     <Form {...form}>
@@ -221,14 +247,94 @@ export function ApplicantCreateForm({
           )}
         />
 
+        {/* States */}
+        <FormField
+          control={form.control}
+          name="stateId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Estado</FormLabel>
+              <FormControl>
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona estado
+                  </option>
+                  {states.map((state) => (
+                    <option key={state.id} value={state.id}>
+                      {state.nombre}
+                    </option>
+                  ))}
+                </select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Municipalities */}
+        <FormField
+          control={form.control}
+          name="municipalityId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Municipio</FormLabel>
+              <FormControl>
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                  disabled={!form.watch("stateId")}
+                >
+                  <option value="" disabled>
+                    Selecciona municipio
+                  </option>
+                  {municipalities
+                    .filter((m) => m.estadoId === form.watch("stateId"))
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.nombre}
+                      </option>
+                    ))}
+                </select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Townships */}
         <FormField
           control={form.control}
           name="codigoPostalId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Código Postal</FormLabel>
+              <FormLabel>Localidad/Colonia</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                  disabled={!form.watch("municipalityId")}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                >
+                  <option value={0} disabled>
+                    Selecciona localidad/colonia
+                  </option>
+                  {townships
+                    .filter((t: Township) => t.municipioId === form.watch("municipalityId"))
+                    .map((t: Township) => (
+                      <option key={t.id} value={t.id}>
+                        {t.asentamiento}
+                      </option>
+                    ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>

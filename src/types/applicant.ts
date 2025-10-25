@@ -38,6 +38,9 @@ export interface PayloadCreateApplicant {
   notas: string;
   atendidoPorUsuarioId: string;
   horarioId: number;
+  stateId?: string;
+  municipalityId?: string;
+  townshipId?: number;
 }
 
 export interface PayloadUpdateApplicant {
