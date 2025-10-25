@@ -63,6 +63,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="apellidoPaterno"
@@ -76,6 +77,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="apellidoMaterno"
@@ -89,6 +91,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="fechaNacimiento"
@@ -102,6 +105,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="generoId"
@@ -129,6 +133,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="correo"
@@ -142,6 +147,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="telefono"
@@ -155,6 +161,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="curp"
@@ -168,6 +175,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="calle"
@@ -181,6 +189,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="numeroExterior"
@@ -194,6 +203,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="numeroInterior"
@@ -207,6 +217,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="codigoPostalId"
@@ -220,6 +231,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="idEstadoCivil"
@@ -247,6 +259,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="campusId"
@@ -274,6 +287,7 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="planEstudiosId"
