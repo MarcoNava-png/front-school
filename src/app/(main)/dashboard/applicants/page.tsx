@@ -133,7 +133,16 @@ export default function Page() {
         <Button onClick={() => setOpen(true)} variant="default">
           Crear aspirante
         </Button>
-        <CreateApplicantModal open={open} onOpenChange={setOpen} />
+        <CreateApplicantModal
+          open={open}
+          genres={genres}
+          civilStatus={civilStatus}
+          campus={campus}
+          studyPlans={studyPlans}
+          contactMethods={contactMethods}
+          schedules={schedules}
+          onOpenChange={setOpen}
+        />
       </div>
       <DataTable table={table} columns={columns} />
       <DataTablePagination table={table} />

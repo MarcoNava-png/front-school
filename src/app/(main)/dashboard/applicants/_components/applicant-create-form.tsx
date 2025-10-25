@@ -1,19 +1,50 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { UseFormReturn } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { PayloadCreateApplicant } from "@/types/applicant";
+import { Campus } from "@/types/campus";
+import { CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { StudyPlan } from "@/types/study-plan";
 
 interface ApplicantFormProps {
   form: UseFormReturn<PayloadCreateApplicant>;
+  open: boolean;
+  genres: Genres[];
+  civilStatus: CivilStatus[];
+  campus: Campus[];
+  studyPlans: StudyPlan[];
+  contactMethods: ContactMethod[];
+  schedules: Schedule[];
   onSubmit: (data: PayloadCreateApplicant) => void;
   onCancel: () => void;
 }
 
-export function ApplicantCreateForm({ form, onSubmit, onCancel }: ApplicantFormProps) {
+export function ApplicantCreateForm({
+  form,
+  genres,
+  civilStatus,
+  campus,
+  studyPlans,
+  contactMethods,
+  schedules,
+  onSubmit,
+  onCancel,
+}: ApplicantFormProps) {
+  const user = useCurrentUser();
+
+  useEffect(() => {
+    if (user && user.id) {
+      form.setValue("atendidoPorUsuarioId", user.id);
+    }
+  }, [user, form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4 py-4">
@@ -75,9 +106,23 @@ export function ApplicantCreateForm({ form, onSubmit, onCancel }: ApplicantFormP
           name="generoId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Género</FormLabel>
+              <FormLabel>Género</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona género
+                  </option>
+                  {genres.map((genre) => (
+                    <option key={genre.idGenero} value={genre.idGenero}>
+                      {genre.descGenero}
+                    </option>
+                  ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -179,9 +224,23 @@ export function ApplicantCreateForm({ form, onSubmit, onCancel }: ApplicantFormP
           name="idEstadoCivil"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Estado Civil</FormLabel>
+              <FormLabel>Estado Civil</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona estado civil
+                  </option>
+                  {civilStatus.map((status) => (
+                    <option key={status.idEstadoCivil} value={status.idEstadoCivil}>
+                      {status.descEstadoCivil}
+                    </option>
+                  ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -192,9 +251,23 @@ export function ApplicantCreateForm({ form, onSubmit, onCancel }: ApplicantFormP
           name="campusId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Campus</FormLabel>
+              <FormLabel>Campus</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona campus
+                  </option>
+                  {campus.map((c) => (
+                    <option key={c.idCampus} value={c.idCampus}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -205,9 +278,23 @@ export function ApplicantCreateForm({ form, onSubmit, onCancel }: ApplicantFormP
           name="planEstudiosId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Plan de estudios</FormLabel>
+              <FormLabel>Plan de estudios</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona plan de estudios
+                  </option>
+                  {studyPlans.map((plan) => (
+                    <option key={plan.idPlanEstudios} value={plan.idPlanEstudios}>
+                      {plan.nombrePlanEstudios}
+                    </option>
+                  ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -231,9 +318,23 @@ export function ApplicantCreateForm({ form, onSubmit, onCancel }: ApplicantFormP
           name="medioContactoId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Medio de contacto</FormLabel>
+              <FormLabel>Medio de contacto</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona medio de contacto
+                  </option>
+                  {contactMethods.map((method) => (
+                    <option key={method.idMedioContacto} value={method.idMedioContacto}>
+                      {method.descMedio}
+                    </option>
+                  ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -252,27 +353,29 @@ export function ApplicantCreateForm({ form, onSubmit, onCancel }: ApplicantFormP
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="atendidoPorUsuarioId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>ID Usuario que atiende</FormLabel>
-              <FormControl>
-                <Input {...field} required />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* El campo atendidoPorUsuarioId se setea internamente con el usuario autenticado */}
         <FormField
           control={form.control}
           name="horarioId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Horario</FormLabel>
+              <FormLabel>Horario</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona horario
+                  </option>
+                  {schedules.map((schedule) => (
+                    <option key={schedule.idTurno} value={schedule.idTurno}>
+                      {schedule.nombre}
+                    </option>
+                  ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>

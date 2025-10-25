@@ -7,16 +7,34 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createApplicant } from "@/services/applicants-service";
 import { PayloadCreateApplicant } from "@/types/applicant";
+import { Campus } from "@/types/campus";
+import { CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { StudyPlan } from "@/types/study-plan";
 
 import { ApplicantCreateForm } from "./applicant-create-form";
 import { createApplicantSchema } from "./schema-create-applicant";
 
 interface CreateApplicantModalProps {
   open: boolean;
+  genres: Genres[];
+  civilStatus: CivilStatus[];
+  campus: Campus[];
+  studyPlans: StudyPlan[];
+  contactMethods: ContactMethod[];
+  schedules: Schedule[];
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreateApplicantModal({ open, onOpenChange }: CreateApplicantModalProps) {
+export function CreateApplicantModal({
+  open,
+  onOpenChange,
+  genres,
+  civilStatus,
+  campus,
+  studyPlans,
+  contactMethods,
+  schedules,
+}: CreateApplicantModalProps) {
   const form = useForm({
     resolver: zodResolver(createApplicantSchema),
     defaultValues: {
@@ -75,7 +93,18 @@ export function CreateApplicantModal({ open, onOpenChange }: CreateApplicantModa
         <div id="create-applicant-description" className="sr-only">
           Complete el formulario para crear un nuevo aspirante.
         </div>
-        <ApplicantCreateForm form={form} onSubmit={onSubmit} onCancel={() => handleOpenChange(false)} />
+        <ApplicantCreateForm
+          form={form}
+          open={open}
+          genres={genres}
+          civilStatus={civilStatus}
+          campus={campus}
+          studyPlans={studyPlans}
+          contactMethods={contactMethods}
+          schedules={schedules}
+          onSubmit={onSubmit}
+          onCancel={() => handleOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
   );
