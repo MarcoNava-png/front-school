@@ -7,10 +7,12 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { createStudent } from "@/services/students-service";
+import { PayloadCreateStudent } from "@/types/student";
 
 import { createStudentSchema } from "./schema-create-student";
 
@@ -28,11 +30,14 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
       nombreCompleto: "",
       telefono: "",
       planEstudios: "",
+      fechaIngreso: "",
+      activo: false,
     },
   });
 
   const onSubmit = async (data: any) => {
     try {
+      console.log(data);
       await createStudent(data);
       toast.success("Estudiante creado correctamente");
       form.reset();
@@ -112,6 +117,36 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
                     <Input {...field} id="planEstudios" required />
                   </FormControl>
                   {form.formState.touchedFields.planEstudios || form.formState.isSubmitted ? <FormMessage /> : null}
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="fechaIngreso"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fecha de ingreso</FormLabel>
+                  <FormControl>
+                    <Input {...field} id="fechaIngreso" type="date" required />
+                  </FormControl>
+                  {form.formState.touchedFields.fechaIngreso || form.formState.isSubmitted ? <FormMessage /> : null}
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="activo"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center gap-2">
+                  <FormControl>
+                    <Checkbox id="activo" checked={field.value} onCheckedChange={field.onChange} className="size-5" />
+                  </FormControl>
+                  <FormLabel htmlFor="activo" className="text-sm font-medium">
+                    ¿Está activo?
+                  </FormLabel>
+                  {form.formState.touchedFields.activo || form.formState.isSubmitted ? <FormMessage /> : null}
                 </FormItem>
               )}
             />
