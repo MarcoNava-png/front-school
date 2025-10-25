@@ -35,14 +35,22 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
     try {
       await createStudent(data);
       toast.success("Estudiante creado correctamente");
+      form.reset();
       onOpenChange(false);
     } catch (error: any) {
       toast.error("Error al crear estudiante", { description: error?.message ?? "Intenta nuevamente." });
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset();
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md" aria-describedby="create-student-description">
         <DialogHeader>
           <DialogTitle>Crear estudiante</DialogTitle>
@@ -61,12 +69,7 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
                   <FormControl>
                     <Input {...field} id="matricula" required />
                   </FormControl>
-                  <FormMessage />
-                  {!form.formState.errors.matricula && (
-                    <p className="text-destructive text-sm">
-                      La matrícula es obligatoria y debe tener al menos 3 caracteres.
-                    </p>
-                  )}
+                  {form.formState.touchedFields.matricula || form.formState.isSubmitted ? <FormMessage /> : null}
                 </FormItem>
               )}
             />
@@ -80,10 +83,7 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
                   <FormControl>
                     <Input {...field} id="nombreCompleto" required />
                   </FormControl>
-                  <FormMessage />
-                  {!form.formState.errors.nombreCompleto && (
-                    <p className="text-destructive text-sm">El nombre completo es obligatorio.</p>
-                  )}
+                  {form.formState.touchedFields.nombreCompleto || form.formState.isSubmitted ? <FormMessage /> : null}
                 </FormItem>
               )}
             />
@@ -97,10 +97,7 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
                   <FormControl>
                     <Input {...field} id="telefono" required />
                   </FormControl>
-                  <FormMessage />
-                  {!form.formState.errors.telefono && (
-                    <p className="text-destructive text-sm">El teléfono es obligatorio y debe ser válido.</p>
-                  )}
+                  {form.formState.touchedFields.telefono || form.formState.isSubmitted ? <FormMessage /> : null}
                 </FormItem>
               )}
             />
@@ -114,10 +111,7 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
                   <FormControl>
                     <Input {...field} id="planEstudios" required />
                   </FormControl>
-                  <FormMessage />
-                  {!form.formState.errors.planEstudios && (
-                    <p className="text-destructive text-sm">El plan de estudios es obligatorio.</p>
-                  )}
+                  {form.formState.touchedFields.planEstudios || form.formState.isSubmitted ? <FormMessage /> : null}
                 </FormItem>
               )}
             />
