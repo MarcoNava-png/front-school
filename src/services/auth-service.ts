@@ -1,17 +1,31 @@
+import { LoginResponse } from "@/types/auth";
+
 export async function login({ email, password }: { email: string; password: string }) {
-  await new Promise((resolve) => setTimeout(resolve, 700));
-  if (email && password) {
-    const mockToken = "mock_access_token";
-
-    // Guardar en localStorage (para hooks del cliente como useAuth)
-    localStorage.setItem("access_token", mockToken);
-
-    // Guardar en cookies (para middleware del servidor)
-    document.cookie = `access_token=${mockToken}; path=/; max-age=86400; SameSite=Lax`;
-
-    return { success: true, token: mockToken };
+  if (!email || !password) {
+    return { success: false, error: "Invalid credentials" };
   }
-  return { success: false, error: "Invalid credentials" };
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
+    }
+    const response = await fetch(`${baseUrl}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    const data: LoginResponse = await response.json();
+    if (response.ok && data.data?.token) {
+      localStorage.setItem("access_token", data.data.token);
+      document.cookie = `access_token=${data.data.token}; path=/; max-age=86400; SameSite=Lax`;
+      return { success: true, token: data.data.token, user: data.data };
+    }
+    return { success: false, error: data.messageError ?? "Invalid credentials" };
+  } catch (error) {
+    return { success: false, error: "Network error" };
+  }
 }
 
 export function logout() {
