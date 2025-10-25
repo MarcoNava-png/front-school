@@ -64,7 +64,11 @@ export function CreateApplicantModal({ open, onOpenChange }: CreateApplicantModa
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl" aria-describedby="create-applicant-description">
+      <DialogContent
+        className="max-h-[90vh] w-full !max-w-7xl overflow-y-auto"
+        aria-describedby="create-applicant-description"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Crear aspirante</DialogTitle>
         </DialogHeader>

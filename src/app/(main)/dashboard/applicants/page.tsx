@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useReactTable, getCoreRowModel, getPaginationRowModel, ColumnDef } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, ColumnDef, Table } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
@@ -10,7 +10,13 @@ import { DataTableViewOptions } from "@/components/data-table/data-table-view-op
 import { withDndColumn } from "@/components/data-table/table-utils";
 import { Button } from "@/components/ui/button";
 import { getApplicantsList } from "@/services/applicants-service";
+import { getCampusList } from "@/services/campus-service";
+import { getCivilStatus, getContactMethods, getGenresList, getSchedules } from "@/services/catalogs-service";
+import { getStudyPlansList } from "@/services/study-plans-service";
 import { Applicant } from "@/types/applicant";
+import { Campus } from "@/types/campus";
+import { CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { StudyPlan } from "@/types/study-plan";
 
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
 
@@ -43,6 +49,12 @@ const columns: ColumnDef<Applicant>[] = withDndColumn([
 
 export default function Page() {
   const [data, setData] = useState<Applicant[]>([]);
+  const [genres, setGenres] = useState<Genres[]>([]);
+  const [civilStatus, setCivilStatus] = useState<CivilStatus[]>([]);
+  const [campus, setCampus] = useState<Campus[]>([]);
+  const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
+  const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -55,9 +67,45 @@ export default function Page() {
         setData(res.items);
       })
       .finally(() => setLoading(false));
+
+    getGenresList()
+      .then((res: Genres[]) => {
+        setGenres(res);
+      })
+      .finally(() => setLoading(false));
+
+    getCivilStatus()
+      .then((res) => {
+        setCivilStatus(res);
+      })
+      .finally(() => setLoading(false));
+
+    getCampusList()
+      .then((res) => {
+        setCampus(res.items);
+      })
+      .finally(() => setLoading(false));
+
+    getStudyPlansList()
+      .then((res) => {
+        setStudyPlans(res.items);
+      })
+      .finally(() => setLoading(false));
+
+    getContactMethods()
+      .then((res) => {
+        setContactMethods(res);
+      })
+      .finally(() => setLoading(false));
+
+    getSchedules()
+      .then((res) => {
+        setSchedules(res);
+      })
+      .finally(() => setLoading(false));
   }, [pageIndex, pageSize]);
 
-  const table = useReactTable<Applicant>({
+  const table: Table<Applicant> = useReactTable<Applicant>({
     data,
     columns,
     state: {
