@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { PayloadCreateApplicant } from "@/types/applicant";
 import { Campus } from "@/types/campus";
-import { CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
 import { StudyPlan } from "@/types/study-plan";
 
 interface ApplicantFormProps {
@@ -22,6 +22,7 @@ interface ApplicantFormProps {
   studyPlans: StudyPlan[];
   contactMethods: ContactMethod[];
   schedules: Schedule[];
+  applicantStatus: ApplicantStatus[];
   onSubmit: (data: PayloadCreateApplicant) => void;
   onCancel: () => void;
 }
@@ -34,6 +35,7 @@ export function ApplicantCreateForm({
   studyPlans,
   contactMethods,
   schedules,
+  applicantStatus,
   onSubmit,
   onCancel,
 }: ApplicantFormProps) {
@@ -299,19 +301,35 @@ export function ApplicantCreateForm({
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="aspiranteStatusId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Estatus</FormLabel>
+              <FormLabel>Estatus del aspirante</FormLabel>
               <FormControl>
-                <Input {...field} type="number" required />
+                <select
+                  {...field}
+                  required
+                  className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                  value={field.value}
+                >
+                  <option value="" disabled>
+                    Selecciona estatus
+                  </option>
+                  {applicantStatus.map((status) => (
+                    <option key={status.idAspiranteEstatus} value={status.idAspiranteEstatus}>
+                      {status.descEstatus}
+                    </option>
+                  ))}
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="medioContactoId"

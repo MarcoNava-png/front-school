@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { createApplicant } from "@/services/applicants-service";
 import { PayloadCreateApplicant } from "@/types/applicant";
 import { Campus } from "@/types/campus";
-import { CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
 import { StudyPlan } from "@/types/study-plan";
 
 import { ApplicantCreateForm } from "./applicant-create-form";
@@ -22,6 +22,7 @@ interface CreateApplicantModalProps {
   studyPlans: StudyPlan[];
   contactMethods: ContactMethod[];
   schedules: Schedule[];
+  applicantStatus: ApplicantStatus[];
   onOpenChange: (open: boolean) => void;
 }
 
@@ -34,6 +35,7 @@ export function CreateApplicantModal({
   studyPlans,
   contactMethods,
   schedules,
+  applicantStatus,
 }: CreateApplicantModalProps) {
   const form = useForm({
     resolver: zodResolver(createApplicantSchema),
@@ -103,6 +105,7 @@ export function CreateApplicantModal({
           studyPlans={studyPlans}
           contactMethods={contactMethods}
           schedules={schedules}
+          applicantStatus={applicantStatus}
           onSubmit={onSubmit}
           onCancel={() => handleOpenChange(false)}
         />

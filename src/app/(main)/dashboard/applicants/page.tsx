@@ -19,11 +19,17 @@ import { withDndColumn } from "@/components/data-table/table-utils";
 import { Button } from "@/components/ui/button";
 import { getApplicantsList } from "@/services/applicants-service";
 import { getCampusList } from "@/services/campus-service";
-import { getCivilStatus, getContactMethods, getGenresList, getSchedules } from "@/services/catalogs-service";
+import {
+  getApplicantStatus,
+  getCivilStatus,
+  getContactMethods,
+  getGenresList,
+  getSchedules,
+} from "@/services/catalogs-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
 import { Applicant, ApplicantsResponse } from "@/types/applicant";
 import { Campus, CampusResponse } from "@/types/campus";
-import { CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
+import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
 import { StudyPlan, StudyPlansResponse } from "@/types/study-plan";
 
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
@@ -63,6 +69,7 @@ export default function Page() {
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
   const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [applicantStatus, setApplicantStatus] = useState<ApplicantStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -128,6 +135,12 @@ export default function Page() {
         setSchedules(res);
       })
       .finally(() => setLoading(false));
+
+    getApplicantStatus()
+      .then((res: ApplicantStatus[]) => {
+        setApplicantStatus(res);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const table: Table<Applicant> = useReactTable<Applicant>({
@@ -173,6 +186,7 @@ export default function Page() {
           studyPlans={studyPlans}
           contactMethods={contactMethods}
           schedules={schedules}
+          applicantStatus={applicantStatus}
           onOpenChange={setOpen}
         />
       </div>
