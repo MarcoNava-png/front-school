@@ -68,6 +68,11 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/campus",
         icon: GraduationCap,
       },
+      {
+        title: "Estudiantes",
+        url: "/dashboard/students",
+        icon: GraduationCap,
+      },
       /* {
         title: "Analytics",
         url: "/dashboard/coming-soon",
