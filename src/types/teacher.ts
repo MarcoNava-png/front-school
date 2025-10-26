@@ -19,8 +19,8 @@ export interface PayloadCreateTeacher {
   calle: string;
   numeroExterior: string;
   numeroInterior: string;
-  codigoPostalId: 0;
-  idEstadoCivil: 0;
+  codigoPostalId: number;
+  idEstadoCivil: number;
   noEmpleado: string;
   rfc: string;
   emailInstitucional: string;

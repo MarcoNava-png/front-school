@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 import { CreateTeacherDialog } from "@/components/create-teacher-dialog";
 import { DataTable } from "@/components/data-table/data-table";
 import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { getCampusList } from "@/services/campus-service";
+import { getCivilStatus, getGenresList } from "@/services/catalogs-service";
+import { getStates } from "@/services/location-service";
 import { getTeachersList } from "@/services/teacher-service";
 import { Campus } from "@/types/campus";
+import { CivilStatus, Genres } from "@/types/catalog";
+import { State } from "@/types/location";
 import { Teacher } from "@/types/teacher";
 
 import { CampusSelect } from "./_components/campus-select";
@@ -19,6 +23,9 @@ export default function TeachersPage() {
   const [campuses, setCampuses] = useState<Campus[]>([]);
   const [selectedCampus, setSelectedCampus] = useState<number | null>(null);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [civilStatus, setCivilStatus] = useState<CivilStatus[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [genres, setGenres] = useState<Genres[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -38,6 +45,20 @@ export default function TeachersPage() {
       setTeachers([]);
     }
   }, [selectedCampus]);
+
+  useEffect(() => {
+    getCivilStatus().then((res) => {
+      setCivilStatus(res);
+    });
+
+    getStates().then((res) => {
+      setStates(res);
+    });
+
+    getGenresList().then((res) => {
+      setGenres(res);
+    });
+  }, []);
 
   const table = useDataTableInstance({
     data: teachers,
@@ -78,6 +99,9 @@ export default function TeachersPage() {
       <CreateTeacherDialog
         open={openCreateDialog}
         campusId={selectedCampus}
+        genres={genres}
+        states={states}
+        civilStatus={civilStatus}
         onClose={() => setOpenCreateDialog(false)}
         onCreate={(data) => {
           // Aquí puedes manejar la creación del profesor
