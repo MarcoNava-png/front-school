@@ -65,9 +65,8 @@ export function ApplicantCreateForm({
     form.setValue("codigoPostalId", 0);
   }, [form.watch("stateId")]);
 
-  // Cargar townships al seleccionar municipio
   useEffect(() => {
-    const municipalityId = form.watch("municipalityId");
+    const municipalityId: string | undefined = form.watch("municipalityId");
     if (municipalityId) {
       getTownships(municipalityId).then(setTownships);
     } else {

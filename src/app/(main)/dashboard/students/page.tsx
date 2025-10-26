@@ -4,17 +4,19 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
-import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
+import { getMatterPlanList } from "@/services/matter-plan-service";
 import { getStudentsList } from "@/services/students-service";
+import { MatterPlan } from "@/types/matter-plan";
 import { StudentsResponse } from "@/types/student";
 
-import { studentsColumns } from "./_components/columns";
+import { getStudentsColumns } from "./_components/columns";
 import { CreateStudentModal } from "./_components/create-student-modal";
 
 export default function Page() {
   const [open, setOpen] = useState(false);
   const [students, setStudents] = useState<StudentsResponse | null>(null);
+  const [matterPlans, setMatterPlans] = useState<MatterPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,9 +29,18 @@ export default function Page() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    getMatterPlanList()
+      .then((res) => {
+        setMatterPlans(res);
+      })
+      .catch(() => setError("Error de red"))
+      .finally(() => setLoading(false));
+  }, []);
+
   const table = useDataTableInstance({
     data: students?.items ?? [],
-    columns: studentsColumns,
+    columns: getStudentsColumns(matterPlans),
     getRowId: (row) => row.idEstudiante.toString(),
   });
 
@@ -54,15 +65,15 @@ export default function Page() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Estudiantes</h1>
         <div className="flex gap-2">
-          <Button onClick={() => setOpen(true)} variant="default">
+          {/* <Button onClick={() => setOpen(true)} variant="default">
             Crear estudiante
-          </Button>
+          </Button> */}
           <DataTableViewOptions table={table} />
         </div>
       </div>
       <CreateStudentModal open={open} onOpenChange={setOpen} />
       <div className="overflow-hidden rounded-lg border">
-        <DataTable table={table} columns={studentsColumns} />
+        <DataTable table={table} columns={getStudentsColumns(matterPlans)} />
       </div>
       <DataTablePagination table={table} />
     </div>
