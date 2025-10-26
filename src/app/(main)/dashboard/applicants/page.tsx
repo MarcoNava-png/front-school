@@ -206,7 +206,7 @@ export default function Page() {
         />
       </div>
 
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border">
         <table className="min-w-full">
           <thead>
             <tr>

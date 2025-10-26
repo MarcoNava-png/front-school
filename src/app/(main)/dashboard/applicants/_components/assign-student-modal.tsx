@@ -1,5 +1,7 @@
 import React from "react";
 
+import { toast } from "sonner";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createStudent } from "@/services/students-service";
 import { Applicant } from "@/types/applicant";
@@ -54,10 +56,12 @@ export const AssignStudentModal: React.FC<AssignStudentModalProps> = ({
         activo,
       };
       const student = await createStudent(payload);
+      toast.success("Estudiante asignado correctamente");
       onAssign(student);
       onClose();
     } catch (err) {
       setError("Error al asignar estudiante");
+      toast.error("Error al asignar estudiante", { description: "Intenta nuevamente." });
     } finally {
       setLoading(false);
     }
