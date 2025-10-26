@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+import { CreateTeacherDialog } from "@/components/create-teacher-dialog";
 import { DataTable } from "@/components/data-table/data-table";
+import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { getCampusList } from "@/services/campus-service";
 import { getTeachersList } from "@/services/teacher-service";
@@ -19,6 +21,7 @@ export default function TeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
 
   useEffect(() => {
     getCampusList().then((res) => setCampuses(res.items ?? []));
@@ -46,10 +49,17 @@ export default function TeachersPage() {
     <div className="@container/main flex flex-col gap-4 md:gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Profesores</h1>
+        {selectedCampus && (
+          <Button type="button" onClick={() => setOpenCreateDialog(true)}>
+            Nuevo Profesor
+          </Button>
+        )}
       </div>
+
       <div className="mb-4 w-full">
         <CampusSelect campuses={campuses} value={selectedCampus} onChange={setSelectedCampus} />
       </div>
+
       {loading ? (
         <div className="flex h-[50vh] items-center justify-center">
           <div className="text-muted-foreground">Cargando profesores...</div>
@@ -65,6 +75,15 @@ export default function TeachersPage() {
           <DataTable table={table} columns={teachersColumns} />
         </div>
       )}
+      <CreateTeacherDialog
+        open={openCreateDialog}
+        campusId={selectedCampus}
+        onClose={() => setOpenCreateDialog(false)}
+        onCreate={(data) => {
+          // Aquí puedes manejar la creación del profesor
+          setOpenCreateDialog(false);
+        }}
+      />
     </div>
   );
 }
