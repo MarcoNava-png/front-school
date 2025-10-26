@@ -37,7 +37,6 @@ export function CreateStudentModal({ open, onOpenChange, children }: CreateStude
 
   const onSubmit = async (data: any) => {
     try {
-      console.log(data);
       await createStudent(data);
       toast.success("Estudiante creado correctamente");
       form.reset();

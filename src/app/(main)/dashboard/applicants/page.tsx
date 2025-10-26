@@ -250,6 +250,7 @@ export default function Page() {
         <AssignStudentModal
           open={assignModalOpen}
           applicant={applicantToAssign}
+          studyPlans={studyPlans}
           onClose={() => {
             setAssignModalOpen(false);
             setApplicantToAssign(null);
