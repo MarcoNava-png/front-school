@@ -12,11 +12,11 @@ import {
   PaginationState,
 } from "@tanstack/react-table";
 
-import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { withDndColumn } from "@/components/data-table/table-utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getApplicantsList } from "@/services/applicants-service";
 import { getCampusList } from "@/services/campus-service";
 import {
@@ -34,6 +34,7 @@ import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@
 import { State } from "@/types/location";
 import { StudyPlan, StudyPlansResponse } from "@/types/study-plan";
 
+import { AssignStudentModal } from "./_components/assign-student-modal";
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
 
 const columns: ColumnDef<Applicant>[] = withDndColumn([
@@ -65,6 +66,8 @@ const columns: ColumnDef<Applicant>[] = withDndColumn([
 
 export default function Page() {
   const [data, setData] = useState<Applicant[]>([]);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [applicantToAssign, setApplicantToAssign] = useState<Applicant | null>(null);
   const [genres, setGenres] = useState<Genres[]>([]);
   const [civilStatus, setCivilStatus] = useState<CivilStatus[]>([]);
   const [campus, setCampus] = useState<Campus[]>([]);
@@ -173,20 +176,22 @@ export default function Page() {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
+    <div className="@container/main flex flex-col gap-4 space-y-4 md:gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 py-4">
         <h2 className="text-xl font-bold">Aspirantes</h2>
-        <DataTableViewOptions table={table} />
-        <input
-          type="text"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filtrar por nombre o email"
-          className="rounded border px-2 py-1 text-sm"
-        />
-        <Button onClick={() => setOpen(true)} variant="default">
-          Crear aspirante
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          {/* <DataTableViewOptions table={table} /> */}
+          <Input
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filtrar por nombre o email"
+            className="min-w-[220px] rounded-[10px] border px-2 py-1 text-sm"
+          />
+          <Button onClick={() => setOpen(true)} variant="default">
+            Crear aspirante
+          </Button>
+        </div>
         <CreateApplicantModal
           open={open}
           genres={genres}
@@ -200,7 +205,61 @@ export default function Page() {
           onOpenChange={setOpen}
         />
       </div>
-      <DataTable table={table} columns={columns} />
+
+      <div className="overflow-hidden rounded-lg border">
+        <table className="min-w-full">
+          <thead>
+            <tr>
+              <th className="px-4 py-2">ID</th>
+              <th className="px-4 py-2">Nombre</th>
+              <th className="px-4 py-2">Email</th>
+              <th className="px-4 py-2">Teléfono</th>
+              <th className="px-4 py-2">Estatus</th>
+              <th className="px-4 py-2">Registro</th>
+              <th className="px-4 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((applicant) => (
+              <tr key={applicant.idAspirante}>
+                <td className="px-4 py-2">{applicant.idAspirante}</td>
+                <td className="px-4 py-2">{applicant.nombreCompleto}</td>
+                <td className="px-4 py-2">{applicant.email}</td>
+                <td className="px-4 py-2">{applicant.telefono}</td>
+                <td className="px-4 py-2">{applicant.aspiranteEstatus}</td>
+                <td className="px-4 py-2">{applicant.fechaRegistro}</td>
+                <td className="px-4 py-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setApplicantToAssign(applicant);
+                      setAssignModalOpen(true);
+                    }}
+                  >
+                    Asignar estudiante
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {applicantToAssign && (
+        <AssignStudentModal
+          open={assignModalOpen}
+          applicant={applicantToAssign}
+          onClose={() => {
+            setAssignModalOpen(false);
+            setApplicantToAssign(null);
+          }}
+          onAssign={(studentData) => {
+            setAssignModalOpen(false);
+            setApplicantToAssign(null);
+          }}
+        />
+      )}
       <DataTablePagination table={table} />
       {loading && <div className="text-center">Cargando...</div>}
     </div>
