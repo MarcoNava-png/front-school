@@ -1,18 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { Edit } from "lucide-react";
+
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
-import { getCampusList, createCampus } from "@/services/campus-service";
+import { getCampusList } from "@/services/campus-service";
 import { getStates } from "@/services/location-service";
-import { Campus, CampusResponse, PayloadCreateCampus } from "@/types/campus";
+import { Campus, CampusResponse } from "@/types/campus";
 import { State } from "@/types/location";
 
 import { campusColumns } from "./_components/columns";
 import { CreateCampusModal } from "./_components/create-campus-modal";
+import { EditCampusModal } from "./_components/edit-campus-modal";
 
 export default function Page() {
   const [campus, setCampus] = useState<CampusResponse | null>(null);
@@ -20,6 +22,8 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [campusToEdit, setCampusToEdit] = useState<Campus | null>(null);
 
   useEffect(() => {
     getCampusList()
@@ -103,7 +107,59 @@ export default function Page() {
         </div>
       </div>
       <div className="overflow-hidden rounded-lg border">
-        <DataTable table={table} columns={campusColumns} />
+        <table className="min-w-full">
+          <thead>
+            <tr>
+              <th className="px-4 py-2">Clave</th>
+              <th className="px-4 py-2">Nombre</th>
+              <th className="px-4 py-2">Dirección</th>
+              <th className="px-4 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campus?.items.map((c) => (
+              <tr key={c.idCampus}>
+                <td className="px-4 py-2">{c.claveCampus}</td>
+                <td className="px-4 py-2">{c.nombre}</td>
+                <td className="px-4 py-2">{c.direccion}</td>
+                <td className="px-4 py-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setCampusToEdit(c);
+                      setEditModalOpen(true);
+                    }}
+                  >
+                    <Edit size={16} />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {campusToEdit && (
+          <EditCampusModal
+            open={editModalOpen}
+            campus={campusToEdit}
+            states={states}
+            onClose={() => {
+              setEditModalOpen(false);
+              setCampusToEdit(null);
+            }}
+            onUpdate={(updated) => {
+              setCampus((prev) => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  items: prev.items.map((item) => (item.idCampus === updated.idCampus ? updated : item)),
+                };
+              });
+              setEditModalOpen(false);
+              setCampusToEdit(null);
+            }}
+          />
+        )}
       </div>
       <DataTablePagination table={table} />
     </div>
