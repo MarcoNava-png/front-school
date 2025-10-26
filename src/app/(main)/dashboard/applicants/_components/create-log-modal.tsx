@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 
+import { useForm } from "react-hook-form";
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { addApplicantTrackingLog } from "@/services/applicants-service";
@@ -17,20 +20,24 @@ interface CreateLogModalProps {
 }
 
 export function CreateLogModal({ open, applicantId, onClose, onCreated }: CreateLogModalProps) {
-  const [medioContacto, setMedioContacto] = useState("");
-  const [resumen, setResumen] = useState("");
-  const [proximaAccion, setProximaAccion] = useState("");
-  const [loading, setLoading] = useState(false);
   const currentUser = useCurrentUser();
+  const [loading, setLoading] = useState(false);
+  const form = useForm<Pick<PayloadTrackingLog, "medioContacto" | "resumen" | "proximaAccion">>({
+    defaultValues: {
+      medioContacto: "",
+      resumen: "",
+      proximaAccion: "",
+    },
+  });
 
-  const handleCreate = async () => {
+  const handleSubmit = async (values: { medioContacto: string; resumen: string; proximaAccion: string }) => {
     setLoading(true);
     const payload: PayloadTrackingLog = {
       aspiranteId: Number(applicantId),
       usuarioAtiendeId: currentUser?.userId ?? "",
-      medioContacto,
-      resumen,
-      proximaAccion,
+      medioContacto: values.medioContacto,
+      resumen: values.resumen,
+      proximaAccion: values.proximaAccion,
       fecha: new Date().toISOString(),
     };
     await addApplicantTrackingLog(payload);
@@ -45,23 +52,57 @@ export function CreateLogModal({ open, applicantId, onClose, onCreated }: Create
         <DialogHeader>
           <DialogTitle>Create applicant log</DialogTitle>
         </DialogHeader>
-        <div className="space-y-2">
-          <Input
-            value={medioContacto}
-            onChange={(e) => setMedioContacto(e.target.value)}
-            placeholder="Contact method"
-          />
-          <Input value={resumen} onChange={(e) => setResumen(e.target.value)} placeholder="Summary" />
-          <Input value={proximaAccion} onChange={(e) => setProximaAccion(e.target.value)} placeholder="Next action" />
-        </div>
-        <DialogFooter>
-          <Button onClick={handleCreate} disabled={loading}>
-            {loading ? "Saving..." : "Save log"}
-          </Button>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-        </DialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
+            <FormField
+              control={form.control}
+              name="medioContacto"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact method</FormLabel>
+                  <FormControl>
+                    <Input {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="resumen"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Summary</FormLabel>
+                  <FormControl>
+                    <Input {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="proximaAccion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Next action</FormLabel>
+                  <FormControl>
+                    <Input {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Saving..." : "Save log"}
+              </Button>
+              <Button variant="outline" type="button" onClick={onClose}>
+                Cancel
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

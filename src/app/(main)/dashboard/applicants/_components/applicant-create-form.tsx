@@ -46,8 +46,8 @@ export function ApplicantCreateForm({
   const user = useCurrentUser();
 
   useEffect(() => {
-    if (user && user.id) {
-      form.setValue("atendidoPorUsuarioId", user.id);
+    if (user && user.userId) {
+      form.setValue("atendidoPorUsuarioId", user.userId);
     }
   }, [user, form]);
 
