@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { CreateCampusModal } from "@/components/create-campus-modal";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
+import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
-import { getCampusList } from "@/services/campus-service";
-import { CampusResponse } from "@/types/campus";
+import { getCampusList, createCampus } from "@/services/campus-service";
+import { Campus, CampusResponse, PayloadCreateCampus } from "@/types/campus";
 
 import { campusColumns } from "./_components/columns";
 
@@ -14,6 +16,7 @@ export default function Page() {
   const [campus, setCampus] = useState<CampusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     getCampusList()
@@ -33,6 +36,20 @@ export default function Page() {
     columns: campusColumns,
     getRowId: (row) => row.idCampus.toString(),
   });
+
+  const handleCreateCampus = async (campusCreated: Campus) => {
+    try {
+      setCampus((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          items: [...prev.items, campusCreated],
+        };
+      });
+    } catch (err) {
+      setError("Error al crear campus");
+    }
+  };
 
   if (loading) {
     return (
@@ -54,7 +71,15 @@ export default function Page() {
     <div className="@container/main flex flex-col gap-4 md:gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Campus</h1>
-        <DataTableViewOptions table={table} />
+        <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setModalOpen(true)} variant="default">
+              Crear campus
+            </Button>
+            <CreateCampusModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={handleCreateCampus} />
+            <DataTableViewOptions table={table} />
+          </div>
+        </div>
       </div>
       <div className="overflow-hidden rounded-lg border">
         <DataTable table={table} columns={campusColumns} />
