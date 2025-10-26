@@ -46,10 +46,10 @@ export interface NavGroup {
 export const sidebarItems: NavGroup[] = [
   {
     id: 1,
-    label: "Dashboards",
+    label: "Acceso",
     items: [
       {
-        title: "Default",
+        title: "Dashboard",
         url: "/dashboard/default",
         icon: LayoutDashboard,
       },
@@ -76,6 +76,31 @@ export const sidebarItems: NavGroup[] = [
       {
         title: "Estudiantes",
         url: "/dashboard/students",
+        icon: GraduationCap,
+      },
+      {
+        title: "Grupos",
+        url: "/dashboard/groups",
+        icon: GraduationCap,
+      },
+      {
+        title: "Materias",
+        url: "/dashboard/subjects",
+        icon: GraduationCap,
+      },
+      {
+        title: "Periodos academicos",
+        url: "/dashboard/academic-periods",
+        icon: GraduationCap,
+      },
+      {
+        title: "Planes de estudio",
+        url: "/dashboard/study-plans",
+        icon: GraduationCap,
+      },
+      {
+        title: "Profesores",
+        url: "/dashboard/teachers",
         icon: GraduationCap,
       },
       /* {
