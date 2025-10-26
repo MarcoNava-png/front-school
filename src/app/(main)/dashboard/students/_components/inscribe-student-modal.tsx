@@ -46,7 +46,7 @@ export function InscribeStudentModal({ open, onOpenChange, studentId, matterPlan
       onOpenChange(false);
     } catch (e: any) {
       toast.error("Error al inscribir estudiante", {
-        description: e?.message ?? e.response.data ?? "Intenta nuevamente.",
+        description: e?.response.data ?? "No se logro inscribir al estudiante.",
       });
     } finally {
       setLoading(false);
