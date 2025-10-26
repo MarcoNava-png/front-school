@@ -1,19 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { CreateCampusModal } from "@/components/create-campus-modal";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { getCampusList, createCampus } from "@/services/campus-service";
+import { getStates } from "@/services/location-service";
 import { Campus, CampusResponse, PayloadCreateCampus } from "@/types/campus";
+import { State } from "@/types/location";
 
 import { campusColumns } from "./_components/columns";
+import { CreateCampusModal } from "./_components/create-campus-modal";
 
 export default function Page() {
   const [campus, setCampus] = useState<CampusResponse | null>(null);
+  const [states, setStates] = useState<State[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -25,6 +28,19 @@ export default function Page() {
           setCampus(res);
         } else {
           setError("Error al cargar campus");
+        }
+      })
+      .catch(() => setError("Error de red"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    getStates()
+      .then((res) => {
+        if (res) {
+          setStates(res);
+        } else {
+          setError("Error al cargar estados");
         }
       })
       .catch(() => setError("Error de red"))
@@ -76,7 +92,12 @@ export default function Page() {
             <Button onClick={() => setModalOpen(true)} variant="default">
               Crear campus
             </Button>
-            <CreateCampusModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={handleCreateCampus} />
+            <CreateCampusModal
+              open={modalOpen}
+              states={states}
+              onClose={() => setModalOpen(false)}
+              onCreate={handleCreateCampus}
+            />
             <DataTableViewOptions table={table} />
           </div>
         </div>

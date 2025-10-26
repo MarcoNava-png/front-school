@@ -1,27 +1,57 @@
 import React from "react";
 
 import { createCampus } from "@/services/campus-service";
+import { getMunicipalities, getTownships } from "@/services/location-service";
 import { Campus } from "@/types/campus";
+import { State, Municipality, Township } from "@/types/location";
 
-import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Input } from "./ui/input";
+import { Button } from "../../../../../components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../../components/ui/dialog";
+import { Input } from "../../../../../components/ui/input";
 
 interface CreateCampusModalProps {
   open: boolean;
+  states: State[];
   onClose: () => void;
   onCreate: (data: Campus) => void;
 }
 
-export const CreateCampusModal: React.FC<CreateCampusModalProps> = ({ open, onClose, onCreate }) => {
+export const CreateCampusModal: React.FC<CreateCampusModalProps> = ({ open, states, onClose, onCreate }) => {
   const [claveCampus, setClaveCampus] = React.useState("");
   const [nombre, setNombre] = React.useState("");
   const [calle, setCalle] = React.useState("");
   const [numeroExterior, setNumeroExterior] = React.useState("");
   const [numeroInterior, setNumeroInterior] = React.useState("");
   const [codigoPostalId, setCodigoPostalId] = React.useState("");
+  const [selectedState, setSelectedState] = React.useState("");
+  const [selectedMunicipality, setSelectedMunicipality] = React.useState("");
+  const [municipalities, setMunicipalities] = React.useState<Municipality[]>([]);
+  const [townships, setTownships] = React.useState<Township[]>([]);
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
+  React.useEffect(() => {
+    if (selectedState) {
+      getMunicipalities(selectedState).then(setMunicipalities);
+      setSelectedMunicipality("");
+      setTownships([]);
+      setCodigoPostalId("");
+    } else {
+      setMunicipalities([]);
+      setSelectedMunicipality("");
+      setTownships([]);
+      setCodigoPostalId("");
+    }
+  }, [selectedState]);
+
+  React.useEffect(() => {
+    if (selectedMunicipality) {
+      getTownships(selectedMunicipality).then(setTownships);
+      setCodigoPostalId("");
+    } else {
+      setTownships([]);
+      setCodigoPostalId("");
+    }
+  }, [selectedMunicipality]);
 
   const validate = () => {
     if (!claveCampus.trim()) return "La clave es obligatoria";
@@ -29,7 +59,9 @@ export const CreateCampusModal: React.FC<CreateCampusModalProps> = ({ open, onCl
     if (!calle.trim()) return "La calle es obligatoria";
     if (!numeroExterior.trim()) return "El número exterior es obligatorio";
     if (!numeroInterior.trim()) return "El número interior es obligatorio";
-    if (!codigoPostalId.trim() || isNaN(Number(codigoPostalId))) return "El código postal debe ser un número";
+    if (!selectedState) return "El estado es obligatorio";
+    if (!selectedMunicipality) return "El municipio es obligatorio";
+    if (!codigoPostalId.trim() || isNaN(Number(codigoPostalId))) return "La localidad es obligatoria";
     return null;
   };
 
@@ -87,12 +119,50 @@ export const CreateCampusModal: React.FC<CreateCampusModalProps> = ({ open, onCl
             value={numeroInterior}
             onChange={(e) => setNumeroInterior(e.target.value)}
           />
-          <Input
-            placeholder="Código postal ID"
-            type="number"
+
+          <label className="text-sm font-medium">Estado</label>
+          <select
+            className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+            value={selectedState}
+            onChange={(e) => setSelectedState(e.target.value)}
+          >
+            <option value="">Selecciona estado</option>
+            {states.map((state) => (
+              <option key={state.id} value={state.id}>
+                {state.nombre}
+              </option>
+            ))}
+          </select>
+
+          <label className="text-sm font-medium">Municipio</label>
+          <select
+            className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+            value={selectedMunicipality}
+            onChange={(e) => setSelectedMunicipality(e.target.value)}
+            disabled={!selectedState}
+          >
+            <option value="">Selecciona municipio</option>
+            {municipalities.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nombre}
+              </option>
+            ))}
+          </select>
+
+          <label className="text-sm font-medium">Localidad/Colonia</label>
+          <select
+            className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
             value={codigoPostalId}
             onChange={(e) => setCodigoPostalId(e.target.value)}
-          />
+            disabled={!selectedMunicipality}
+          >
+            <option value="">Selecciona localidad/colonia</option>
+            {townships.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.asentamiento} ({t.codigo})
+              </option>
+            ))}
+          </select>
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
