@@ -34,6 +34,7 @@ import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@
 import { State } from "@/types/location";
 import { StudyPlan, StudyPlansResponse } from "@/types/study-plan";
 
+import { ApplicantLogsModal } from "./_components/applicant-logs-modal";
 import { AssignStudentModal } from "./_components/assign-student-modal";
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
 
@@ -68,6 +69,8 @@ export default function Page() {
   const [data, setData] = useState<Applicant[]>([]);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [applicantToAssign, setApplicantToAssign] = useState<Applicant | null>(null);
+  const [bitacorasModalOpen, setBitacorasModalOpen] = useState(false);
+  const [applicantForBitacoras, setApplicantForBitacoras] = useState<Applicant | null>(null);
   const [genres, setGenres] = useState<Genres[]>([]);
   const [civilStatus, setCivilStatus] = useState<CivilStatus[]>([]);
   const [campus, setCampus] = useState<Campus[]>([]);
@@ -239,6 +242,17 @@ export default function Page() {
                   >
                     Asignar estudiante
                   </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setApplicantForBitacoras(applicant);
+                      setBitacorasModalOpen(true);
+                    }}
+                  >
+                    Bitacoras
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -261,6 +275,14 @@ export default function Page() {
           }}
         />
       )}
+      <ApplicantLogsModal
+        open={bitacorasModalOpen}
+        applicant={applicantForBitacoras}
+        onClose={() => {
+          setBitacorasModalOpen(false);
+          setApplicantForBitacoras(null);
+        }}
+      />
       <DataTablePagination table={table} />
       {loading && <div className="text-center">Cargando...</div>}
     </div>

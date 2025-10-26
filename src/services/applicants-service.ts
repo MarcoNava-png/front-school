@@ -36,7 +36,7 @@ export async function updateApplicant(payload: PayloadUpdateApplicant): Promise<
 }
 
 export async function getApplicantTrackingLogs(applicantId: number | string): Promise<TrackingLog[]> {
-  const { data } = await apiClient.get<TrackingLog[]>(`/Aspirante/bitacora-seguimiento?idAspirante=${applicantId}`);
+  const { data } = await apiClient.get<TrackingLog[]>(`/Aspirante/bitacora-seguimiento?aspiranteId=${applicantId}`);
   return data;
 }
 
