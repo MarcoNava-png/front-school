@@ -2,8 +2,8 @@ import { AcademicPeriod, AcademicPeriodsResponse, PayloadCreateAcademicPeriod } 
 
 import apiClient from "./api-client";
 
-export async function getAcademicPeriodsList(): Promise<AcademicPeriodsResponse[]> {
-  const { data } = await apiClient.get<AcademicPeriodsResponse[]>(`/PeriodoAcademico`);
+export async function getAcademicPeriodsList(): Promise<AcademicPeriodsResponse> {
+  const { data } = await apiClient.get<AcademicPeriodsResponse>(`/PeriodoAcademico`);
   return data;
 }
 
