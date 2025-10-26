@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 
+import { UserAuth } from "@/types/user-auth";
+
 export function useCurrentUser() {
   const [user, setUser] = useState(() => {
     if (typeof window === "undefined") return null;
-    const stored = localStorage.getItem("user");
+    const stored: string | null = localStorage.getItem("user");
     try {
       return stored ? JSON.parse(stored) : null;
     } catch {
@@ -24,5 +26,5 @@ export function useCurrentUser() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  return user;
+  return user as UserAuth;
 }

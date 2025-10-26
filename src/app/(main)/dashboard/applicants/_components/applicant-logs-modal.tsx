@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { getApplicantTrackingLogs } from "@/services/applicants-service";
 import { Applicant, TrackingLog } from "@/types/applicant";
 
+import { CreateLogModal } from "./create-log-modal";
+
 interface ApplicantLogsModalProps {
   open: boolean;
   applicant: Applicant | null;
@@ -17,8 +19,9 @@ export function ApplicantLogsModal(props: ApplicantLogsModalProps) {
   const { open, applicant, onClose } = props;
   const [logs, setLogs] = useState<TrackingLog[]>([]);
   const [loading, setLoading] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchLogs = () => {
     if (open && applicant?.idAspirante) {
       setLoading(true);
       getApplicantTrackingLogs(applicant.idAspirante)
@@ -27,6 +30,10 @@ export function ApplicantLogsModal(props: ApplicantLogsModalProps) {
     } else {
       setLogs([]);
     }
+  };
+
+  useEffect(() => {
+    fetchLogs();
   }, [open, applicant]);
 
   return (
@@ -36,9 +43,17 @@ export function ApplicantLogsModal(props: ApplicantLogsModalProps) {
           <DialogTitle>Applicant logs for {applicant?.nombreCompleto}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <Button className="mb-2" variant="default" size="sm">
+          <Button className="mb-2" variant="default" size="sm" onClick={() => setCreateModalOpen(true)}>
             Create log
           </Button>
+          {applicant?.idAspirante && (
+            <CreateLogModal
+              open={createModalOpen}
+              applicantId={applicant.idAspirante}
+              onClose={() => setCreateModalOpen(false)}
+              onCreated={fetchLogs}
+            />
+          )}
           {loading ? (
             <div className="text-center text-sm">Loading logs...</div>
           ) : logs.length === 0 ? (
