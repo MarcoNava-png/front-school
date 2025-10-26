@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatCurrency, cn } from "@/lib/utils";
 
 function ChipSVG() {
@@ -65,6 +66,8 @@ const recentPayments = [
 ];
 
 export function AccountOverview() {
+  const user = useCurrentUser();
+
   return (
     <Card className="shadow-xs">
       <CardHeader className="items-center">
@@ -93,7 +96,7 @@ export function AccountOverview() {
                 <div className="absolute top-1/2 w-full -translate-y-1/2">
                   <div className="flex items-end justify-between px-6">
                     <span className="text-accent font-mono text-lg leading-none font-medium tracking-wide uppercase">
-                      Arham Khan
+                      {user.nombres} {user.apellidos}
                     </span>
                     <ChipSVG />
                   </div>
