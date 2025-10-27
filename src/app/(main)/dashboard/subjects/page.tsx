@@ -8,6 +8,7 @@ import { getMatterPlanList } from "@/services/matter-plan-service";
 import { MatterPlan } from "@/types/matter-plan";
 
 import { subjectsColumns } from "./_components/columns";
+import { CreateSubjectDialog } from "./_components/create-subject-dialog";
 import { EmptySubjects } from "./_components/empty";
 
 export default function SubjectsPage() {
@@ -28,10 +29,13 @@ export default function SubjectsPage() {
     getRowId: (row: MatterPlan) => row.idMateriaPlan.toString(),
   });
 
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="@container/main flex flex-col gap-4 md:gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Materias</h1>
+        <CreateSubjectDialog open={open} setOpen={setOpen} />
       </div>
       {loading ? (
         <div className="flex h-[50vh] items-center justify-center">

@@ -15,5 +15,5 @@ export interface PayloadMatterPlan {
   idMateria: number;
   materia: string;
   cuatrimestre: number;
-  esOptativa: true;
+  esOptativa: boolean;
 }
