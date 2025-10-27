@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getMunicipalities, getTownships } from "@/services/location-service";
 import { createTeacher } from "@/services/teacher-service";
 import { CivilStatus, Genres } from "@/types/catalog";
-import { State } from "@/types/location";
+import { State, Municipality, Township } from "@/types/location";
 
 export interface CreateTeacherDialogProps {
   open: boolean;
@@ -41,15 +42,45 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
     calle: "",
     numeroExterior: "",
     numeroInterior: "",
-    codigoPostalId: 0,
+    codigoPostalId: "",
     idEstadoCivil: 0,
     noEmpleado: "",
     rfc: "",
     emailInstitucional: "",
+    password: "",
   });
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [selectedState, setSelectedState] = React.useState<string>("");
+  const [selectedMunicipality, setSelectedMunicipality] = React.useState<string>("");
+  const [municipalities, setMunicipalities] = React.useState<Municipality[]>([]);
+  const [townships, setTownships] = React.useState<Township[]>([]);
+
+  React.useEffect(() => {
+    setSelectedMunicipality("");
+    setTownships([]);
+    setForm((prev) => ({ ...prev, codigoPostalId: "" }));
+    if (selectedState) {
+      getMunicipalities(selectedState)
+        .then((data) => setMunicipalities(data))
+        .catch(() => setMunicipalities([]));
+    } else {
+      setMunicipalities([]);
+    }
+  }, [selectedState]);
+
+  React.useEffect(() => {
+    setTownships([]);
+    setForm((prev) => ({ ...prev, codigoPostalId: "" }));
+    if (selectedMunicipality) {
+      getTownships(selectedMunicipality)
+        .then((data) => setTownships(data))
+        .catch(() => setTownships([]));
+    } else {
+      setTownships([]);
+    }
+  }, [selectedMunicipality]);
 
   React.useEffect(() => {
     if (open) {
@@ -65,12 +96,15 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
         calle: "",
         numeroExterior: "",
         numeroInterior: "",
-        codigoPostalId: 0,
+        codigoPostalId: "",
         idEstadoCivil: 0,
         noEmpleado: "",
         rfc: "",
         emailInstitucional: "",
+        password: "",
       });
+      setSelectedState("");
+      setSelectedMunicipality("");
       setError(null);
     }
   }, [open]);
@@ -226,17 +260,70 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
             <Input id="numeroInterior" name="numeroInterior" value={form.numeroInterior} onChange={handleChange} />
           </div>
 
-          {/* Código postal */}
+          {/* Estado */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="codigoPostalId">Código postal</Label>
-            <Input
+            <Label htmlFor="state">Estado</Label>
+            <select
+              id="state"
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              required
+            >
+              <option value="" disabled>
+                Selecciona estado
+              </option>
+              {states.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Municipio */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="municipality">Municipio</Label>
+            <select
+              id="municipality"
+              value={selectedMunicipality}
+              onChange={(e) => setSelectedMunicipality(e.target.value)}
+              className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              required
+              disabled={!selectedState}
+            >
+              <option value="" disabled>
+                Selecciona municipio
+              </option>
+              {municipalities.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Colonia / Código postal */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="codigoPostalId">Colonia / Código postal</Label>
+            <select
               id="codigoPostalId"
-              type="number"
               name="codigoPostalId"
               value={form.codigoPostalId}
-              onChange={handleChange}
+              onChange={(e) => setForm((prev) => ({ ...prev, codigoPostalId: e.target.value }))}
+              className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               required
-            />
+              disabled={!selectedMunicipality}
+            >
+              <option value="" disabled>
+                Selecciona colonia / código postal
+              </option>
+              {townships.map((t) => (
+                <option key={t.id} value={t.codigo}>
+                  {t.asentamiento} ({t.codigo})
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Estado civil */}
@@ -281,6 +368,19 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
               type="email"
               name="emailInstitucional"
               value={form.emailInstitucional}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {/* Password */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={form.password}
               onChange={handleChange}
               required
             />
