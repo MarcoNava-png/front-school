@@ -8,6 +8,7 @@ import { getStudyPlansList } from "@/services/study-plans-service";
 import { StudyPlan } from "@/types/study-plan";
 
 import { studyPlansColumns } from "./_components/columns";
+import { CreateStudyPlanDialog } from "./_components/create-study-plan-dialog";
 import { EmptyStudyPlans } from "./_components/empty";
 
 export default function StudyPlansPage() {
@@ -31,10 +32,13 @@ export default function StudyPlansPage() {
     getRowId: (row: StudyPlan) => row.idPlanEstudios.toString(),
   });
 
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="@container/main flex flex-col gap-4 md:gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Planes de estudio</h1>
+        <CreateStudyPlanDialog open={open} setOpen={setOpen} />
       </div>
       {loading ? (
         <div className="flex h-[50vh] items-center justify-center">
