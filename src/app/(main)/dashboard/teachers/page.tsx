@@ -1,8 +1,9 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { CreateTeacherDialog } from "@/components/create-teacher-dialog";
+import { CreateTeacherDialog } from "@/app/(main)/dashboard/teachers/_components/create-teacher-dialog";
+import { UpdateTeacherDialog } from "@/app/(main)/dashboard/teachers/_components/update-teacher-dialog";
 import { DataTable } from "@/components/data-table/data-table";
 import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
@@ -29,6 +30,8 @@ export default function TeachersPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
   useEffect(() => {
     getCampusList().then((res) => setCampuses(res.items ?? []));
@@ -60,9 +63,14 @@ export default function TeachersPage() {
     });
   }, []);
 
+  const handleEdit = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setOpenUpdateDialog(true);
+  };
+
   const table = useDataTableInstance({
     data: teachers,
-    columns: teachersColumns,
+    columns: teachersColumns(handleEdit),
     getRowId: (row: Teacher) => row.idProfesor.toString(),
   });
 
@@ -93,7 +101,7 @@ export default function TeachersPage() {
         <EmptyTeachers />
       ) : (
         <div className="overflow-hidden rounded-lg border">
-          <DataTable table={table} columns={teachersColumns} />
+          <DataTable table={table} columns={teachersColumns(handleEdit)} />
         </div>
       )}
       <CreateTeacherDialog
@@ -104,8 +112,23 @@ export default function TeachersPage() {
         civilStatus={civilStatus}
         onClose={() => setOpenCreateDialog(false)}
         onCreate={(data) => {
-          // Aquí puedes manejar la creación del profesor
           setOpenCreateDialog(false);
+        }}
+      />
+      <UpdateTeacherDialog
+        open={openUpdateDialog}
+        teacher={selectedTeacher}
+        campusId={selectedCampus}
+        genres={genres}
+        states={states}
+        civilStatus={civilStatus}
+        onClose={() => {
+          setOpenUpdateDialog(false);
+          setSelectedTeacher(null);
+        }}
+        onUpdate={(data) => {
+          setOpenUpdateDialog(false);
+          setSelectedTeacher(null);
         }}
       />
     </div>
