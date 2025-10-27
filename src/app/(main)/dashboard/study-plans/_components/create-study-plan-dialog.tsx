@@ -42,7 +42,6 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
   }, []);
 
   const onSubmit = async (data: any) => {
-    console.log(data);
     setLoading(true);
     try {
       await createStudyPlan({
