@@ -153,6 +153,22 @@ export const sidebarItems: NavGroup[] = [
         ],
       }
     ]
+  },
+  {
+    id: 6,
+    label: "Finanzas",
+    items: [
+      {
+        title: "Gestión Financiera",
+        url: "/financial",
+        icon: Banknote,
+        subItems: [
+          { title: "Recibos", url: "/dashboard/invoices", newTab: false },
+          { title: "Pagos", url: "/dashboard/payments", newTab: false },
+          { title: "Reportes", url: "/dashboard/reports", newTab: false },
+        ],
+      }
+    ]
   }
   /* }}{
     id: 3,
