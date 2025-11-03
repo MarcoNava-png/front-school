@@ -50,7 +50,7 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address</FormLabel>
+              <FormLabel>Correo Electronico</FormLabel>
               <FormControl>
                 <Input id="email" type="email" placeholder="you@example.com" autoComplete="email" {...field} />
               </FormControl>
@@ -63,7 +63,7 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Contraseña</FormLabel>
               <FormControl>
                 <Input
                   id="password"
@@ -74,25 +74,6 @@ export function LoginForm() {
                 />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="remember"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center">
-              <FormControl>
-                <Checkbox
-                  id="login-remember"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="size-4"
-                />
-              </FormControl>
-              <FormLabel htmlFor="login-remember" className="text-muted-foreground ml-1 text-sm font-medium">
-                Remember me for 30 days
-              </FormLabel>
             </FormItem>
           )}
         />

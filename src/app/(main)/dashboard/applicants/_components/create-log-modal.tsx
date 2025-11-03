@@ -50,7 +50,7 @@ export function CreateLogModal({ open, applicantId, onClose, onCreated }: Create
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create applicant log</DialogTitle>
+          <DialogTitle>Crear registro de seguimiento</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
@@ -59,7 +59,7 @@ export function CreateLogModal({ open, applicantId, onClose, onCreated }: Create
               name="medioContacto"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact method</FormLabel>
+                  <FormLabel>Método de contacto</FormLabel>
                   <FormControl>
                     <Input {...field} required />
                   </FormControl>
@@ -72,7 +72,7 @@ export function CreateLogModal({ open, applicantId, onClose, onCreated }: Create
               name="resumen"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Summary</FormLabel>
+                  <FormLabel>Resumen</FormLabel>
                   <FormControl>
                     <Input {...field} required />
                   </FormControl>
@@ -85,7 +85,7 @@ export function CreateLogModal({ open, applicantId, onClose, onCreated }: Create
               name="proximaAccion"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Next action</FormLabel>
+                  <FormLabel>Siguiente acción:</FormLabel>
                   <FormControl>
                     <Input {...field} required />
                   </FormControl>
@@ -95,10 +95,10 @@ export function CreateLogModal({ open, applicantId, onClose, onCreated }: Create
             />
             <DialogFooter>
               <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save log"}
+                {loading ? "Guardando..." : "Guardar registro"}
               </Button>
               <Button variant="outline" type="button" onClick={onClose}>
-                Cancel
+                Cancelar
               </Button>
             </DialogFooter>
           </form>

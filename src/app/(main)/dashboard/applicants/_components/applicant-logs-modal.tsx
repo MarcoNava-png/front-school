@@ -40,11 +40,11 @@ export function ApplicantLogsModal(props: ApplicantLogsModalProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Applicant logs for {applicant?.nombreCompleto}</DialogTitle>
+          <DialogTitle>Registrar seguimiento para: {applicant?.nombreCompleto}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Button className="mb-2" variant="default" size="sm" onClick={() => setCreateModalOpen(true)}>
-            Create log
+            Crear registro
           </Button>
           {applicant?.idAspirante && (
             <CreateLogModal
@@ -69,13 +69,13 @@ export function ApplicantLogsModal(props: ApplicantLogsModalProps) {
                     <span className="text-muted-foreground text-xs">{b.medioContacto}</span>
                   </div>
                   <div className="mb-1">
-                    <span className="font-medium">Attended by:</span> {b.usuarioAtiendeNombre}
+                    <span className="font-medium">Usuario que atiende:</span> {b.usuarioAtiendeNombre}
                   </div>
                   <div className="mb-1">
-                    <span className="font-medium">Summary:</span> {b.resumen}
+                    <span className="font-medium">Resumen:</span> {b.resumen}
                   </div>
                   <div>
-                    <span className="font-medium">Next action:</span> {b.proximaAccion}
+                    <span className="font-medium">Próxima acción:</span> {b.proximaAccion}
                   </div>
                 </li>
               ))}

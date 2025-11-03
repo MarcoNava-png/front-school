@@ -26,9 +26,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <Link href="/dashboard/default">
-                <Command />
-                <span className="text-base font-semibold">{APP_CONFIG.name}</span>
+              <Link href="/dashboard/default" className="flex items-center">
+                <img src="/public/Logousag.png" alt="Logo" className="w-8 h-8 mr-3 rounded" />
+                <span className="text-base font-semibold whitespace-nowrap">{APP_CONFIG.name}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

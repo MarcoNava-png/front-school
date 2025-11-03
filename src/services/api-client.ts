@@ -1,31 +1,24 @@
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from "axios";
+import axios from 'axios'
 
-const apiClient: AxiosInstance = axios.create({
+const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+})
 
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+axiosInstance.interceptors.request.use(
+  config => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token')
+
+      if (token != null && token != undefined) {
+        config.headers['Authorization'] = `Bearer ${token}`
+      }
     }
-    return config;
+    console.log('access_token:', localStorage.getItem('access_token'))
+    return config
   },
-  (error: AxiosError) => Promise.reject(error),
-);
+  error => {
+    return Promise.reject(error)
+  }
+)
 
-apiClient.interceptors.response.use(
-  (response: AxiosResponse): AxiosResponse => response,
-  async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      window.location.href = "/auth/v2/login";
-    }
-    return Promise.reject(error);
-  },
-);
-
-export default apiClient;
+export default axiosInstance

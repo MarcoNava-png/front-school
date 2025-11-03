@@ -213,21 +213,21 @@ export default function Page() {
         <table className="min-w-full">
           <thead>
             <tr>
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Nombre</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Teléfono</th>
-              <th className="px-4 py-2">Estatus</th>
-              <th className="px-4 py-2">Registro</th>
-              <th className="px-4 py-2">Acciones</th>
+              <th className="px-4 py-2 text-left">ID</th>
+              <th className="px-4 py-2 text-left">Nombre</th>
+              <th className="px-4 py-2 text-left">Plan Estudios Interés</th>
+              <th className="px-4 py-2 text-left">Teléfono</th>
+              <th className="px-4 py-2 text-left">Estatus</th>
+              <th className="px-4 py-2 text-left">Registro</th>
+              <th className="px-4 py-2 text-left">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((applicant) => (
+            {data.filter(applicant => applicant.aspiranteEstatus !== "Admitido").map((applicant) => (
               <tr key={applicant.idAspirante}>
                 <td className="px-4 py-2">{applicant.idAspirante}</td>
                 <td className="px-4 py-2">{applicant.nombreCompleto}</td>
-                <td className="px-4 py-2">{applicant.email}</td>
+                <td className="px-4 py-2">{applicant.planEstudios}</td>
                 <td className="px-4 py-2">{applicant.telefono}</td>
                 <td className="px-4 py-2">{applicant.aspiranteEstatus}</td>
                 <td className="px-4 py-2">{applicant.fechaRegistro}</td>
@@ -240,7 +240,7 @@ export default function Page() {
                       setAssignModalOpen(true);
                     }}
                   >
-                    Asignar estudiante
+                    Migrar Aspirante
                   </Button>
 
                   <Button
@@ -251,7 +251,7 @@ export default function Page() {
                       setBitacorasModalOpen(true);
                     }}
                   >
-                    Bitacoras
+                    Seguimiento
                   </Button>
                 </td>
               </tr>

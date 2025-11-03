@@ -15,6 +15,7 @@ import {
   Banknote,
   Gauge,
   GraduationCap,
+  BriefcaseBusiness,
   type LucideIcon,
 } from "lucide-react";
 
@@ -63,46 +64,6 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/finance",
         icon: Banknote,
       },*/
-      {
-        title: "Campus",
-        url: "/dashboard/campus",
-        icon: GraduationCap,
-      },
-      {
-        title: "Aspirantes",
-        url: "/dashboard/applicants",
-        icon: GraduationCap,
-      },
-      {
-        title: "Estudiantes",
-        url: "/dashboard/students",
-        icon: GraduationCap,
-      },
-      {
-        title: "Grupos",
-        url: "/dashboard/groups",
-        icon: GraduationCap,
-      },
-      {
-        title: "Materias",
-        url: "/dashboard/subjects",
-        icon: GraduationCap,
-      },
-      {
-        title: "Periodos academicos",
-        url: "/dashboard/academic-periods",
-        icon: GraduationCap,
-      },
-      {
-        title: "Planes de estudio",
-        url: "/dashboard/study-plans",
-        icon: GraduationCap,
-      },
-      {
-        title: "Profesores",
-        url: "/dashboard/teachers",
-        icon: GraduationCap,
-      },
       /* {
         title: "Analytics",
         url: "/dashboard/coming-soon",
@@ -131,64 +92,69 @@ export const sidebarItems: NavGroup[] = [
   },
   {
     id: 2,
-    label: "Pages",
+    label: "Admisiones",
     items: [
-      /* {
-        title: "Email",
-        url: "/dashboard/coming-soon",
-        icon: Mail,
-        comingSoon: true,
-      },
       {
-        title: "Chat",
-        url: "/dashboard/coming-soon",
-        icon: MessageSquare,
-        comingSoon: true,
-      },
-      {
-        title: "Calendar",
-        url: "/dashboard/coming-soon",
-        icon: Calendar,
-        comingSoon: true,
-      },
-      {
-        title: "Kanban",
-        url: "/dashboard/coming-soon",
-        icon: Kanban,
-        comingSoon: true,
-      },
-      {
-        title: "Invoice",
-        url: "/dashboard/coming-soon",
-        icon: ReceiptText,
-        comingSoon: true,
-      },
-      {
-        title: "Users",
-        url: "/dashboard/coming-soon",
-        icon: Users,
-        comingSoon: true,
-      },
-      {
-        title: "Roles",
-        url: "/dashboard/coming-soon",
-        icon: Lock,
-        comingSoon: true,
-      },
-      {
-        title: "Authentication",
-        url: "/auth",
-        icon: Fingerprint,
+        title: "Listado de Aspirantes",
+        url: "/applicants",
+        icon: BriefcaseBusiness,
         subItems: [
-          { title: "Login v1", url: "/auth/v1/login", newTab: true },
-          { title: "Login v2", url: "/auth/v2/login", newTab: true },
-          { title: "Register v1", url: "/auth/v1/register", newTab: true },
-          { title: "Register v2", url: "/auth/v2/register", newTab: true },
+          { title: "Aspirantes", url: "/dashboard/applicants", newTab: false },
         ],
-      },*/
+      },
     ],
   },
-  /* {
+  {
+    id: 3,
+    label: "Pages",
+    items: [
+      {
+        title: "Catálogos",
+        url: "/auth",
+        icon: BriefcaseBusiness,
+        subItems: [
+          { title: "Campus", url: "/dashboard/campus", newTab: false },
+          { title: "Materias", url: "/dashboard/subjects", newTab: false },
+          { title: "Planes Estudio", url: "/dashboard/study-plans", newTab: false },
+          { title: "Periodos Academicos", url: "/dashboard/academic-periods", newTab: false },
+        ],
+      },
+    ],
+  },
+  {
+    id: 4,
+    label: "Estudiantes",
+    items: [
+      {
+        title: "Gestión Estudiantil",
+        url: "/students",
+        icon: Users,
+        subItems: [
+          { title: "Estudiantes", url: "/dashboard/students", newTab: false },
+          { title: "Inscripciones", url: "/dashboard/enrollments", newTab: false },
+          { title: "Calificaciones", url: "/dashboard/grades", newTab: false },
+          { title: "Asistencias", url: "/dashboard/attendances", newTab: false },
+        ],
+      }
+    ]
+  },
+  {
+    id: 5,
+    label: "Academico",
+    items: [
+      {
+        title: "Gestión Académica",
+        url: "/academic",
+        icon: Calendar,
+        subItems: [
+          { title: "Horarios", url: "/dashboard/schedules", newTab: false },
+          { title: "Aulas", url: "/dashboard/classrooms", newTab: false },
+          { title: "Profesores", url: "/dashboard/teachers", newTab: false },
+        ],
+      }
+    ]
+  }
+  /* }}{
     id: 3,
     label: "Misc",
     items: [
