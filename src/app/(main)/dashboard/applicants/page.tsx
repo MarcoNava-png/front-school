@@ -210,7 +210,7 @@ export default function Page() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border">
-        <table className="min-w-full">
+        <table className="min-w-full table-fixed text-xs leading-tight">
           <thead>
             <tr>
               <th className="px-4 py-2 text-left">ID</th>
@@ -219,6 +219,8 @@ export default function Page() {
               <th className="px-4 py-2 text-left">Teléfono</th>
               <th className="px-4 py-2 text-left">Estatus</th>
               <th className="px-4 py-2 text-left">Registro</th>
+              <th className="px-4 py-2 text-left">Estatus Pago</th>
+              <th className="px-4 py-2 text-left">Estatus Documentos</th>
               <th className="px-4 py-2 text-left">Acciones</th>
             </tr>
           </thead>
@@ -231,6 +233,8 @@ export default function Page() {
                 <td className="px-4 py-2">{applicant.telefono}</td>
                 <td className="px-4 py-2">{applicant.aspiranteEstatus}</td>
                 <td className="px-4 py-2">{applicant.fechaRegistro}</td>
+                <td className="px-4 py-2">{}</td>
+                <td className="px-4 py-2">{}</td>
                 <td className="px-4 py-2">
                   <Button
                     size="sm"
@@ -240,7 +244,7 @@ export default function Page() {
                       setAssignModalOpen(true);
                     }}
                   >
-                    Migrar Aspirante
+                    Migrar
                   </Button>
 
                   <Button

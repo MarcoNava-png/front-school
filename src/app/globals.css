@@ -157,7 +157,7 @@ These serve as the fallback; there is no separate default.css file. */
   }
 
   body {
-    @apply bg-background text-foreground overscroll-none;
+    @apply bg-background text-foreground overscroll-none text-sm;
   }
 }
 

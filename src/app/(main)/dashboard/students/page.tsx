@@ -63,7 +63,7 @@ export default function Page() {
   return (
     <div className="@container/main flex flex-col gap-4 md:gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Estudiantes</h1>
+        <h1 className="text-2xl font-bold">Inscripciones</h1>
         <div className="flex gap-2">
           {/* <Button onClick={() => setOpen(true)} variant="default">
             Crear estudiante

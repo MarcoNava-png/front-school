@@ -130,8 +130,8 @@ export const sidebarItems: NavGroup[] = [
         url: "/students",
         icon: Users,
         subItems: [
-          { title: "Estudiantes", url: "/dashboard/students", newTab: false },
-          { title: "Inscripciones", url: "/dashboard/enrollments", newTab: false },
+          { title: "Inscripciones", url: "/dashboard/students", newTab: false },
+          { title: "Estudiantes", url: "", newTab: false },
           { title: "Calificaciones", url: "/dashboard/grades", newTab: false },
           { title: "Asistencias", url: "/dashboard/attendances", newTab: false },
         ],
@@ -166,6 +166,20 @@ export const sidebarItems: NavGroup[] = [
           { title: "Recibos", url: "/dashboard/invoices", newTab: false },
           { title: "Pagos", url: "/dashboard/payments", newTab: false },
           { title: "Reportes", url: "/dashboard/reports", newTab: false },
+        ],
+      }
+    ]
+  },
+  {
+    id: 7,
+    label: "Configuración",
+    items: [
+      {
+        title: "Ajustes",
+        url: "/settings",
+        icon: Lock,
+        subItems: [
+          { title: "Usuarios", url: "/dashboard/users", newTab: false },
         ],
       }
     ]

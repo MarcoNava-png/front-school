@@ -13,7 +13,6 @@ axiosInstance.interceptors.request.use(
         config.headers['Authorization'] = `Bearer ${token}`
       }
     }
-    console.log('access_token:', localStorage.getItem('access_token'))
     return config
   },
   error => {

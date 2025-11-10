@@ -39,7 +39,7 @@ export default function LoginV2() {
         <div className="text-sm">{APP_CONFIG.copyright}</div>
         <div className="flex items-center gap-1 text-sm">
           <Globe className="text-muted-foreground size-4" />
-          ENG
+          Español
         </div>
       </div>
     </>
