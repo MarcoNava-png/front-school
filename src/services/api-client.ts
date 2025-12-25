@@ -1,31 +1,71 @@
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from "axios";
+import axios from 'axios'
 
-const apiClient: AxiosInstance = axios.create({
+const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+})
 
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Función para verificar si el token ha expirado
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const expirationTime = payload.exp * 1000 // Convertir a milisegundos
+    return Date.now() >= expirationTime
+  } catch (error) {
+    return true // Si hay error al parsear, consideramos el token como expirado
+  }
+}
+
+// Función para limpiar la sesión
+function clearSession() {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
+    document.cookie = 'access_token=; path=/; max-age=0; SameSite=Lax'
+  }
+}
+
+// Interceptor de peticiones - agrega el token
+axiosInstance.interceptors.request.use(
+  config => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token')
+
+      if (token != null && token != undefined) {
+        // Verificar si el token ha expirado antes de enviarlo
+        if (isTokenExpired(token)) {
+          clearSession()
+          // Redirigir al login si no estamos ya en esa página
+          if (!window.location.pathname.includes('/auth/')) {
+            window.location.href = '/auth/v2/login'
+          }
+          return Promise.reject(new Error('Token expirado'))
+        }
+
+        config.headers['Authorization'] = `Bearer ${token}`
+      }
     }
-    return config;
+    return config
   },
-  (error: AxiosError) => Promise.reject(error),
-);
+  error => {
+    return Promise.reject(error)
+  }
+)
 
-apiClient.interceptors.response.use(
-  (response: AxiosResponse): AxiosResponse => response,
-  async (error: AxiosError) => {
+// Interceptor de respuestas - maneja errores 401
+axiosInstance.interceptors.response.use(
+  response => response,
+  error => {
     if (error.response?.status === 401) {
-      window.location.href = "/auth/v2/login";
-    }
-    return Promise.reject(error);
-  },
-);
+      // Token inválido o expirado
+      clearSession()
 
-export default apiClient;
+      // Solo redirigir si no estamos ya en la página de login
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/')) {
+        window.location.href = '/auth/v2/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
+export default axiosInstance

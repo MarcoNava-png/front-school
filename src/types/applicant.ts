@@ -13,8 +13,15 @@ export interface Applicant {
   codigoPostalId: number;
   municipioId: number;
   estadoId: number;
+  // Usuario que atiende al aspirante (puede cambiar)
   usuarioAtiendeNombre: string;
   idAtendidoPorUsuario: string;
+  // Usuario que registró al aspirante (no cambia)
+  createdBy: string;
+  usuarioRegistroNombre: string;
+  // Campos adicionales para UI (si vienen del backend)
+  estatusPago?: string; // SIN_RECIBO | PENDIENTE | PARCIAL | PAGADO
+  estatusDocumentos?: string; // INCOMPLETO | COMPLETO | VALIDADO
 }
 
 export interface PayloadCreateApplicant {
@@ -67,3 +74,305 @@ export interface PayloadTrackingLog {
 }
 
 export type ApplicantsResponse = PaginatedResponse<Applicant>;
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+export enum EstatusDocumentoEnum {
+  PENDIENTE = 0,
+  SUBIDO = 1,
+  VALIDADO = 2,
+  RECHAZADO = 3,
+}
+
+export enum EstatusRecibo {
+  PENDIENTE = 0,
+  PARCIAL = 1,
+  PAGADO = 2,
+  VENCIDO = 3,
+  CANCELADO = 4,
+  BONIFICADO = 5,
+}
+
+// ============================================================================
+// DOCUMENTOS
+// ============================================================================
+
+export interface AspiranteDocumentoDto {
+  idAspiranteDocumento: number;
+  idDocumentoRequisito: number;
+  clave: string;
+  descripcion: string;
+  estatus: EstatusDocumentoEnum;
+  urlArchivo?: string | null;
+  notas?: string | null;
+}
+
+export interface DocumentoRequisitoDto {
+  idDocumentoRequisito: number;
+  clave: string;
+  descripcion: string;
+  esObligatorio: boolean;
+  orden: number;
+  activo: boolean;
+}
+
+export interface ValidarDocumentoRequestDto {
+  idAspiranteDocumento: number;
+  validar: boolean; // true => VALIDADO; false => RECHAZADO
+  notas?: string | null;
+}
+
+export interface CambiarEstatusDocumentoDto {
+  estatus: EstatusDocumentoEnum;
+  notas?: string | null;
+}
+
+export interface CargarDocumentoFormData {
+  idAspirante: number;
+  idDocumentoRequisito: number;
+  archivo: File;
+  notas?: string;
+}
+
+// ============================================================================
+// RECIBOS
+// ============================================================================
+
+export interface ReciboLineaDto {
+  idReciboDetalle: number;
+  idConceptoPago: number;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  importe: number;
+  refTabla?: string | null;
+  refId?: number | null;
+}
+
+export interface ReciboDto {
+  idRecibo: number;
+  folio?: string | null;
+  idAspirante?: number | null;
+  idEstudiante?: number | null;
+  idPeriodoAcademico?: number | null;
+  fechaEmision: string; // DateOnly -> string en frontend
+  fechaVencimiento: string;
+  estatus: EstatusRecibo;
+  subtotal: number;
+  descuento: number;
+  recargos: number;
+  total: number;
+  saldo: number;
+  notas?: string | null;
+  detalles: ReciboLineaDto[];
+}
+
+// ============================================================================
+// ESTADÍSTICAS
+// ============================================================================
+
+export interface EstadisticasAspirantesDto {
+  totalAspirantes: number;
+  aspirantesPorEstatus: Record<string, number>;
+  aspirantesPorPrograma: Record<string, number>;
+  aspirantesPorMedioContacto: Record<string, number>;
+  aspirantesConDocumentosPendientes: number;
+  aspirantesConPagosPendientes: number;
+  aspirantesConDocumentosCompletos: number;
+  aspirantesConPagosCompletos: number;
+}
+
+// ============================================================================
+// FICHA DE ADMISIÓN (Compleja - 12 clases anidadas)
+// ============================================================================
+
+export interface DireccionDto {
+  calle: string;
+  numeroExterior: string;
+  numeroInterior?: string | null;
+  colonia?: string | null;
+  codigoPostal: string;
+  municipio: string;
+  estado: string;
+  pais: string;
+}
+
+export interface DatosPersonalesDto {
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  nombreCompleto: string;
+  curp?: string | null;
+  rfc?: string | null;
+  fechaNacimiento: string;
+  edad: number;
+  genero: string;
+  estadoCivil?: string | null;
+  nacionalidad?: string | null;
+}
+
+export interface DatosContactoDto {
+  email: string;
+  telefono?: string | null;
+  celular?: string | null;
+  direccion?: DireccionDto | null;
+}
+
+export interface InformacionAcademicaDto {
+  clavePlan: string;
+  nombrePlan: string;
+  rvoe?: string | null;
+  duracionAnios: number;
+  duracionMeses: number;
+  turno: string;
+  campus: string;
+  nivelEducativo: string;
+}
+
+export interface DocumentoDto {
+  clave: string;
+  descripcion: string;
+  esObligatorio: boolean;
+  estatus: EstatusDocumentoEnum;
+  fechaSubida?: string | null;
+  urlArchivo?: string | null;
+  notas?: string | null;
+}
+
+export interface ConceptoReciboDto {
+  concepto: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+}
+
+export interface ReciboResumenDto {
+  idRecibo: number;
+  folio: string;
+  fechaEmision: string;
+  fechaVencimiento: string;
+  estatus: EstatusRecibo;
+  estatusTexto: string;
+  subtotal: number;
+  descuento: number;
+  recargos: number;
+  total: number;
+  saldo: number;
+  conceptos: ConceptoReciboDto[];
+}
+
+export interface InformacionPagosDto {
+  totalAPagar: number;
+  totalPagado: number;
+  saldoPendiente: number;
+  recibos: ReciboResumenDto[];
+}
+
+export interface AsesorDto {
+  id: string;
+  nombreCompleto: string;
+  email?: string | null;
+  telefono?: string | null;
+}
+
+export interface BitacoraSeguimientoDto {
+  fecha: string;
+  usuarioAtiende: string;
+  medioContacto: string;
+  resumen: string;
+  proximaAccion?: string | null;
+}
+
+export interface SeguimientoDto {
+  asesorAsignado?: AsesorDto | null;
+  medioContacto?: string | null;
+  bitacora: BitacoraSeguimientoDto[];
+}
+
+export interface MetadataGeneracionDto {
+  fechaGeneracion: string;
+  usuarioGenero?: string | null;
+  nombreUsuarioGenero?: string | null;
+}
+
+export interface FichaAdmisionDto {
+  idAspirante: number;
+  folio: string;
+  fechaRegistro: string;
+  estatusActual: string;
+  observaciones?: string | null;
+  datosPersonales: DatosPersonalesDto;
+  datosContacto: DatosContactoDto;
+  informacionAcademica: InformacionAcademicaDto;
+  documentos: DocumentoDto[];
+  informacionPagos: InformacionPagosDto;
+  seguimiento: SeguimientoDto;
+  metadata: MetadataGeneracionDto;
+}
+
+// ============================================================================
+// INSCRIPCIÓN COMO ESTUDIANTE
+// ============================================================================
+
+export interface DocumentoValidacionDto {
+  descripcion: string;
+  esObligatorio: boolean;
+  estatus: EstatusDocumentoEnum;
+  cumple: boolean;
+}
+
+export interface ValidacionesInscripcionDto {
+  documentosCompletos: boolean;
+  pagoInscripcion: boolean;
+  estatusValido: boolean;
+  advertencias: string[];
+  detalleDocumentos: DocumentoValidacionDto[];
+}
+
+export interface CredencialesAccesoDto {
+  usuario: string;
+  passwordTemporal: string;
+  urlAcceso: string;
+  mensaje: string;
+}
+
+export interface ReciboGeneradoDto {
+  idRecibo: number;
+  folio: string;
+  concepto: string;
+  total: number;
+  fechaVencimiento: string;
+}
+
+export interface InscripcionAspiranteResultDto {
+  idAspirante: number;
+  nombreCompleto: string;
+  nuevoEstatusAspirante: string;
+  idEstudiante: number;
+  matricula: string;
+  email: string;
+  fechaIngreso: string;
+  planEstudios: string;
+  credenciales: CredencialesAccesoDto;
+  recibosGenerados: ReciboGeneradoDto[];
+  validaciones: ValidacionesInscripcionDto;
+  fechaProceso: string;
+  usuarioQueProceso?: string | null;
+  inscripcionForzada: boolean;
+}
+
+export interface InscribirAspiranteRequest {
+  idPeriodoAcademico?: number | null;
+  forzarInscripcion?: boolean;
+  observaciones?: string | null;
+}
+
+// ============================================================================
+// OTRAS OPERACIONES
+// ============================================================================
+
+export interface CancelarAspiranteRequest {
+  motivo: string;
+}

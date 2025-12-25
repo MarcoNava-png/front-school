@@ -30,6 +30,8 @@ yarn-error.log*
 .env*.local
 .env*.production
 .env.production
+.env
+.env.local.example
 
 # vercel
 .vercel
@@ -37,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+nul
+NUL
+
+backend/
+.claude/
+front-school.tgz
+

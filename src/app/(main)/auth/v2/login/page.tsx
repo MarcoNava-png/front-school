@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Globe } from "lucide-react";
@@ -10,7 +9,6 @@ import { APP_CONFIG } from "@/config/app-config";
 import { useAuth } from "@/hooks/use-auth";
 
 import { LoginForm } from "../../_components/login-form";
-import { GoogleButton } from "../../_components/social-auth/google-button";
 
 export default function LoginV2() {
   const router = useRouter();
@@ -24,32 +22,26 @@ export default function LoginV2() {
 
   return (
     <>
-      <div className="mx-auto flex w-full flex-col justify-center space-y-8 sm:w-[350px]">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-medium">Login to your account</h1>
-          <p className="text-muted-foreground text-sm">Please enter your details to login.</p>
+      <div className="mx-auto flex w-full flex-col justify-center space-y-8 sm:w-[400px] px-4">
+        <div className="space-y-3 text-center">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
+            Accede a tu cuenta
+          </h1>
+          <p className="text-muted-foreground text-base">
+            Introduzca sus datos para iniciar sesión en el sistema.
+          </p>
         </div>
-        <div className="space-y-4">
-          <GoogleButton className="w-full" />
-          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-            <span className="bg-background text-muted-foreground relative z-10 px-2">Or continue with</span>
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-8 shadow-xl">
+            <LoginForm />
           </div>
-          <LoginForm />
         </div>
       </div>
-      <div className="absolute top-5 flex w-full justify-end px-10">
-        <div className="text-muted-foreground text-sm">
-          Don&apos;t have an account?{" "}
-          <Link className="text-foreground" href="register">
-            Register
-          </Link>
-        </div>
-      </div>
-      <div className="absolute bottom-5 flex w-full justify-between px-10">
-        <div className="text-sm">{APP_CONFIG.copyright}</div>
-        <div className="flex items-center gap-1 text-sm">
-          <Globe className="text-muted-foreground size-4" />
-          ENG
+      <div className="absolute bottom-5 flex w-full justify-between px-10 text-muted-foreground">
+        <div className="text-xs">{APP_CONFIG.copyright}</div>
+        <div className="flex items-center gap-1.5 text-xs">
+          <Globe className="size-3.5" />
+          Español
         </div>
       </div>
     </>

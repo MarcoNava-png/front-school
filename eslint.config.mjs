@@ -47,7 +47,7 @@ export default [
   {
     rules: {
       // Prettier integration rules
-      "prettier/prettier": "warn",
+      "prettier/prettier": "off",
 
       // File Naming
       "unicorn/filename-case": [

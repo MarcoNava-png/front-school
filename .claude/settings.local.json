@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npx eslint:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet build:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(npm run dev:*)",
+      "Bash(ls:*)",
+      "Bash(nul)",
+      "Bash(npx next info)",
+      "Bash(dir:*)",
+      "Bash(taskkill /PID 40720 /F)",
+      "Bash(cmd //c \"taskkill /F /PID 40720\")",
+      "Bash(powershell -Command:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

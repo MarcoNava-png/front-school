@@ -1,11 +1,15 @@
 import {
+  AcademicPeriod,
   ApplicantStatus,
   CivilStatus,
   ContactMethod,
   EducationLevel,
   Genres,
+  Grupo,
+  PaymentMethod,
   Periodicity,
   Schedule,
+  StudyPlan,
   WeekDay,
 } from "@/types/catalog";
 
@@ -20,6 +24,11 @@ export async function getGenresList(): Promise<Genres[]> {
 
 export async function getSchedules(): Promise<Schedule[]> {
   const res = await apiClient.get<Schedule[]>(`${baseUrlCatalogs}/horarios`);
+  return res.data;
+}
+
+export async function getTurnos(): Promise<Schedule[]> {
+  const res = await apiClient.get<Schedule[]>(`${baseUrlCatalogs}/turnos`);
   return res.data;
 }
 
@@ -56,4 +65,30 @@ export async function getEducationLevels(): Promise<EducationLevel[]> {
 export async function getPeriodicity(): Promise<Periodicity[]> {
   const res = await apiClient.get<Periodicity[]>(`${baseUrlCatalogs}/periodicidad`);
   return res.data;
+}
+
+export async function getPaymentMethods(): Promise<PaymentMethod[]> {
+  const res = await apiClient.get<PaymentMethod[]>(`${baseUrlCatalogs}/medios-pago`);
+  return res.data;
+}
+
+export async function getAcademicPeriods(): Promise<AcademicPeriod[]> {
+  const res = await apiClient.get<AcademicPeriod[]>(`${baseUrlCatalogs}/periodos-academicos`);
+  return res.data;
+}
+
+export async function getStudyPlans(): Promise<StudyPlan[]> {
+  const res = await apiClient.get<StudyPlan[]>(`${baseUrlCatalogs}/planes-estudio`);
+  return res.data;
+}
+
+export async function getGrupos(idPeriodoAcademico?: number): Promise<Grupo[]> {
+  const params = new URLSearchParams();
+  params.append("page", "1");
+  params.append("pageSize", "1000");
+  if (idPeriodoAcademico) {
+    params.append("idPeriodoAcademico", idPeriodoAcademico.toString());
+  }
+  const res = await apiClient.get<{ items: Grupo[] }>(`/grupos?${params.toString()}`);
+  return res.data.items;
 }

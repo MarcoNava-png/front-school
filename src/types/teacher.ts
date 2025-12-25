@@ -5,6 +5,8 @@ export interface Teacher {
   noEmpleado: string;
   nombreCompleto: string;
   emailInstitucional: string;
+  telefono?: string;
+  especialidad?: string;
 }
 
 export interface PayloadCreateTeacher {
@@ -33,3 +35,21 @@ export interface PayloadUpdateTeacher extends PayloadCreateTeacher {
 }
 
 export type TeachersResponse = PaginatedResponse<Teacher>;
+
+// ============================================================================
+// VALIDACIÓN DE HORARIOS
+// ============================================================================
+
+export interface TeacherScheduleConflict {
+  tieneConflicto: boolean;
+  conflictos: ScheduleConflictDetail[];
+}
+
+export interface ScheduleConflictDetail {
+  dia: string;
+  horaInicio: string;
+  horaFin: string;
+  nombreMateria: string;
+  grupo: string;
+  aula: string;
+}

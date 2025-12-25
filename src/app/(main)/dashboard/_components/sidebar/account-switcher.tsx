@@ -49,7 +49,7 @@ function AvatarCard({
 
 /* -------------------------------- AccountSwitcher ------------------------------ */
 export function AccountSwitcher() {
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
   const logout = useLogout();
   const [mounted, setMounted] = useState(false);
 

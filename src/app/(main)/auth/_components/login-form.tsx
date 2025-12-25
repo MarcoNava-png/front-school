@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -8,14 +9,14 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/use-auth";
 import { login } from "@/services/auth-service";
 
 const FormSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  email: z.string().email({ message: "Por favor ingrese un correo electrónico válido." }),
+  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   remember: z.boolean().optional(),
 });
 
@@ -29,30 +30,45 @@ export function LoginForm() {
     },
   });
   const router = useRouter();
+  const { refreshAuth } = useAuth();
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
       const res = await login({ email: data.email, password: data.password });
-      if (!res.success) throw new Error(res.error ?? "Login failed");
+      if (!res.success) throw new Error(res.error ?? "Error al iniciar sesión");
+
+      refreshAuth();
+
+      toast.success("Inicio de sesión exitoso", {
+        description: "Bienvenido " + (res.user?.nombres ?? ""),
+      });
+
       router.push("/dashboard");
     } catch (error: unknown) {
-      let message = "Unknown error";
+      let message = "Error desconocido";
       if (error instanceof Error) message = error.message;
-      toast("Login error", { description: message });
+      toast.error("Error de autenticación", { description: message });
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address</FormLabel>
+              <FormLabel className="text-sm font-medium">Correo Electrónico</FormLabel>
               <FormControl>
-                <Input id="email" type="email" placeholder="you@example.com" autoComplete="email" {...field} />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  autoComplete="email"
+                  className="h-11 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -63,13 +79,22 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-sm font-medium">Contraseña</FormLabel>
+                <Link
+                  href="/auth/v2/forgot-password"
+                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <FormControl>
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
+                  className="h-11 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
                   {...field}
                 />
               </FormControl>
@@ -77,27 +102,12 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="remember"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center">
-              <FormControl>
-                <Checkbox
-                  id="login-remember"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="size-4"
-                />
-              </FormControl>
-              <FormLabel htmlFor="login-remember" className="text-muted-foreground ml-1 text-sm font-medium">
-                Remember me for 30 days
-              </FormLabel>
-            </FormItem>
-          )}
-        />
-        <Button className="w-full" type="submit">
-          Login
+        <Button
+          className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium shadow-lg shadow-blue-500/30 transition-all duration-200"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
         </Button>
       </form>
     </Form>

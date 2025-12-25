@@ -15,6 +15,18 @@ import {
   Banknote,
   Gauge,
   GraduationCap,
+  BriefcaseBusiness,
+  Building2,
+  BookOpen,
+  FileText,
+  UserCircle,
+  DollarSign,
+  Receipt,
+  CreditCard,
+  Award,
+  BarChart3,
+  FileSpreadsheet,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +37,7 @@ export interface NavSubItem {
   comingSoon?: boolean;
   newTab?: boolean;
   isNew?: boolean;
+  requiredModule?: string;
 }
 
 export interface NavMainItem {
@@ -35,169 +48,207 @@ export interface NavMainItem {
   comingSoon?: boolean;
   newTab?: boolean;
   isNew?: boolean;
+  requiredModule?: string;
 }
 
 export interface NavGroup {
   id: number;
   label?: string;
   items: NavMainItem[];
+  requiredModule?: string;
 }
 
 export const sidebarItems: NavGroup[] = [
   {
     id: 1,
-    label: "Acceso",
+    requiredModule: "Dashboard",
     items: [
       {
         title: "Dashboard",
         url: "/dashboard/default",
         icon: LayoutDashboard,
+        requiredModule: "Dashboard",
       },
-      /* {
-        title: "CRM",
-        url: "/dashboard/crm",
-        icon: ChartBar,
-      },
-      {
-        title: "Finance",
-        url: "/dashboard/finance",
-        icon: Banknote,
-      },*/
-      {
-        title: "Campus",
-        url: "/dashboard/campus",
-        icon: GraduationCap,
-      },
-      {
-        title: "Aspirantes",
-        url: "/dashboard/applicants",
-        icon: GraduationCap,
-      },
-      {
-        title: "Estudiantes",
-        url: "/dashboard/students",
-        icon: GraduationCap,
-      },
-      {
-        title: "Grupos",
-        url: "/dashboard/groups",
-        icon: GraduationCap,
-      },
-      {
-        title: "Materias",
-        url: "/dashboard/subjects",
-        icon: GraduationCap,
-      },
-      {
-        title: "Periodos academicos",
-        url: "/dashboard/academic-periods",
-        icon: GraduationCap,
-      },
-      {
-        title: "Planes de estudio",
-        url: "/dashboard/study-plans",
-        icon: GraduationCap,
-      },
-      {
-        title: "Profesores",
-        url: "/dashboard/teachers",
-        icon: GraduationCap,
-      },
-      /* {
-        title: "Analytics",
-        url: "/dashboard/coming-soon",
-        icon: Gauge,
-        comingSoon: true,
-      },
-      {
-        title: "E-commerce",
-        url: "/dashboard/coming-soon",
-        icon: ShoppingBag,
-        comingSoon: true,
-      },
-      {
-        title: "Academy",
-        url: "/dashboard/coming-soon",
-        icon: GraduationCap,
-        comingSoon: true,
-      },
-      {
-        title: "Logistics",
-        url: "/dashboard/coming-soon",
-        icon: Forklift,
-        comingSoon: true,
-      },*/
     ],
   },
   {
     id: 2,
-    label: "Pages",
+    label: "ADMISIONES",
+    requiredModule: "Admisiones",
     items: [
-      /* {
-        title: "Email",
-        url: "/dashboard/coming-soon",
-        icon: Mail,
-        comingSoon: true,
-      },
       {
-        title: "Chat",
-        url: "/dashboard/coming-soon",
-        icon: MessageSquare,
-        comingSoon: true,
+        title: "Aspirantes",
+        url: "/dashboard/applicants",
+        icon: BriefcaseBusiness,
+        requiredModule: "Admisiones",
       },
-      {
-        title: "Calendar",
-        url: "/dashboard/coming-soon",
-        icon: Calendar,
-        comingSoon: true,
-      },
-      {
-        title: "Kanban",
-        url: "/dashboard/coming-soon",
-        icon: Kanban,
-        comingSoon: true,
-      },
-      {
-        title: "Invoice",
-        url: "/dashboard/coming-soon",
-        icon: ReceiptText,
-        comingSoon: true,
-      },
-      {
-        title: "Users",
-        url: "/dashboard/coming-soon",
-        icon: Users,
-        comingSoon: true,
-      },
-      {
-        title: "Roles",
-        url: "/dashboard/coming-soon",
-        icon: Lock,
-        comingSoon: true,
-      },
-      {
-        title: "Authentication",
-        url: "/auth",
-        icon: Fingerprint,
-        subItems: [
-          { title: "Login v1", url: "/auth/v1/login", newTab: true },
-          { title: "Login v2", url: "/auth/v2/login", newTab: true },
-          { title: "Register v1", url: "/auth/v1/register", newTab: true },
-          { title: "Register v2", url: "/auth/v2/register", newTab: true },
-        ],
-      },*/
     ],
   },
-  /* {
+  {
     id: 3,
-    label: "Misc",
+    label: "CATÁLOGOS",
+    requiredModule: "Catalogos",
     items: [
       {
-        title: "Others",
-        url: "/dashboard/coming-soon",
-        icon: SquareArrowUpRight,
-        comingSoon: true,
+        title: "Campus",
+        url: "/dashboard/campus",
+        icon: Building2,
+        requiredModule: "Catalogos",
+      },
+      {
+        title: "Materias",
+        url: "/dashboard/subjects",
+        icon: BookOpen,
+        requiredModule: "Catalogos",
+      },
+      {
+        title: "Planes de Estudio",
+        url: "/dashboard/study-plans",
+        icon: FileText,
+        requiredModule: "Catalogos",
+      },
+      {
+        title: "Periodos Académicos",
+        url: "/dashboard/academic-periods",
+        icon: Calendar,
+        requiredModule: "Catalogos",
       },
     ],
-  },*/
+  },
+  {
+    id: 4,
+    label: "ESTUDIANTES",
+    requiredModule: "Estudiantes",
+    items: [
+      {
+        title: "Gestión Estudiantil",
+        url: "/students",
+        icon: Users,
+        requiredModule: "Estudiantes",
+        subItems: [
+          { title: "Estudiantes por Grupo", url: "/dashboard/students", newTab: false, requiredModule: "Estudiantes" },
+          { title: "Inscripción a Grupos", url: "/dashboard/group-enrollment", newTab: false, requiredModule: "Estudiantes" },
+          { title: "Calificaciones", url: "/dashboard/grades", newTab: false, requiredModule: "Academico" },
+          { title: "Asistencias", url: "/dashboard/attendances", newTab: false, requiredModule: "Academico" },
+        ],
+      },
+      {
+        title: "Documentos",
+        url: "/dashboard/documentos-estudiante",
+        icon: Award,
+        requiredModule: "Estudiantes",
+        isNew: true,
+      },
+      {
+        title: "Importar Estudiantes",
+        url: "/dashboard/importar-estudiantes",
+        icon: FileSpreadsheet,
+        requiredModule: "Estudiantes",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    id: 5,
+    label: "ACADÉMICO",
+    requiredModule: "Academico",
+    items: [
+      {
+        title: "Gestión Académica",
+        url: "/academic",
+        icon: GraduationCap,
+        requiredModule: "Academico",
+        subItems: [
+          { title: "Grupos", url: "/dashboard/academic-management", newTab: false, requiredModule: "Academico" },
+          { title: "Horarios", url: "/dashboard/schedules", newTab: false, requiredModule: "Academico" },
+          { title: "Aulas", url: "/dashboard/classrooms", newTab: false, requiredModule: "Academico" },
+          { title: "Profesores", url: "/dashboard/teachers", newTab: false, requiredModule: "Academico" },
+        ],
+      },
+    ],
+  },
+  {
+    id: 6,
+    label: "FINANZAS",
+    requiredModule: "Finanzas",
+    items: [
+      {
+        title: "Caja",
+        url: "/dashboard/cashier",
+        icon: DollarSign,
+        isNew: true,
+        requiredModule: "Finanzas",
+      },
+      {
+        title: "Recibos",
+        url: "/receipts",
+        icon: Receipt,
+        requiredModule: "Finanzas",
+        subItems: [
+          { title: "Administración", url: "/dashboard/receipts", newTab: false, requiredModule: "Finanzas" },
+          { title: "Mis Recibos", url: "/dashboard/receipts/my-receipts", newTab: false, isNew: true },
+        ],
+      },
+      {
+        title: "Gestión Financiera",
+        url: "/financial",
+        icon: Banknote,
+        requiredModule: "Finanzas",
+        subItems: [
+          { title: "Corte de Caja", url: "/dashboard/cashier/corte", newTab: false, isNew: true, requiredModule: "Finanzas" },
+          { title: "Plantillas de Cobro", url: "/dashboard/payment-templates", newTab: false, isNew: true, requiredModule: "Finanzas" },
+          { title: "Conceptos de Pago", url: "/dashboard/payment-concepts", newTab: false, isNew: true, requiredModule: "Finanzas" },
+          { title: "Becas", url: "/dashboard/scholarships", newTab: false, isNew: true, requiredModule: "Finanzas" },
+          { title: "Pagos", url: "/dashboard/payments", newTab: false, requiredModule: "Finanzas" },
+          { title: "Reportes", url: "/dashboard/reports", newTab: false, requiredModule: "Finanzas" },
+        ],
+      },
+    ],
+  },
+  {
+    id: 7,
+    label: "CONFIGURACIÓN",
+    requiredModule: "Configuracion",
+    items: [
+      {
+        title: "Usuarios",
+        url: "/dashboard/users",
+        icon: UserCircle,
+        requiredModule: "Configuracion",
+      },
+      {
+        title: "Roles y Permisos",
+        url: "/dashboard/roles",
+        icon: Shield,
+        requiredModule: "Configuracion",
+        isNew: true,
+      },
+    ],
+  },
 ];
+
+// Funcion para filtrar items del sidebar segun modulos accesibles
+export function filterSidebarByModules(accessibleModules: string[]): NavGroup[] {
+  return sidebarItems
+    .filter((group) => {
+      // Si no tiene modulo requerido, mostrar siempre
+      if (!group.requiredModule) return true;
+      return accessibleModules.includes(group.requiredModule);
+    })
+    .map((group) => ({
+      ...group,
+      items: group.items
+        .filter((item) => {
+          if (!item.requiredModule) return true;
+          return accessibleModules.includes(item.requiredModule);
+        })
+        .map((item) => ({
+          ...item,
+          subItems: item.subItems?.filter((subItem) => {
+            if (!subItem.requiredModule) return true;
+            return accessibleModules.includes(subItem.requiredModule);
+          }),
+        })),
+    }))
+    .filter((group) => group.items.length > 0);
+}

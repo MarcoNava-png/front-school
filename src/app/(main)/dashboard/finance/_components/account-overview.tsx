@@ -66,7 +66,9 @@ const recentPayments = [
 ];
 
 export function AccountOverview() {
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
+
+  if (!user) return null;
 
   return (
     <Card className="shadow-xs">

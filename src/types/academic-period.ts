@@ -7,6 +7,7 @@ export interface AcademicPeriod {
   periodicidad: string;
   fechaInicio: string;
   fechaFin: string;
+  esPeriodoActual: boolean; // NUEVO: Indica si es el periodo activo
 }
 
 export interface PayloadCreateAcademicPeriod {
