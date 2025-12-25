@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { AlertCircle, ArrowLeft, CheckCircle, Eye, EyeOff, KeyRound } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ArrowLeft, KeyRound, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -19,7 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import apiClient from "@/services/api-client";
 
 const formSchema = z.object({
@@ -79,8 +81,9 @@ function ResetPasswordContent() {
       toast.success("Contraseña actualizada", {
         description: "Ya puedes iniciar sesión con tu nueva contraseña.",
       });
-    } catch (error: any) {
-      const message = error.response?.data?.message || "No se pudo restablecer la contraseña";
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const message = axiosError.response?.data?.message ?? "No se pudo restablecer la contraseña";
       toast.error("Error", { description: message });
 
       // Si el token es inválido o expiró
