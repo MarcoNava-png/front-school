@@ -22,7 +22,7 @@ import { getInitials } from "@/lib/utils";
 export function NavUser() {
   const { isMobile } = useSidebar();
   const logout = useLogout();
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -38,39 +38,39 @@ export function NavUser() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="group/user data-[state=open]:bg-gradient-to-r data-[state=open]:from-blue-50 data-[state=open]:to-indigo-50 dark:data-[state=open]:from-blue-950/40 dark:data-[state=open]:to-indigo-950/40 hover:bg-sidebar-accent/80 transition-all duration-200 rounded-xl"
               >
-                <Avatar className="h-8 w-8 rounded-lg grayscale">
+                <Avatar className="h-9 w-9 rounded-xl ring-2 ring-blue-500/20 transition-all duration-200 group-hover/user:ring-blue-500/40">
                   <AvatarImage src={""} alt={user.nombres} />
-                  <AvatarFallback className="rounded-lg">
+                  <AvatarFallback className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
                     {getInitials(`${user.nombres ?? ""} ${user.apellidos ?? ""}`)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
+                  <span className="truncate font-semibold text-foreground">
                     {user.nombres} {user.apellidos}
                   </span>
                   <span className="text-muted-foreground truncate text-xs">{user.email}</span>
                 </div>
-                <EllipsisVertical className="ml-auto size-4" />
+                <EllipsisVertical className="ml-auto size-4 transition-transform group-hover/user:scale-110" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl shadow-xl border-2"
               side={isMobile ? "bottom" : "right"}
               align="end"
-              sideOffset={4}
+              sideOffset={8}
             >
               <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="h-8 w-8 rounded-lg">
+                <div className="flex items-center gap-3 px-3 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-t-xl">
+                  <Avatar className="h-10 w-10 rounded-xl ring-2 ring-white dark:ring-gray-800">
                     <AvatarImage src={user.photoUrl ?? undefined} alt={user.nombres} />
-                    <AvatarFallback className="rounded-lg">
+                    <AvatarFallback className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold">
                       {getInitials(`${user.nombres ?? ""} ${user.apellidos ?? ""}`)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">
+                    <span className="truncate font-bold text-foreground">
                       {user.nombres} {user.apellidos}
                     </span>
                     <span className="text-muted-foreground truncate text-xs">{user.email}</span>
@@ -78,25 +78,32 @@ export function NavUser() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <CircleUser />
-                  Account
+              <DropdownMenuGroup className="px-1">
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
+                  <a href="/dashboard/profile">
+                    <CircleUser className="text-blue-600" />
+                    <span className="font-medium">Mi Cuenta</span>
+                  </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard />
-                  Billing
+                <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
+                  <CreditCard className="text-green-600" />
+                  <span className="font-medium">Facturación</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <MessageSquareDot />
-                  Notifications
+                <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
+                  <MessageSquareDot className="text-purple-600" />
+                  <span className="font-medium">Notificaciones</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>
-                <LogOut />
-                Log out
-              </DropdownMenuItem>
+              <div className="px-1 pb-1">
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="cursor-pointer rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 font-semibold transition-colors"
+                >
+                  <LogOut />
+                  <span>Cerrar Sesión</span>
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         )}

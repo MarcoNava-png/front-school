@@ -78,15 +78,16 @@ export function InscribeStudentModal({ open, onOpenChange, studentId, matterPlan
                     <select
                       {...field}
                       required
-                      className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                      className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none bg-background text-foreground border-input"
+                      style={{ color: 'var(--foreground)', backgroundColor: 'var(--background)' }}
                       value={field.value}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     >
-                      <option value={0} disabled>
+                      <option value={0} disabled style={{ color: 'var(--foreground)', backgroundColor: 'var(--background)' }}>
                         Selecciona grupo/materia
                       </option>
                       {matterPlans.map((plan) => (
-                        <option key={plan.idMateriaPlan} value={plan.idMateriaPlan}>
+                        <option key={plan.idMateriaPlan} value={plan.idMateriaPlan} style={{ color: 'var(--foreground)', backgroundColor: 'var(--background)' }}>
                           {plan.materia} - {plan.nombrePlanEstudios}
                         </option>
                       ))}
@@ -121,12 +122,13 @@ export function InscribeStudentModal({ open, onOpenChange, studentId, matterPlan
                     <select
                       {...field}
                       required
-                      className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none"
+                      className="block w-full rounded border px-3 py-2 focus:ring focus:outline-none bg-background text-foreground border-input"
+                      style={{ color: 'var(--foreground)', backgroundColor: 'var(--background)' }}
                       value={field.value}
                     >
-                      <option value="activo">Activo</option>
-                      <option value="pendiente">Pendiente</option>
-                      <option value="cancelado">Cancelado</option>
+                      <option value="activo" style={{ color: 'var(--foreground)', backgroundColor: 'var(--background)' }}>Activo</option>
+                      <option value="pendiente" style={{ color: 'var(--foreground)', backgroundColor: 'var(--background)' }}>Pendiente</option>
+                      <option value="cancelado" style={{ color: 'var(--foreground)', backgroundColor: 'var(--background)' }}>Cancelado</option>
                     </select>
                   </FormControl>
                   <FormMessage />

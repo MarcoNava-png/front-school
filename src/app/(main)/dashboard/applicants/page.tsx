@@ -35,8 +35,10 @@ import { State } from "@/types/location";
 import { StudyPlan, StudyPlansResponse } from "@/types/study-plan";
 
 import { ApplicantLogsModal } from "./_components/applicant-logs-modal";
-import { AssignStudentModal } from "./_components/assign-student-modal";
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
+import { DocumentsManagementModal } from "./_components/documents-management-modal";
+import { EnrollStudentModal } from "./_components/enroll-student-modal";
+import { ReceiptsManagementModal } from "./_components/receipts-management-modal";
 
 const columns: ColumnDef<Applicant>[] = withDndColumn([
   {
@@ -65,12 +67,37 @@ const columns: ColumnDef<Applicant>[] = withDndColumn([
   },
 ]);
 
-export default function Page() {
+// Helper functions extracted to reduce complexity
+const getStatusBadgeClass = (estatus: string) => {
+  if (estatus === "Inscrito") return "bg-green-100 text-green-700";
+  if (estatus === "Aceptado") return "bg-blue-100 text-blue-700";
+  if (estatus === "Rechazado") return "bg-red-100 text-red-700";
+  return "bg-yellow-100 text-yellow-700";
+};
+
+const getPaymentStatusBadgeClass = (estatus?: string) => {
+  if (estatus === "PAGADO") return "bg-green-100 text-green-700";
+  if (estatus === "PARCIAL") return "bg-yellow-100 text-yellow-700";
+  if (estatus === "PENDIENTE") return "bg-orange-100 text-orange-700";
+  return "bg-gray-100 text-gray-700";
+};
+
+const getDocumentStatusBadgeClass = (estatus?: string) => {
+  if (estatus === "VALIDADO") return "bg-green-100 text-green-700";
+  if (estatus === "COMPLETO") return "bg-blue-100 text-blue-700";
+  return "bg-orange-100 text-orange-700";
+};
+
+function Page() {
   const [data, setData] = useState<Applicant[]>([]);
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [applicantToAssign, setApplicantToAssign] = useState<Applicant | null>(null);
+  const [enrollModalOpen, setEnrollModalOpen] = useState(false);
+  const [applicantToEnroll, setApplicantToEnroll] = useState<Applicant | null>(null);
   const [bitacorasModalOpen, setBitacorasModalOpen] = useState(false);
   const [applicantForBitacoras, setApplicantForBitacoras] = useState<Applicant | null>(null);
+  const [documentsModalOpen, setDocumentsModalOpen] = useState(false);
+  const [applicantForDocuments, setApplicantForDocuments] = useState<Applicant | null>(null);
+  const [receiptsModalOpen, setReceiptsModalOpen] = useState(false);
+  const [applicantForReceipts, setApplicantForReceipts] = useState<Applicant | null>(null);
   const [genres, setGenres] = useState<Genres[]>([]);
   const [civilStatus, setCivilStatus] = useState<CivilStatus[]>([]);
   const [campus, setCampus] = useState<Campus[]>([]);
@@ -93,69 +120,70 @@ export default function Page() {
     return () => clearTimeout(handler);
   }, [filter]);
 
+  const loadApplicants = () => {
+    const filterToSend: string | undefined = debouncedFilter.trim() === "" ? undefined : debouncedFilter;
+    setLoading(true);
+    getApplicantsList({ page: pageIndex + 1, pageSize, filter: filterToSend })
+      .then((res: ApplicantsResponse) => {
+        console.log("=== DATOS DE ASPIRANTES ===");
+        console.log("Total items:", res.items.length);
+
+        // Buscar aspirante 84
+        const aspirante84 = res.items.find(a => a.idAspirante === 84);
+        if (aspirante84) {
+          console.log("ASPIRANTE 84 ENCONTRADO:");
+          console.log("- ID:", aspirante84.idAspirante);
+          console.log("- Nombre:", aspirante84.nombreCompleto);
+          console.log("- Estatus Pago:", aspirante84.estatusPago);
+          console.log("- Estatus Documentos:", aspirante84.estatusDocumentos);
+          console.log("- Objeto completo:", aspirante84);
+        } else {
+          console.log("ASPIRANTE 84 NO ENCONTRADO en la página actual");
+        }
+
+        setData(res.items);
+      })
+      .finally(() => setLoading(false));
+  };
+
   useEffect(() => {
     const handler: NodeJS.Timeout = setTimeout(() => {
-      const filterToSend: string | undefined = debouncedFilter.trim() === "" ? undefined : debouncedFilter;
-      setLoading(true);
-      getApplicantsList({ page: pageIndex + 1, pageSize, filter: filterToSend })
-        .then((res: ApplicantsResponse) => {
-          setData(res.items);
-        })
-        .finally(() => setLoading(false));
+      loadApplicants();
     }, 500);
     return () => clearTimeout(handler);
   }, [pageIndex, pageSize, debouncedFilter]);
 
   useEffect(() => {
-    setLoading(true);
+    const loadCatalogs = async () => {
+      setLoading(true);
+      try {
+        const [genresData, civilStatusData, campusData, studyPlansData, contactMethodsData, schedulesData, applicantStatusData, statesData] = await Promise.all([
+          getGenresList(),
+          getCivilStatus(),
+          getCampusList(),
+          getStudyPlansList(),
+          getContactMethods(),
+          getSchedules(),
+          getApplicantStatus(),
+          getStates(),
+        ]);
 
-    getGenresList()
-      .then((res: Genres[]) => {
-        setGenres(res);
-      })
-      .finally(() => setLoading(false));
+        setGenres(genresData);
+        setCivilStatus(civilStatusData);
+        setCampus(campusData.items);
+        setStudyPlans(studyPlansData.items);
+        setContactMethods(contactMethodsData);
+        setSchedules(schedulesData);
+        setApplicantStatus(applicantStatusData);
+        setStates(statesData);
+      } catch (error) {
+        console.error("Error loading catalogs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    getCivilStatus()
-      .then((res: CivilStatus[]) => {
-        setCivilStatus(res);
-      })
-      .finally(() => setLoading(false));
-
-    getCampusList()
-      .then((res: CampusResponse) => {
-        setCampus(res.items);
-      })
-      .finally(() => setLoading(false));
-
-    getStudyPlansList()
-      .then((res: StudyPlansResponse) => {
-        setStudyPlans(res.items);
-      })
-      .finally(() => setLoading(false));
-
-    getContactMethods()
-      .then((res: ContactMethod[]) => {
-        setContactMethods(res);
-      })
-      .finally(() => setLoading(false));
-
-    getSchedules()
-      .then((res: Schedule[]) => {
-        setSchedules(res);
-      })
-      .finally(() => setLoading(false));
-
-    getApplicantStatus()
-      .then((res: ApplicantStatus[]) => {
-        setApplicantStatus(res);
-      })
-      .finally(() => setLoading(false));
-
-    getStates()
-      .then((res: State[]) => {
-        setStates(res);
-      })
-      .finally(() => setLoading(false));
+    loadCatalogs();
   }, []);
 
   const table: Table<Applicant> = useReactTable<Applicant>({
@@ -209,54 +237,113 @@ export default function Page() {
         />
       </div>
 
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="min-w-full table-fixed text-xs leading-tight">
-          <thead>
+      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+        <table className="w-full text-xs">
+          <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-4 py-2 text-left">ID</th>
-              <th className="px-4 py-2 text-left">Nombre</th>
-              <th className="px-4 py-2 text-left">Plan Estudios Interés</th>
-              <th className="px-4 py-2 text-left">Teléfono</th>
-              <th className="px-4 py-2 text-left">Estatus</th>
-              <th className="px-4 py-2 text-left">Registro</th>
-              <th className="px-4 py-2 text-left">Estatus Pago</th>
-              <th className="px-4 py-2 text-left">Estatus Documentos</th>
-              <th className="px-4 py-2 text-left">Acciones</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[50px]">ID</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 min-w-[180px]">Nombre</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 min-w-[150px]">Plan de Estudios</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[95px]">Teléfono</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[100px]">Estatus</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[120px]">Registrado Por</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[85px]">Registro</th>
+              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 w-[90px]">Pagos</th>
+              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 w-[95px]">Documentos</th>
+              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 w-[220px]">Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
             {data.filter(applicant => applicant.aspiranteEstatus !== "Admitido").map((applicant) => (
-              <tr key={applicant.idAspirante}>
-                <td className="px-4 py-2">{applicant.idAspirante}</td>
-                <td className="px-4 py-2">{applicant.nombreCompleto}</td>
-                <td className="px-4 py-2">{applicant.planEstudios}</td>
-                <td className="px-4 py-2">{applicant.telefono}</td>
-                <td className="px-4 py-2">{applicant.aspiranteEstatus}</td>
-                <td className="px-4 py-2">{applicant.fechaRegistro}</td>
-                <td className="px-4 py-2">{}</td>
-                <td className="px-4 py-2">{}</td>
-                <td className="px-4 py-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setApplicantToAssign(applicant);
-                      setAssignModalOpen(true);
-                    }}
-                  >
-                    Migrar
-                  </Button>
+              <tr key={applicant.idAspirante} className="hover:bg-gray-50 transition-colors">
+                <td className="px-2 py-2 text-gray-900 font-medium text-xs">{applicant.idAspirante}</td>
+                <td className="px-2 py-2 text-gray-900">
+                  <div className="font-medium text-xs leading-tight">{applicant.nombreCompleto}</div>
+                  <div className="text-[10px] text-gray-500 leading-tight">{applicant.email}</div>
+                </td>
+                <td className="px-2 py-2 text-gray-700 text-xs">{applicant.planEstudios}</td>
+                <td className="px-2 py-2 text-gray-700 text-xs">{applicant.telefono}</td>
+                <td className="px-2 py-2">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusBadgeClass(applicant.aspiranteEstatus)}`}>
+                    {applicant.aspiranteEstatus}
+                  </span>
+                </td>
+                <td className="px-2 py-2 text-gray-700 text-xs">
+                  {applicant.usuarioRegistroNombre ? (
+                    <span className="truncate block" title={applicant.usuarioRegistroNombre}>
+                      {applicant.usuarioRegistroNombre}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 italic text-[10px]" title="No se tiene registro del usuario que creó este aspirante">
+                      Sistema
+                    </span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-gray-700 text-[10px]">{new Date(applicant.fechaRegistro).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: '2-digit' })}</td>
+                <td className="px-2 py-2 text-center">
+                  <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${getPaymentStatusBadgeClass(applicant.estatusPago)}`}>
+                    {applicant.estatusPago ?? "SIN"}
+                  </span>
+                </td>
+                <td className="px-2 py-2 text-center">
+                  <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${getDocumentStatusBadgeClass(applicant.estatusDocumentos)}`}>
+                    {applicant.estatusDocumentos ?? "INCOMP"}
+                  </span>
+                </td>
+                <td className="px-2 py-2">
+                  <div className="flex items-center justify-center gap-0.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setApplicantForDocuments(applicant);
+                        setDocumentsModalOpen(true);
+                      }}
+                      title="Gestionar documentos"
+                      className="h-6 px-1.5 text-[10px]"
+                    >
+                      Docs
+                    </Button>
 
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setApplicantForBitacoras(applicant);
-                      setBitacorasModalOpen(true);
-                    }}
-                  >
-                    Seguimiento
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setApplicantForReceipts(applicant);
+                        setReceiptsModalOpen(true);
+                      }}
+                      title="Ver recibos y pagos"
+                      className="h-6 px-1.5 text-[10px]"
+                    >
+                      Pagos
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setApplicantForBitacoras(applicant);
+                        setBitacorasModalOpen(true);
+                      }}
+                      title="Ver seguimiento"
+                      className="h-6 px-1.5 text-[10px]"
+                    >
+                      Seg
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => {
+                        setApplicantToEnroll(applicant);
+                        setEnrollModalOpen(true);
+                      }}
+                      title="Inscribir como estudiante"
+                      className="h-6 px-1.5 text-[10px] bg-blue-600 hover:bg-blue-700"
+                    >
+                      Inscribir
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -264,21 +351,17 @@ export default function Page() {
         </table>
       </div>
 
-      {applicantToAssign && (
-        <AssignStudentModal
-          open={assignModalOpen}
-          applicant={applicantToAssign}
-          studyPlans={studyPlans}
-          onClose={() => {
-            setAssignModalOpen(false);
-            setApplicantToAssign(null);
-          }}
-          onAssign={(studentData) => {
-            setAssignModalOpen(false);
-            setApplicantToAssign(null);
-          }}
-        />
-      )}
+      <EnrollStudentModal
+        open={enrollModalOpen}
+        applicant={applicantToEnroll}
+        onClose={() => {
+          setEnrollModalOpen(false);
+          setApplicantToEnroll(null);
+        }}
+        onEnrollmentSuccess={() => {
+          loadApplicants();
+        }}
+      />
       <ApplicantLogsModal
         open={bitacorasModalOpen}
         applicant={applicantForBitacoras}
@@ -287,8 +370,32 @@ export default function Page() {
           setApplicantForBitacoras(null);
         }}
       />
+
+      <DocumentsManagementModal
+        open={documentsModalOpen}
+        applicant={applicantForDocuments}
+        onClose={() => {
+          setDocumentsModalOpen(false);
+          setApplicantForDocuments(null);
+        }}
+      />
+
+      <ReceiptsManagementModal
+        open={receiptsModalOpen}
+        applicant={applicantForReceipts}
+        onClose={() => {
+          setReceiptsModalOpen(false);
+          setApplicantForReceipts(null);
+        }}
+        onPaymentRegistered={() => {
+          loadApplicants();
+        }}
+      />
+
       <DataTablePagination table={table} />
       {loading && <div className="text-center">Cargando...</div>}
     </div>
   );
 }
+
+export default Page;

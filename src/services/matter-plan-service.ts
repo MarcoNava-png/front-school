@@ -25,3 +25,12 @@ export async function updateMatterPlan(payload: PayloadMatterPlan): Promise<Matt
 export async function deleteMatterPlan(matterPlanId: number): Promise<void> {
   await apiClient.delete<void>(`/MateriaPlan/${matterPlanId}`);
 }
+
+/**
+ * Obtiene las materias de un plan de estudios específico
+ * Como el endpoint /MateriaPlan/plan/{id} no existe, obtenemos todas y filtramos
+ */
+export async function getMattersByStudyPlan(idPlanEstudios: number): Promise<MatterPlan[]> {
+  const allMatters = await getMatterPlanList();
+  return allMatters.filter(matter => matter.idPlanEstudios === idPlanEstudios);
+}

@@ -43,10 +43,10 @@ export function ApplicantCreateForm({
   onSubmit,
   onCancel,
 }: ApplicantFormProps) {
-  const user = useCurrentUser();
+  const { user } = useCurrentUser();
 
   useEffect(() => {
-    if (user && user.userId) {
+    if (user?.userId) {
       form.setValue("atendidoPorUsuarioId", user.userId);
     }
   }, [user, form]);

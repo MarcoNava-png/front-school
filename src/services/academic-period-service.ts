@@ -16,3 +16,26 @@ export async function updateAcademicPeriod(payload: AcademicPeriod): Promise<Aca
   const { data } = await apiClient.put<AcademicPeriod>(`/PeriodoAcademico`, payload);
   return data;
 }
+
+/**
+ * Obtiene el periodo académico actual
+ */
+export async function getCurrentAcademicPeriod(): Promise<AcademicPeriod | null> {
+  try {
+    const { data } = await apiClient.get<AcademicPeriod>(`/PeriodoAcademico/actual`);
+    return data;
+  } catch (error) {
+    // Si no hay periodo actual, retorna null
+    return null;
+  }
+}
+
+/**
+ * Marca un periodo como actual
+ */
+export async function setCurrentAcademicPeriod(idPeriodoAcademico: number): Promise<{ mensaje: string; periodo: AcademicPeriod }> {
+  const { data } = await apiClient.post<{ mensaje: string; periodo: AcademicPeriod }>(
+    `/PeriodoAcademico/${idPeriodoAcademico}/marcar-actual`
+  );
+  return data;
+}

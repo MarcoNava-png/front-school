@@ -6,6 +6,11 @@ export interface MatterPlan {
   materia: string;
   cuatrimestre: number;
   esOptativa: boolean;
+
+  // Campos adicionales que vienen del backend
+  claveMateria?: string;
+  nombreMateria?: string;
+  creditos?: number;
 }
 
 export interface PayloadMatterPlan {

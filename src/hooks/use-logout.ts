@@ -2,6 +2,7 @@ import { useCallback } from "react";
 
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter } from "next/navigation";
+import { clearPermissionsCache } from "./use-permissions";
 
 export function useLogout() {
   const router: AppRouterInstance = useRouter();
@@ -11,6 +12,9 @@ export function useLogout() {
     localStorage.removeItem("user");
 
     document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
+
+    // Limpiar cache de permisos
+    clearPermissionsCache();
 
     router.replace("/auth/v2/login");
   }, [router]);

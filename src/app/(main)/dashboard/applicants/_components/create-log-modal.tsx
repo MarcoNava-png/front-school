@@ -20,7 +20,7 @@ interface CreateLogModalProps {
 }
 
 export function CreateLogModal({ open, applicantId, onClose, onCreated }: CreateLogModalProps) {
-  const currentUser = useCurrentUser();
+  const { user: currentUser } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const form = useForm<Pick<PayloadTrackingLog, "medioContacto" | "resumen" | "proximaAccion">>({
     defaultValues: {

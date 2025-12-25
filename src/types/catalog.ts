@@ -62,3 +62,52 @@ export interface Periodicity {
   periodoAcademico: [];
   planEstudios: [];
 }
+
+export interface PaymentMethod {
+  idMedioPago: number;
+  clave: string;
+  descripcion?: string;
+  activo: boolean;
+}
+
+export interface AcademicPeriod {
+  idPeriodoAcademico: number;
+  clave: string;
+  nombre: string;
+  idPeriodicidad: number;
+  fechaInicio: string;
+  fechaFin: string;
+  status: number;
+  esPeriodoActual?: boolean;
+}
+
+export interface StudyPlan {
+  idPlanEstudios: number;
+  clavePlanEstudios: string;
+  nombrePlanEstudios: string;
+  rvoe?: string;
+  permiteAdelantar?: boolean;
+  version?: string;
+  duracionMeses?: number;
+  minimaAprobatoriaParcial?: number;
+  minimaAprobatoriaFinal?: number;
+  periodicidad?: string;
+  idPeriodicidad: number;
+  idNivelEducativo: number;
+  idCampus?: number;
+  activo?: boolean;
+}
+
+export interface Grupo {
+  idGrupo: number;
+  codigoGrupo: string;
+  numeroCuatrimestre: number;
+  idTurno: number;
+  numeroGrupo: number;
+  idPeriodoAcademico: number;
+  idPlanEstudios: number;
+  cupo: number;
+}
+
+// Alias for Schedule (Turno)
+export type Turno = Schedule;
