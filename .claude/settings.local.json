@@ -15,7 +15,8 @@
       "Bash(taskkill /PID 40720 /F)",
       "Bash(cmd //c \"taskkill /F /PID 40720\")",
       "Bash(powershell -Command:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(if exist .next rmdir /s /q .next)"
     ],
     "deny": [],
     "ask": []
