@@ -19,6 +19,7 @@ export interface ImportarEstudianteDto {
   domicilio?: string
   colonia?: string
   celular?: string
+  genero?: string
 }
 
 export interface ImportarEstudiantesRequest {
@@ -92,6 +93,110 @@ export const importacionService = {
     )
     return response.data
   },
+
+  // ========================================
+  // Importación de Campus
+  // ========================================
+
+  async importarCampus(
+    request: ImportarCampusRequest
+  ): Promise<ImportarCampusResponse> {
+    const response = await axiosInstance.post<ImportarCampusResponse>(
+      `${API_URL}/campus`,
+      request
+    )
+    return response.data
+  },
+
+  // ========================================
+  // Importación de Planes de Estudio
+  // ========================================
+
+  async importarPlanesEstudios(
+    request: ImportarPlanesEstudiosRequest
+  ): Promise<ImportarPlanesEstudiosResponse> {
+    const response = await axiosInstance.post<ImportarPlanesEstudiosResponse>(
+      `${API_URL}/planes`,
+      request
+    )
+    return response.data
+  },
+}
+
+// ========================================
+// Interfaces para Campus
+// ========================================
+
+export interface ImportarCampusDto {
+  claveCampus: string
+  nombre: string
+  calle?: string
+  numeroExterior?: string
+  numeroInterior?: string
+  codigoPostal?: string
+  colonia?: string
+  telefono?: string
+}
+
+export interface ImportarCampusRequest {
+  campus: ImportarCampusDto[]
+  actualizarExistentes: boolean
+}
+
+export interface ResultadoImportacionCampus {
+  fila: number
+  claveCampus: string
+  nombre: string
+  exito: boolean
+  mensaje: string
+  idCampus?: number
+  advertencias: string[]
+}
+
+export interface ImportarCampusResponse {
+  totalProcesados: number
+  exitosos: number
+  fallidos: number
+  actualizados: number
+  resultados: ResultadoImportacionCampus[]
+}
+
+// ========================================
+// Interfaces para Planes de Estudio
+// ========================================
+
+export interface ImportarPlanEstudiosDto {
+  clavePlanEstudios: string
+  nombrePlanEstudios: string
+  claveCampus: string
+  nivelEducativo?: string
+  periodicidad?: string
+  duracionMeses?: number
+  rvoe?: string
+  version?: string
+}
+
+export interface ImportarPlanesEstudiosRequest {
+  planes: ImportarPlanEstudiosDto[]
+  actualizarExistentes: boolean
+}
+
+export interface ResultadoImportacionPlanEstudios {
+  fila: number
+  clavePlanEstudios: string
+  nombrePlanEstudios: string
+  exito: boolean
+  mensaje: string
+  idPlanEstudios?: number
+  advertencias: string[]
+}
+
+export interface ImportarPlanesEstudiosResponse {
+  totalProcesados: number
+  exitosos: number
+  fallidos: number
+  actualizados: number
+  resultados: ResultadoImportacionPlanEstudios[]
 }
 
 export default importacionService

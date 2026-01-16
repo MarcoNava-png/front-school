@@ -18,7 +18,7 @@ export async function createMatterPlan(payload: PayloadMatterPlan): Promise<Matt
 }
 
 export async function updateMatterPlan(payload: PayloadMatterPlan): Promise<MatterPlan> {
-  const response = await apiClient.put<MatterPlan>(`/MateriaPlan`, payload);
+  const response = await apiClient.put<MatterPlan>(`/MateriaPlan/${payload.idMateriaPlan}`, payload);
   return response.data;
 }
 

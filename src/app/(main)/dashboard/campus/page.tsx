@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { Building2, Edit, MapPin, Plus, Search, Trash2 } from "lucide-react";
+import { Building2, Edit, MapPin, Plus, Search, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,14 +17,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getCampusList } from "@/services/campus-service";
+import { deleteCampus, getCampusList } from "@/services/campus-service";
 import { getStates } from "@/services/location-service";
 import { Campus, CampusResponse } from "@/types/campus";
 import { State } from "@/types/location";
 
 import { CreateCampusModal } from "./_components/create-campus-modal";
 import { EditCampusModal } from "./_components/edit-campus-modal";
+import { ImportCampusModal } from "./_components/import-campus-modal";
 
+// eslint-disable-next-line complexity
 export default function Page() {
   const [campus, setCampus] = useState<CampusResponse | null>(null);
   const [states, setStates] = useState<State[]>([]);
@@ -33,6 +36,10 @@ export default function Page() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [campusToEdit, setCampusToEdit] = useState<Campus | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [campusToDelete, setCampusToDelete] = useState<Campus | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -69,6 +76,42 @@ export default function Page() {
       };
     });
     toast.success("Campus creado exitosamente");
+  };
+
+  const openDeleteDialog = (campus: Campus) => {
+    setCampusToDelete(campus);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteCampus = async () => {
+    if (!campusToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteCampus(campusToDelete.idCampus);
+      setCampus((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          items: prev.items.filter((item) => item.idCampus !== campusToDelete.idCampus),
+        };
+      });
+      toast.success("Campus eliminado exitosamente");
+      setDeleteDialogOpen(false);
+      setCampusToDelete(null);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Error al eliminar el campus";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          toast.error(axiosError.response.data.message);
+          return;
+        }
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const filteredCampus = campus?.items.filter((c) =>
@@ -118,10 +161,16 @@ export default function Page() {
             Gestiona los campus de la institución
           </p>
         </div>
-        <Button onClick={() => setModalOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Campus
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportModalOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" />
+            Importar
+          </Button>
+          <Button onClick={() => setModalOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nuevo Campus
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -244,9 +293,7 @@ export default function Page() {
                           size="sm"
                           variant="ghost"
                           className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
-                          onClick={() => {
-                            toast.info("Función de eliminar próximamente");
-                          }}
+                          onClick={() => openDeleteDialog(c)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -291,6 +338,22 @@ export default function Page() {
           }}
         />
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Eliminar Campus"
+        description="Esta acción no se puede deshacer. Se eliminará permanentemente el campus:"
+        itemName={campusToDelete?.nombre}
+        onConfirm={handleDeleteCampus}
+        isDeleting={isDeleting}
+      />
+
+      <ImportCampusModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        onImportSuccess={loadData}
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -37,6 +38,7 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
   const [showSubjectsModal, setShowSubjectsModal] = useState(false);
   const [showStudentsModal, setShowStudentsModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const ocupacion = grupo.capacidadMaxima > 0
@@ -44,19 +46,16 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
     : 0;
 
   const handleDelete = async () => {
-    if (!confirm(`¿Estás seguro de eliminar el grupo ${grupo.nombreGrupo}?`)) {
-      return;
-    }
-
     setDeleting(true);
     try {
       await deleteGroup(grupo.idGrupo);
       toast.success("Grupo eliminado exitosamente");
+      setShowDeleteDialog(false);
       onUpdate();
     } catch (error: unknown) {
       console.error("Error deleting group:", error);
-      const err = error as { response?: { data?: { mensaje?: string } }; message?: string };
-      const errorMessage = err?.response?.data?.mensaje ?? err?.message ?? "Error al eliminar el grupo";
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = err?.response?.data?.message ?? err?.message ?? "Error al eliminar el grupo";
       toast.error(errorMessage);
     } finally {
       setDeleting(false);
@@ -92,9 +91,9 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
                 Promover Estudiantes
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDelete} disabled={deleting} className="text-red-600">
+              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600">
                 <Trash2 className="w-4 h-4 mr-2" />
-                {deleting ? "Eliminando..." : "Eliminar Grupo"}
+                Eliminar Grupo
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -190,6 +189,16 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
         idGrupo={grupo.idGrupo}
         nombreGrupo={grupo.nombreGrupo}
         onSuccess={onUpdate}
+      />
+
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Eliminar Grupo"
+        description="Esta acción no se puede deshacer. Se eliminará permanentemente el grupo:"
+        itemName={grupo.nombreGrupo}
+        onConfirm={handleDelete}
+        isDeleting={deleting}
       />
     </>
   );

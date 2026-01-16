@@ -22,7 +22,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
 import {
   Table,
   TableBody,
@@ -74,18 +73,20 @@ const COLUMN_MAPPING: Record<string, keyof ImportarEstudianteDto> = {
   colonia: 'colonia',
   'tel.celular': 'celular',
   celular: 'celular',
+  genero: 'genero',
+  género: 'genero',
+  sexo: 'genero',
 }
 
 type Step = 'upload' | 'preview' | 'validate' | 'import' | 'results'
 
+// eslint-disable-next-line complexity
 export default function ImportarEstudiantesPage() {
   const [step, setStep] = useState<Step>('upload')
-  const [file, setFile] = useState<File | null>(null)
   const [estudiantes, setEstudiantes] = useState<ImportarEstudianteDto[]>([])
   const [validacion, setValidacion] = useState<ValidarImportacionResponse | null>(null)
   const [resultado, setResultado] = useState<ImportarEstudiantesResponse | null>(null)
   const [loading, setLoading] = useState(false)
-  const [progress, setProgress] = useState(0)
 
   // Opciones de importacion
   const [crearCatalogos, setCrearCatalogos] = useState(false)
@@ -108,7 +109,6 @@ export default function ImportarEstudiantesPage() {
   }, [])
 
   const processFile = async (selectedFile: File) => {
-    setFile(selectedFile)
     setLoading(true)
 
     try {
@@ -116,7 +116,7 @@ export default function ImportarEstudiantesPage() {
       const workbook = XLSX.read(data)
       const sheetName = workbook.SheetNames[0]
       const worksheet = workbook.Sheets[sheetName]
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
 
       if (jsonData.length < 2) {
         toast.error('El archivo no contiene datos')
@@ -171,7 +171,6 @@ export default function ImportarEstudiantesPage() {
 
   const handleValidar = async () => {
     setLoading(true)
-    setProgress(0)
 
     try {
       const result = await importacionService.validarImportacion(estudiantes)
@@ -193,7 +192,6 @@ export default function ImportarEstudiantesPage() {
 
   const handleImportar = async () => {
     setLoading(true)
-    setProgress(0)
 
     try {
       const result = await importacionService.importarEstudiantes({
@@ -223,11 +221,9 @@ export default function ImportarEstudiantesPage() {
 
   const handleReset = () => {
     setStep('upload')
-    setFile(null)
     setEstudiantes([])
     setValidacion(null)
     setResultado(null)
-    setProgress(0)
   }
 
   const downloadTemplate = () => {
@@ -251,6 +247,7 @@ export default function ImportarEstudiantesPage() {
         'Domicilio',
         'Colonia',
         'Tel.Celular',
+        'Genero',
       ],
       [
         '18 CUATRIMESTRE SEPTIEMBRE-DICIEMBRE',
@@ -271,6 +268,7 @@ export default function ImportarEstudiantesPage() {
         'CALLE EJEMPLO 123',
         'CENTRO',
         '4779876543',
+        'Masculino',
       ],
     ]
 
@@ -397,14 +395,14 @@ export default function ImportarEstudiantesPage() {
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-mono">{est.matricula}</TableCell>
                       <TableCell>
-                        {`${est.nombre} ${est.apellidoPaterno} ${est.apellidoMaterno || ''}`.trim()}
+                        {`${est.nombre} ${est.apellidoPaterno} ${est.apellidoMaterno ?? ''}`.trim()}
                       </TableCell>
                       <TableCell>{est.campus}</TableCell>
                       <TableCell className="max-w-[200px] truncate" title={est.curso}>
                         {est.curso}
                       </TableCell>
-                      <TableCell>{est.grupo || '-'}</TableCell>
-                      <TableCell>{est.fechaInscripcion || '-'}</TableCell>
+                      <TableCell>{est.grupo ?? '-'}</TableCell>
+                      <TableCell>{est.fechaInscripcion ?? '-'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

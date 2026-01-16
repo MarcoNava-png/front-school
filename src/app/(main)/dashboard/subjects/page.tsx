@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-import { BookOpen, GraduationCap, Hash, Plus, Search } from "lucide-react";
+import { BookOpen, Edit, GraduationCap, Hash, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getMatterPlanList } from "@/services/matter-plan-service";
+import { deleteMatterPlan, getMatterPlanList } from "@/services/matter-plan-service";
 import { MatterPlan } from "@/types/matter-plan";
 
 import { CreateSubjectDialog } from "./_components/create-subject-dialog";
+import { EditSubjectDialog } from "./_components/edit-subject-dialog";
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState<MatterPlan[]>([]);
@@ -28,6 +30,11 @@ export default function SubjectsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<MatterPlan | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [subjectToEdit, setSubjectToEdit] = useState<MatterPlan | null>(null);
 
   useEffect(() => {
     loadSubjects();
@@ -46,9 +53,44 @@ export default function SubjectsPage() {
     }
   };
 
+  const openDeleteDialog = (subject: MatterPlan) => {
+    setSubjectToDelete(subject);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSubject = async () => {
+    if (!subjectToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteMatterPlan(subjectToDelete.idMateriaPlan);
+      setSubjects((prev) => prev.filter((s) => s.idMateriaPlan !== subjectToDelete.idMateriaPlan));
+      toast.success("Materia eliminada exitosamente");
+      setDeleteDialogOpen(false);
+      setSubjectToDelete(null);
+    } catch (error: unknown) {
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          toast.error(axiosError.response.data.message);
+          return;
+        }
+      }
+      const errorMessage = error instanceof Error ? error.message : "Error al eliminar la materia";
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const openEditDialog = (subject: MatterPlan) => {
+    setSubjectToEdit(subject);
+    setEditDialogOpen(true);
+  };
+
   const filteredSubjects = subjects.filter((s) =>
-    s.nombreMateria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.materia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.nombreMateria?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+    s.materia?.toLowerCase().includes(searchTerm.toLowerCase()) ??
     s.claveMateria?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -166,12 +208,13 @@ export default function SubjectsPage() {
                 <TableHead className="font-semibold text-primary text-center">Cuatrimestre</TableHead>
                 <TableHead className="font-semibold text-primary text-center">Créditos</TableHead>
                 <TableHead className="font-semibold text-primary">Plan de Estudios</TableHead>
+                <TableHead className="font-semibold text-primary text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredSubjects.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
+                  <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <BookOpen className="h-8 w-8" />
                       <span>No se encontraron materias</span>
@@ -214,6 +257,26 @@ export default function SubjectsPage() {
                         <span className="truncate max-w-xs">{s.nombrePlanEstudios ?? "—"}</span>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
+                          onClick={() => openEditDialog(s)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                          onClick={() => openDeleteDialog(s)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -221,6 +284,23 @@ export default function SubjectsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Eliminar Materia"
+        description="Esta acción no se puede deshacer. Se eliminará permanentemente la materia:"
+        itemName={subjectToDelete?.nombreMateria ?? subjectToDelete?.materia}
+        onConfirm={handleDeleteSubject}
+        isDeleting={isDeleting}
+      />
+
+      <EditSubjectDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        subject={subjectToEdit}
+        onSuccess={loadSubjects}
+      />
     </div>
   );
 }

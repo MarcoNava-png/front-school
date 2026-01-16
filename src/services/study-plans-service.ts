@@ -18,3 +18,13 @@ export async function updateStudyPlan(payload: PayloadUpdateStudyPlan): Promise<
   const { data } = await apiClient.put<StudyPlan>(`/PlanEstudios`, payload);
   return data;
 }
+
+export async function deleteStudyPlan(id: number): Promise<{ message: string }> {
+  const { data } = await apiClient.delete<{ message: string }>(`/PlanEstudios/${id}`);
+  return data;
+}
+
+export async function getStudyPlanById(id: number): Promise<StudyPlan> {
+  const { data } = await apiClient.get<StudyPlan>(`/PlanEstudios/${id}`);
+  return data;
+}

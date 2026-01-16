@@ -16,3 +16,8 @@ export async function updateCampus(payload: PayloadUpdateCampus): Promise<Campus
   const { data } = await apiClient.put<Campus>("/Campus", payload);
   return data;
 }
+
+export async function deleteCampus(id: number): Promise<{ message: string }> {
+  const { data } = await apiClient.delete<{ message: string }>(`/Campus/${id}`);
+  return data;
+}

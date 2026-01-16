@@ -16,9 +16,10 @@ export interface MatterPlan {
 export interface PayloadMatterPlan {
   idMateriaPlan: number;
   idPlanEstudios: number;
-  nombrePlanEstudios: string;
   idMateria: number;
-  materia: string;
   cuatrimestre: number;
   esOptativa: boolean;
+  // Campos opcionales para crear (no requeridos para actualizar)
+  nombrePlanEstudios?: string;
+  materia?: string;
 }

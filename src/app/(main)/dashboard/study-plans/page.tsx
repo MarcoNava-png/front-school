@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-import { Award, Calendar, GraduationCap, Layers, Search } from "lucide-react";
+import { Award, Calendar, Edit, GraduationCap, Layers, Search, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getStudyPlansList } from "@/services/study-plans-service";
+import { deleteStudyPlan, getStudyPlansList } from "@/services/study-plans-service";
 import { StudyPlan } from "@/types/study-plan";
 
 import { CreateStudyPlanDialog } from "./_components/create-study-plan-dialog";
+import { ImportStudyPlansModal } from "./_components/import-study-plans-modal";
 
 export default function StudyPlansPage() {
   const [plans, setPlans] = useState<StudyPlan[]>([]);
@@ -28,6 +30,10 @@ export default function StudyPlansPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<StudyPlan | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   useEffect(() => {
     loadPlans();
@@ -47,6 +53,36 @@ export default function StudyPlansPage() {
       toast.error("Error al cargar los planes de estudio");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openDeleteDialog = (plan: StudyPlan) => {
+    setPlanToDelete(plan);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteStudyPlan = async () => {
+    if (!planToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteStudyPlan(planToDelete.idPlanEstudios);
+      setPlans((prev) => prev.filter((p) => p.idPlanEstudios !== planToDelete.idPlanEstudios));
+      toast.success("Plan de estudios eliminado exitosamente");
+      setDeleteDialogOpen(false);
+      setPlanToDelete(null);
+    } catch (error: unknown) {
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          toast.error(axiosError.response.data.message);
+          return;
+        }
+      }
+      const errorMessage = error instanceof Error ? error.message : "Error al eliminar el plan";
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -100,7 +136,13 @@ export default function StudyPlansPage() {
             Gestiona los planes de estudio de los programas académicos
           </p>
         </div>
-        <CreateStudyPlanDialog open={open} setOpen={setOpen} />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportModalOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" />
+            Importar
+          </Button>
+          <CreateStudyPlanDialog open={open} setOpen={setOpen} />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -169,12 +211,13 @@ export default function StudyPlansPage() {
                 <TableHead className="font-semibold text-primary text-center">Cuatrimestres</TableHead>
                 <TableHead className="font-semibold text-primary text-center">RVOE</TableHead>
                 <TableHead className="font-semibold text-primary">Estado</TableHead>
+                <TableHead className="font-semibold text-primary text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredPlans.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
+                  <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <GraduationCap className="h-8 w-8" />
                       <span>No se encontraron planes de estudio</span>
@@ -225,6 +268,28 @@ export default function StudyPlansPage() {
                         Activo
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
+                          onClick={() => {
+                            toast.info("Función de editar próximamente");
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                          onClick={() => openDeleteDialog(plan)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -232,6 +297,22 @@ export default function StudyPlansPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Eliminar Plan de Estudios"
+        description="Esta acción no se puede deshacer. Se eliminará permanentemente el plan de estudios:"
+        itemName={planToDelete?.nombrePlanEstudios}
+        onConfirm={handleDeleteStudyPlan}
+        isDeleting={isDeleting}
+      />
+
+      <ImportStudyPlansModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        onImportSuccess={loadPlans}
+      />
     </div>
   );
 }
