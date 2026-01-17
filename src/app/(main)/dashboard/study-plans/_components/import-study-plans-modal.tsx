@@ -114,8 +114,8 @@ export function ImportStudyPlansModal({
         return;
       }
 
-      const headers = (jsonData[0] as unknown[]).map((h) => String(h).toLowerCase().trim());
-      const rows = jsonData.slice(1) as unknown[][];
+      const headers = jsonData[0].map((h) => String(h).toLowerCase().trim());
+      const rows = jsonData.slice(1);
 
       const mapped: ImportarPlanEstudiosDto[] = [];
 
