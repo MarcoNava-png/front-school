@@ -80,6 +80,8 @@ export const SYSTEM_ROLES = {
   DOCENTE: 'docente',
   ALUMNO: 'alumno',
   CONTROL_ESCOLAR: 'controlescolar',
+  FINANZAS: 'finanzas',
+  ADMISIONES: 'admisiones',
 } as const
 
 export type SystemRole = typeof SYSTEM_ROLES[keyof typeof SYSTEM_ROLES]
@@ -92,6 +94,8 @@ export const ROLE_LABELS: Record<string, string> = {
   docente: 'Docente',
   alumno: 'Alumno',
   controlescolar: 'Control Escolar',
+  finanzas: 'Finanzas',
+  admisiones: 'Admisiones',
 }
 
 // Colores de roles
@@ -102,4 +106,6 @@ export const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
   docente: { bg: 'bg-green-100', text: 'text-green-700' },
   alumno: { bg: 'bg-orange-100', text: 'text-orange-700' },
   controlescolar: { bg: 'bg-indigo-100', text: 'text-indigo-700' },
+  finanzas: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  admisiones: { bg: 'bg-cyan-100', text: 'text-cyan-700' },
 }

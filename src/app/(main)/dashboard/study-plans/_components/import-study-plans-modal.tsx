@@ -107,15 +107,15 @@ export function ImportStudyPlansModal({
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      const jsonData = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1 });
 
       if (jsonData.length < 2) {
         toast.error("El archivo no contiene datos");
         return;
       }
 
-      const headers = jsonData[0].map((h) => String(h).toLowerCase().trim());
-      const rows = jsonData.slice(1);
+      const headers = (jsonData[0] as unknown[]).map((h) => String(h).toLowerCase().trim());
+      const rows = jsonData.slice(1) as unknown[][];
 
       const mapped: ImportarPlanEstudiosDto[] = [];
 

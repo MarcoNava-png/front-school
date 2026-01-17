@@ -305,3 +305,36 @@ export interface IngresoConcepto {
   montoCobrado: number;
   saldoPendiente: number;
 }
+
+// ============================================================================
+// GENERACIÓN MASIVA DE RECIBOS
+// ============================================================================
+
+export interface GenerarRecibosMasivosRequest {
+  idPlantillaCobro: number;
+  idPeriodoAcademico: number;
+  soloSimular?: boolean;
+  idEstudiantes?: number[] | null;
+}
+
+export interface ReciboEstudianteResumen {
+  idEstudiante: number;
+  matricula: string;
+  nombreCompleto: string;
+  recibosGenerados: number;
+  montoTotal: number;
+  descuentoBecas: number;
+  montoFinal: number;
+}
+
+export interface GenerarRecibosMasivosResult {
+  exitoso: boolean;
+  mensaje: string;
+  totalEstudiantes: number;
+  totalRecibosGenerados: number;
+  montoTotal: number;
+  totalDescuentosBecas: number;
+  estudiantesOmitidos: number;
+  errores?: string[] | null;
+  detalleEstudiantes?: ReciboEstudianteResumen[] | null;
+}

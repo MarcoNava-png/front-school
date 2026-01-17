@@ -3,6 +3,8 @@ import {
   CreatePlantillaCobroDto,
   UpdatePlantillaCobroDto,
   ConceptoPago,
+  GenerarRecibosMasivosRequest,
+  GenerarRecibosMasivosResult,
 } from "@/types/receipt";
 
 import apiClient from "./api-client";
@@ -170,6 +172,22 @@ export async function duplicarPlantilla(
 export async function obtenerCuatrimestresPorPlan(idPlanEstudios: number): Promise<number[]> {
   const { data } = await apiClient.get<number[]>(
     `/plantillas-cobro/cuatrimestres/${idPlanEstudios}`
+  );
+  return data;
+}
+
+/**
+ * Genera recibos masivamente para todos los estudiantes que cumplan
+ * con los criterios de la plantilla y periodo especificados
+ * @param request Datos de la solicitud
+ * @returns Resultado de la generación masiva
+ */
+export async function generarRecibosMasivo(
+  request: GenerarRecibosMasivosRequest
+): Promise<GenerarRecibosMasivosResult> {
+  const { data } = await apiClient.post<GenerarRecibosMasivosResult>(
+    "/plantillas-cobro/generar-recibos-masivo",
+    request
   );
   return data;
 }

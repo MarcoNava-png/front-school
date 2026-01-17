@@ -1,13 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Edit, Power, Eye, Calendar, Loader2, Trash2, AlertCircle } from "lucide-react";
+import { Plus, Edit, Power, Eye, Calendar, Loader2, Trash2, AlertCircle, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -26,6 +33,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
 import {
@@ -39,6 +47,7 @@ import { PlantillaCobro } from "@/types/receipt";
 import { StudyPlan } from "@/types/study-plan";
 import { CreatePlantillaModal } from "./_components/create-plantilla-modal";
 import { VistaPreviaModal } from "./_components/vista-previa-modal";
+import { GenerarRecibosModal } from "./_components/generar-recibos-modal";
 
 const ESTRATEGIAS_LABEL: Record<number, string> = {
   0: "Mensual",
@@ -63,6 +72,7 @@ export default function PaymentTemplatesPage() {
   const [editingPlantilla, setEditingPlantilla] = useState<PlantillaCobro | null>(null);
   const [vistaPreviaPlantilla, setVistaPreviaPlantilla] = useState<PlantillaCobro | null>(null);
   const [plantillaToDelete, setPlantillaToDelete] = useState<PlantillaCobro | null>(null);
+  const [generarRecibosPlantilla, setGenerarRecibosPlantilla] = useState<PlantillaCobro | null>(null);
 
   useEffect(() => {
     cargarDatosIniciales();
@@ -129,7 +139,7 @@ export default function PaymentTemplatesPage() {
       toast.success(esActiva ? "Plantilla activada" : "Plantilla desactivada");
       cargarPlantillas();
     } catch (err) {
-      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Error al cambiar estado";
+      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Error al cambiar estado";
       toast.error(errorMessage);
     }
   }
@@ -143,7 +153,7 @@ export default function PaymentTemplatesPage() {
       setPlantillaToDelete(null);
       cargarPlantillas();
     } catch (err) {
-      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Error al eliminar plantilla";
+      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Error al eliminar plantilla";
       toast.error(errorMessage);
     }
   }
@@ -167,27 +177,30 @@ export default function PaymentTemplatesPage() {
   if (loading && plantillas.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         <span className="ml-2 text-muted-foreground">Cargando plantillas...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Calendar className="h-8 w-8" />
-            Plantillas de Cobro
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-6">
+      {/* Header - Responsivo */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold flex items-center gap-2">
+            <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+            <span className="truncate">Plantillas de Cobro</span>
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Configura plantillas de cobro por plan de estudios y cuatrimestre
           </p>
         </div>
 
-        <Button onClick={() => setCreateModalOpen(true)}>
+        <Button
+          onClick={() => setCreateModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Nueva Plantilla
         </Button>
@@ -197,33 +210,33 @@ export default function PaymentTemplatesPage() {
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error}
-            <Button variant="link" className="ml-2 p-0 h-auto" onClick={cargarPlantillas}>
+          <AlertDescription className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span>{error}</span>
+            <Button variant="link" className="p-0 h-auto text-sm" onClick={cargarPlantillas}>
               Reintentar
             </Button>
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Filtros */}
+      {/* Filtros - Responsivo */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="text-base sm:text-lg">Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Plan de Estudios</label>
+              <label className="text-xs sm:text-sm font-medium">Plan de Estudios</label>
               <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-full text-sm">
+                  <SelectValue placeholder="Seleccionar plan" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[300px]">
                   <SelectItem value="TODOS">Todos los planes</SelectItem>
                   {planesEstudio.map((plan) => (
                     <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()}>
-                      {plan.clavePlanEstudios} - {plan.nombrePlanEstudios}
+                      <span className="truncate">{plan.clavePlanEstudios} - {plan.nombrePlanEstudios}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -231,12 +244,12 @@ export default function PaymentTemplatesPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Periodo Académico</label>
+              <label className="text-xs sm:text-sm font-medium">Periodo Académico</label>
               <Select value={selectedPeriodo} onValueChange={setSelectedPeriodo}>
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="w-full text-sm">
+                  <SelectValue placeholder="Seleccionar periodo" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[300px]">
                   <SelectItem value="TODOS">Todos los periodos</SelectItem>
                   {periodos.map((p) => (
                     <SelectItem key={p.idPeriodoAcademico} value={p.idPeriodoAcademico.toString()}>
@@ -248,12 +261,12 @@ export default function PaymentTemplatesPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Estado</label>
+              <label className="text-xs sm:text-sm font-medium">Estado</label>
               <Select
                 value={soloActivas ? "activas" : "todas"}
                 onValueChange={(v) => setSoloActivas(v === "activas")}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -264,8 +277,13 @@ export default function PaymentTemplatesPage() {
             </div>
 
             <div className="flex items-end">
-              <Button variant="outline" onClick={cargarPlantillas} className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              <Button
+                variant="outline"
+                onClick={cargarPlantillas}
+                className="w-full border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
                 Buscar
               </Button>
             </div>
@@ -273,118 +291,271 @@ export default function PaymentTemplatesPage() {
         </CardContent>
       </Card>
 
-      {/* Tabla de Plantillas */}
+      {/* Tabla de Plantillas - Responsiva */}
       <Card>
-        <CardHeader>
-          <CardTitle>Plantillas Registradas ({plantillas.length})</CardTitle>
-          <CardDescription>
-            Gestiona las plantillas de cobro para diferentes planes de estudio
-          </CardDescription>
+        <CardHeader className="pb-3 sm:pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <CardTitle className="text-base sm:text-lg">Plantillas Registradas</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                {plantillas.length} plantilla{plantillas.length !== 1 ? "s" : ""} encontrada{plantillas.length !== 1 ? "s" : ""}
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:p-6 sm:pt-0">
           {plantillas.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No hay plantillas registradas</p>
-              <Button variant="outline" className="mt-4" onClick={() => setCreateModalOpen(true)}>
+            <div className="text-center py-8 sm:py-12 text-muted-foreground px-4">
+              <Calendar className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-sm sm:text-base">No hay plantillas registradas</p>
+              <Button
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => setCreateModalOpen(true)}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Crear primera plantilla
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Plan de Estudios</TableHead>
-                  <TableHead>Cuatrimestre</TableHead>
-                  <TableHead>Recibos</TableHead>
-                  <TableHead>Vencimiento</TableHead>
-                  <TableHead>Conceptos</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {plantillas.map((plantilla) => (
-                  <TableRow key={plantilla.idPlantillaCobro}>
-                    <TableCell className="font-medium">{plantilla.nombrePlantilla}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{plantilla.nombrePlanEstudios || getNombrePlan(plantilla.idPlanEstudios)}</div>
+            <>
+              {/* Vista de tabla para pantallas medianas y grandes */}
+              <div className="hidden md:block">
+                <ScrollArea className="w-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-blue-600 hover:bg-blue-600">
+                        <TableHead className="text-white font-semibold">Nombre</TableHead>
+                        <TableHead className="text-white font-semibold">Plan de Estudios</TableHead>
+                        <TableHead className="text-white font-semibold text-center">Cuatrimestre</TableHead>
+                        <TableHead className="text-white font-semibold text-center">Recibos</TableHead>
+                        <TableHead className="text-white font-semibold text-center">Vencimiento</TableHead>
+                        <TableHead className="text-white font-semibold text-center">Conceptos</TableHead>
+                        <TableHead className="text-white font-semibold text-center">Estado</TableHead>
+                        <TableHead className="text-white font-semibold text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {plantillas.map((plantilla, index) => (
+                        <TableRow
+                          key={plantilla.idPlantillaCobro}
+                          className={index % 2 === 0 ? "bg-white hover:bg-gray-50" : "bg-gray-50 hover:bg-gray-100"}
+                        >
+                          <TableCell className="font-medium">{plantilla.nombrePlantilla}</TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div className="truncate max-w-[200px]">
+                                {plantilla.nombrePlanEstudios ?? getNombrePlan(plantilla.idPlanEstudios)}
+                              </div>
+                              {plantilla.nombrePeriodo && (
+                                <div className="text-muted-foreground text-xs truncate">
+                                  {plantilla.nombrePeriodo}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              {plantilla.numeroCuatrimestre}°
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="text-sm">
+                              <div>{plantilla.numeroRecibos}</div>
+                              <div className="text-muted-foreground text-xs">
+                                {ESTRATEGIAS_LABEL[plantilla.estrategiaEmision] ?? "N/A"}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-sm">Día {plantilla.diaVencimiento}</span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary" className="bg-gray-100">
+                              {plantilla.totalConceptos ?? plantilla.detalles?.length ?? 0}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {plantilla.esActiva ? (
+                              <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                                Activa
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+                                Inactiva
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setGenerarRecibosPlantilla(plantilla)}
+                                title="Generar recibos masivamente"
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 w-8 p-0"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setVistaPreviaPlantilla(plantilla)}
+                                title="Vista previa"
+                                className="text-gray-600 hover:text-gray-700 hover:bg-gray-100 h-8 w-8 p-0"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(plantilla)}
+                                title="Editar"
+                                className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 h-8 w-8 p-0"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleCambiarEstado(plantilla.idPlantillaCobro, !plantilla.esActiva)}
+                                title={plantilla.esActiva ? "Desactivar" : "Activar"}
+                                className={`h-8 w-8 p-0 ${
+                                  plantilla.esActiva
+                                    ? "text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                                }`}
+                              >
+                                <Power className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setPlantillaToDelete(plantilla)}
+                                title="Eliminar"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </div>
+
+              {/* Vista de tarjetas para móviles */}
+              <div className="md:hidden space-y-3 px-4 pb-4">
+                {plantillas.map((plantilla, index) => (
+                  <Card
+                    key={plantilla.idPlantillaCobro}
+                    className={`overflow-hidden ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                  >
+                    <div className="bg-blue-600 px-4 py-2 flex items-center justify-between">
+                      <h3 className="font-semibold text-white text-sm truncate flex-1 mr-2">
+                        {plantilla.nombrePlantilla}
+                      </h3>
+                      {plantilla.esActiva ? (
+                        <Badge className="bg-green-500 text-white hover:bg-green-500 text-xs">
+                          Activa
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-gray-200 text-gray-600 text-xs">
+                          Inactiva
+                        </Badge>
+                      )}
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-muted-foreground text-xs">Plan de Estudios</span>
+                          <p className="font-medium truncate">
+                            {plantilla.nombrePlanEstudios ?? getNombrePlan(plantilla.idPlanEstudios)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Cuatrimestre</span>
+                          <p className="font-medium">{plantilla.numeroCuatrimestre}°</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Recibos</span>
+                          <p className="font-medium">
+                            {plantilla.numeroRecibos} ({ESTRATEGIAS_LABEL[plantilla.estrategiaEmision] ?? "N/A"})
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Vencimiento</span>
+                          <p className="font-medium">Día {plantilla.diaVencimiento}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Conceptos</span>
+                          <p className="font-medium">
+                            {plantilla.totalConceptos ?? plantilla.detalles?.length ?? 0}
+                          </p>
+                        </div>
                         {plantilla.nombrePeriodo && (
-                          <div className="text-muted-foreground text-xs">{plantilla.nombrePeriodo}</div>
+                          <div>
+                            <span className="text-muted-foreground text-xs">Periodo</span>
+                            <p className="font-medium truncate">{plantilla.nombrePeriodo}</p>
+                          </div>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{plantilla.numeroCuatrimestre}°</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{plantilla.numeroRecibos} recibos</div>
-                        <div className="text-muted-foreground text-xs">
-                          {ESTRATEGIAS_LABEL[plantilla.estrategiaEmision] || "N/A"}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>Día {plantilla.diaVencimiento}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {plantilla.totalConceptos ?? plantilla.detalles?.length ?? 0} conceptos
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {plantilla.esActiva ? (
-                        <Badge variant="default">Activa</Badge>
-                      ) : (
-                        <Badge variant="secondary">Inactiva</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-1">
+
+                      {/* Acciones móviles */}
+                      <div className="flex items-center justify-between pt-3 border-t gap-1">
                         <Button
-                          variant="ghost"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setGenerarRecibosPlantilla(plantilla)}
+                          className="flex-1 text-xs h-9 text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          <FileText className="w-3.5 h-3.5 mr-1" />
+                          Generar
+                        </Button>
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => setVistaPreviaPlantilla(plantilla)}
-                          title="Vista previa"
+                          className="h-9 w-9 p-0"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => handleEdit(plantilla)}
-                          title="Editar"
+                          className="h-9 w-9 p-0 text-amber-600 border-amber-200 hover:bg-amber-50"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          onClick={() =>
-                            handleCambiarEstado(plantilla.idPlantillaCobro, !plantilla.esActiva)
-                          }
-                          title={plantilla.esActiva ? "Desactivar" : "Activar"}
+                          onClick={() => handleCambiarEstado(plantilla.idPlantillaCobro, !plantilla.esActiva)}
+                          className={`h-9 w-9 p-0 ${
+                            plantilla.esActiva
+                              ? "text-green-600 border-green-200 hover:bg-green-50"
+                              : "text-gray-400 border-gray-200 hover:bg-gray-50"
+                          }`}
                         >
-                          <Power
-                            className={`w-4 h-4 ${plantilla.esActiva ? "text-green-600" : "text-gray-400"}`}
-                          />
+                          <Power className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => setPlantillaToDelete(plantilla)}
-                          title="Eliminar"
+                          className="h-9 w-9 p-0 text-red-600 border-red-200 hover:bg-red-50"
                         >
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -404,24 +575,37 @@ export default function PaymentTemplatesPage() {
         />
       )}
 
-      {/* Diálogo de confirmación de eliminación */}
+      {/* Diálogo de confirmación de eliminación - Responsivo */}
       <AlertDialog open={!!plantillaToDelete} onOpenChange={() => setPlantillaToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-[425px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Plantilla</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar la plantilla &quot;{plantillaToDelete?.nombrePlantilla}&quot;?
+            <AlertDialogTitle className="text-lg">Eliminar Plantilla</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              ¿Estás seguro de que deseas eliminar la plantilla{" "}
+              <span className="font-semibold">&quot;{plantillaToDelete?.nombrePlantilla}&quot;</span>?
               Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleEliminar} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEliminar}
+              className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
+            >
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal para generar recibos masivamente */}
+      {generarRecibosPlantilla && (
+        <GenerarRecibosModal
+          plantilla={generarRecibosPlantilla}
+          open={!!generarRecibosPlantilla}
+          onClose={() => setGenerarRecibosPlantilla(null)}
+        />
+      )}
     </div>
   );
 }
