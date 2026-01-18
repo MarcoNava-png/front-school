@@ -11,11 +11,12 @@ import {
   Updater,
   PaginationState,
 } from "@tanstack/react-table";
+import { Users } from "lucide-react";
 
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
-import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { withDndColumn } from "@/components/data-table/table-utils";
 import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getApplicantsList } from "@/services/applicants-service";
 import { getCampusList } from "@/services/campus-service";
@@ -29,10 +30,10 @@ import {
 import { getStates } from "@/services/location-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
 import { Applicant, ApplicantsResponse } from "@/types/applicant";
-import { Campus, CampusResponse } from "@/types/campus";
+import { Campus } from "@/types/campus";
 import { ApplicantStatus, CivilStatus, ContactMethod, Genres, Schedule } from "@/types/catalog";
 import { State } from "@/types/location";
-import { StudyPlan, StudyPlansResponse } from "@/types/study-plan";
+import { StudyPlan } from "@/types/study-plan";
 
 import { ApplicantLogsModal } from "./_components/applicant-logs-modal";
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
@@ -208,52 +209,113 @@ function Page() {
 
   return (
     <div className="@container/main flex flex-col gap-4 space-y-4 md:gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 py-4">
-        <h2 className="text-xl font-bold">Aspirantes</h2>
-        <div className="ml-auto flex items-center gap-2">
-          {/* <DataTableViewOptions table={table} /> */}
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <Users className="h-8 w-8" style={{ color: '#14356F' }} />
+            </div>
+            Aspirantes
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Gestiona los aspirantes del proceso de admisión
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
           <Input
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filtrar por nombre o email"
-            className="min-w-[220px] rounded-[10px] border px-2 py-1 text-sm"
+            className="min-w-[220px] rounded-lg border px-3 py-2 text-sm focus-visible:ring-[#14356F]"
           />
-          <Button onClick={() => setOpen(true)} variant="default">
+          <Button
+            onClick={() => setOpen(true)}
+            className="text-white"
+            style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+          >
             Crear aspirante
           </Button>
         </div>
-        <CreateApplicantModal
-          open={open}
-          genres={genres}
-          civilStatus={civilStatus}
-          campus={campus}
-          studyPlans={studyPlans}
-          contactMethods={contactMethods}
-          schedules={schedules}
-          applicantStatus={applicantStatus}
-          states={states}
-          onOpenChange={setOpen}
-        />
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
-        <table className="w-full text-xs">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[50px]">ID</th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 min-w-[180px]">Nombre</th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 min-w-[150px]">Plan de Estudios</th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[95px]">Teléfono</th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[100px]">Estatus</th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[120px]">Registrado Por</th>
-              <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 w-[85px]">Registro</th>
-              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 w-[90px]">Pagos</th>
-              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 w-[95px]">Documentos</th>
-              <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 w-[220px]">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card
+          className="border-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+        >
+          <CardHeader className="pb-2">
+            <CardDescription style={{ color: '#1e4a8f' }}>Total Aspirantes</CardDescription>
+            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
+              {data.length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-green-600 dark:text-green-400">Inscriptos</CardDescription>
+            <CardTitle className="text-4xl text-green-700 dark:text-green-300">
+              {data.filter(a => a.aspiranteEstatus === "Inscrito").length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-blue-600 dark:text-blue-400">Aceptados</CardDescription>
+            <CardTitle className="text-4xl text-blue-700 dark:text-blue-300">
+              {data.filter(a => a.aspiranteEstatus === "Aceptado").length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900 border-yellow-200 dark:border-yellow-800">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-yellow-600 dark:text-yellow-400">Pendientes</CardDescription>
+            <CardTitle className="text-4xl text-yellow-700 dark:text-yellow-300">
+              {data.filter(a => a.aspiranteEstatus !== "Inscrito" && a.aspiranteEstatus !== "Aceptado" && a.aspiranteEstatus !== "Rechazado").length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      <CreateApplicantModal
+        open={open}
+        genres={genres}
+        civilStatus={civilStatus}
+        campus={campus}
+        studyPlans={studyPlans}
+        contactMethods={contactMethods}
+        schedules={schedules}
+        applicantStatus={applicantStatus}
+        states={states}
+        onOpenChange={setOpen}
+      />
+
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead
+              className="border-b"
+              style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+            >
+              <tr>
+                <th className="px-2 py-3 text-left text-xs font-semibold text-white w-[50px]">ID</th>
+                <th className="px-2 py-3 text-left text-xs font-semibold text-white min-w-[180px]">Nombre</th>
+                <th className="px-2 py-3 text-left text-xs font-semibold text-white min-w-[150px]">Plan de Estudios</th>
+                <th className="px-2 py-3 text-left text-xs font-semibold text-white w-[95px]">Teléfono</th>
+                <th className="px-2 py-3 text-left text-xs font-semibold text-white w-[100px]">Estatus</th>
+                <th className="px-2 py-3 text-left text-xs font-semibold text-white w-[120px]">Registrado Por</th>
+                <th className="px-2 py-3 text-left text-xs font-semibold text-white w-[85px]">Registro</th>
+                <th className="px-2 py-3 text-center text-xs font-semibold text-white w-[90px]">Pagos</th>
+                <th className="px-2 py-3 text-center text-xs font-semibold text-white w-[95px]">Documentos</th>
+                <th className="px-2 py-3 text-center text-xs font-semibold text-white w-[220px]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
             {data.filter(applicant => applicant.aspiranteEstatus !== "Admitido").map((applicant) => (
               <tr key={applicant.idAspirante} className="hover:bg-gray-50 transition-colors">
                 <td className="px-2 py-2 text-gray-900 font-medium text-xs">{applicant.idAspirante}</td>
@@ -339,7 +401,8 @@ function Page() {
                         setEnrollModalOpen(true);
                       }}
                       title="Inscribir como estudiante"
-                      className="h-6 px-1.5 text-[10px] bg-blue-600 hover:bg-blue-700"
+                      className="h-6 px-1.5 text-[10px] text-white"
+                      style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
                     >
                       Inscribir
                     </Button>
@@ -347,9 +410,10 @@ function Page() {
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       <EnrollStudentModal
         open={enrollModalOpen}

@@ -37,13 +37,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import documentosEstudianteService from '@/services/documentos-estudiante-service'
-import type {
-  SolicitudDocumento,
-  SolicitudesFiltro,
-  TipoDocumento,
-  EstatusSolicitud,
+import {
+  ESTATUS_COLORS,
+  ESTATUS_LABELS,
+  type EstatusSolicitud,
+  type SolicitudDocumento,
+  type SolicitudesFiltro,
+  type TipoDocumento,
 } from '@/types/documentos-estudiante'
-import { ESTATUS_COLORS, ESTATUS_LABELS } from '@/types/documentos-estudiante'
 
 import { CrearSolicitudModal } from './_components/crear-solicitud-modal'
 import { VistaKardexModal } from './_components/vista-kardex-modal'
@@ -163,8 +164,11 @@ export default function DocumentosEstudiantePage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <FileText className="h-8 w-8 text-primary" />
+            <div
+              className="rounded-lg p-2"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <FileText className="h-8 w-8" style={{ color: '#14356F' }} />
             </div>
             Documentos de Estudiante
           </h1>
@@ -177,7 +181,11 @@ export default function DocumentosEstudiantePage() {
             <Filter className="mr-2 h-4 w-4" />
             {showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
           </Button>
-          <Button onClick={() => setCrearModalOpen(true)}>
+          <Button
+            onClick={() => setCrearModalOpen(true)}
+            className="text-white"
+            style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nueva Solicitud
           </Button>
@@ -186,12 +194,15 @@ export default function DocumentosEstudiantePage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-950 dark:to-blue-900">
+        <Card
+          className="border-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+        >
           <CardHeader className="pb-2">
-            <CardDescription className="text-blue-600 dark:text-blue-400">
+            <CardDescription style={{ color: '#1e4a8f' }}>
               Total Solicitudes
             </CardDescription>
-            <CardTitle className="text-4xl text-blue-700 dark:text-blue-300">
+            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
               {totalRegistros}
             </CardTitle>
           </CardHeader>
@@ -336,15 +347,18 @@ export default function DocumentosEstudiantePage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Folio</TableHead>
-                  <TableHead>Estudiante</TableHead>
-                  <TableHead>Matricula</TableHead>
-                  <TableHead>Tipo Documento</TableHead>
-                  <TableHead>Fecha Solicitud</TableHead>
-                  <TableHead>Estatus</TableHead>
-                  <TableHead>Precio</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                <TableRow
+                  className="hover:bg-transparent"
+                  style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+                >
+                  <TableHead className="text-white font-semibold">Folio</TableHead>
+                  <TableHead className="text-white font-semibold">Estudiante</TableHead>
+                  <TableHead className="text-white font-semibold">Matricula</TableHead>
+                  <TableHead className="text-white font-semibold">Tipo Documento</TableHead>
+                  <TableHead className="text-white font-semibold">Fecha Solicitud</TableHead>
+                  <TableHead className="text-white font-semibold">Estatus</TableHead>
+                  <TableHead className="text-white font-semibold">Precio</TableHead>
+                  <TableHead className="text-white font-semibold text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

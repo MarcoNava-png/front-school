@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { HorarioMateria, GrupoMateria } from "@/types/group";
+
 import { SchedulePicker } from "./schedule-picker";
 
 interface EditSubjectScheduleModalProps {

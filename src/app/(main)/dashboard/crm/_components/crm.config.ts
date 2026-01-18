@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 
 import { ChartConfig } from "@/components/ui/chart";
 

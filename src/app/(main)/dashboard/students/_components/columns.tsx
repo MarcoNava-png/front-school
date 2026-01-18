@@ -8,11 +8,11 @@ import { ColumnDef } from "@tanstack/react-table";
 import { BookOpen, GraduationCap, DollarSign, CheckCircle, XCircle, FileText } from "lucide-react";
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Student } from "@/types/student";
 import { listReceiptsByPeriod } from "@/services/receipts-service";
+import { Student } from "@/types/student";
 
 import { EnrollGrupoMateriaModal } from "./enroll-grupomateria-modal";
 import { StudentDocumentsModal } from "./student-documents-modal";
@@ -164,10 +164,9 @@ export function getStudentsColumns(onRefresh: () => void, currentPeriodId?: numb
     {
       accessorKey: "grupo",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Grupo" />,
-      cell: ({ row }) => {
+      cell: () => {
         // TODO: Agregar campo 'grupo' al tipo Student desde el backend
         // Por ahora mostrar un placeholder
-        const student = row.original;
         return <div className="text-center">
           <Badge variant="outline">-</Badge>
         </div>;

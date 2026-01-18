@@ -101,8 +101,11 @@ export default function AcademicPeriodsPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <CalendarClock className="h-8 w-8 text-primary" />
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <CalendarClock className="h-8 w-8" style={{ color: '#14356F' }} />
             </div>
             Periodos Académicos
           </h1>
@@ -115,10 +118,13 @@ export default function AcademicPeriodsPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+        <Card
+          className="border-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+        >
           <CardHeader className="pb-2">
-            <CardDescription className="text-blue-600 dark:text-blue-400">Total Periodos</CardDescription>
-            <CardTitle className="text-4xl text-blue-700 dark:text-blue-300">
+            <CardDescription style={{ color: '#1e4a8f' }}>Total Periodos</CardDescription>
+            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
               {periods.length}
             </CardTitle>
           </CardHeader>
@@ -181,12 +187,15 @@ export default function AcademicPeriodsPage() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-primary/5 hover:bg-primary/5">
-                <TableHead className="font-semibold text-primary">Clave</TableHead>
-                <TableHead className="font-semibold text-primary">Nombre</TableHead>
-                <TableHead className="font-semibold text-primary">Fecha Inicio</TableHead>
-                <TableHead className="font-semibold text-primary">Fecha Fin</TableHead>
-                <TableHead className="font-semibold text-primary text-center">Estado</TableHead>
+              <TableRow
+                className="hover:bg-transparent"
+                style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+              >
+                <TableHead className="font-semibold text-white">Clave</TableHead>
+                <TableHead className="font-semibold text-white">Nombre</TableHead>
+                <TableHead className="font-semibold text-white">Fecha Inicio</TableHead>
+                <TableHead className="font-semibold text-white">Fecha Fin</TableHead>
+                <TableHead className="font-semibold text-white text-center">Estado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -206,17 +215,27 @@ export default function AcademicPeriodsPage() {
                     className={`${index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"} ${period.esPeriodoActual ? "ring-2 ring-yellow-400 ring-inset" : ""}`}
                   >
                     <TableCell>
-                      <Badge variant="outline" className="font-mono bg-primary/5 text-primary border-primary/20">
+                      <Badge
+                        variant="outline"
+                        className="font-mono"
+                        style={{ background: 'rgba(20, 53, 111, 0.05)', color: '#14356F', borderColor: 'rgba(20, 53, 111, 0.2)' }}
+                      >
                         {period.clave ?? `P${period.idPeriodoAcademico}`}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className={`p-1.5 rounded ${period.esPeriodoActual ? "bg-yellow-100 dark:bg-yellow-900" : "bg-blue-100 dark:bg-blue-900"}`}>
+                        <div
+                          className="p-1.5 rounded"
+                          style={period.esPeriodoActual
+                            ? { background: 'rgba(234, 179, 8, 0.2)' }
+                            : { background: 'rgba(20, 53, 111, 0.1)' }
+                          }
+                        >
                           {period.esPeriodoActual ? (
                             <Star className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                           ) : (
-                            <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <Calendar className="h-4 w-4" style={{ color: '#14356F' }} />
                           )}
                         </div>
                         <div>

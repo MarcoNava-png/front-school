@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
-import type { UserPermissions, RolePermission } from '@/types/permissions'
-import { SYSTEM_ROLES } from '@/types/permissions'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import permissionsService from '@/services/permissions-service'
+import { SYSTEM_ROLES, type UserPermissions } from '@/types/permissions'
 
 // Obtener usuario del localStorage
 function getStoredUser() {

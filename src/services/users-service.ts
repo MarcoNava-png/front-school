@@ -42,6 +42,16 @@ export async function deleteUser(id: string): Promise<void> {
 }
 
 /**
+ * Restablecer contraseña de un usuario (solo admin)
+ */
+export async function adminResetPassword(userId: string, newPassword: string): Promise<void> {
+  await apiClient.post("/auth/admin-reset-password", {
+    userId,
+    newPassword,
+  });
+}
+
+/**
  * Obtener el perfil del usuario actual (autenticado)
  */
 export async function getCurrentUserProfile(): Promise<User> {

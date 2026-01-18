@@ -1,27 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { Plus, Edit, Power, Eye, Calendar, Loader2, Trash2, AlertCircle, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,9 +16,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
 import {
   listarPlantillas,
@@ -45,9 +45,10 @@ import { getStudyPlansList } from "@/services/study-plans-service";
 import { AcademicPeriod } from "@/types/academic-period";
 import { PlantillaCobro } from "@/types/receipt";
 import { StudyPlan } from "@/types/study-plan";
+
 import { CreatePlantillaModal } from "./_components/create-plantilla-modal";
-import { VistaPreviaModal } from "./_components/vista-previa-modal";
 import { GenerarRecibosModal } from "./_components/generar-recibos-modal";
+import { VistaPreviaModal } from "./_components/vista-previa-modal";
 
 const ESTRATEGIAS_LABEL: Record<number, string> = {
   0: "Mensual",

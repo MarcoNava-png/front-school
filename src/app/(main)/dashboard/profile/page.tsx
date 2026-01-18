@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Camera, Loader2, User } from "lucide-react";
-import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Camera, Loader2, User } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -26,13 +27,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-
+import { Textarea } from "@/components/ui/textarea";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { updateUserProfile } from "@/services/users-service";
 import { getInitials } from "@/lib/utils";
+import { updateUserProfile } from "@/services/users-service";
 
 const formSchema = z.object({
   email: z.string().email("Email invalido"),
@@ -98,7 +98,7 @@ export default function ProfilePage() {
         biografia: user.biografia || "",
       });
     }
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -186,7 +186,7 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto" style={{ borderColor: '#14356F' }}></div>
           <p className="text-sm text-muted-foreground">Cargando perfil...</p>
         </div>
       </div>
@@ -209,33 +209,52 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
-          Mi Cuenta
-        </h1>
-        <p className="text-muted-foreground">
-          Administra tu informacion personal y foto de perfil
-        </p>
-        <Separator />
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <User className="h-8 w-8" style={{ color: '#14356F' }} />
+            </div>
+            Mi Cuenta
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Administra tu informacion personal y foto de perfil
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Photo Section */}
-        <Card className="border-2 md:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-lg">Foto de Perfil</CardTitle>
+        <Card
+          className="border-2 md:col-span-1"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}
+        >
+          <CardHeader
+            style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}
+          >
+            <CardTitle className="text-lg" style={{ color: '#14356F' }}>Foto de Perfil</CardTitle>
             <CardDescription>
               Actualiza tu foto de perfil (Max 5MB)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col items-center gap-4">
-              <Avatar className="h-32 w-32 rounded-xl ring-4 ring-blue-500/20">
+              <Avatar
+                className="h-32 w-32 rounded-xl ring-4"
+                style={{ '--tw-ring-color': 'rgba(20, 53, 111, 0.2)' } as React.CSSProperties}
+              >
                 <AvatarImage
                   src={photoPreview || user.photoUrl || ""}
                   alt={user.nombres || "Usuario"}
                 />
-                <AvatarFallback className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-bold">
+                <AvatarFallback
+                  className="rounded-xl text-white text-2xl font-bold"
+                  style={{ background: 'linear-gradient(to bottom right, #14356F, #1e4a8f)' }}
+                >
                   {getInitials(`${user.nombres || ""} ${user.apellidos || ""}`)}
                 </AvatarFallback>
               </Avatar>
@@ -252,7 +271,8 @@ export default function ProfilePage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                    className="w-full cursor-pointer"
+                    style={{ borderColor: '#14356F', color: '#14356F' }}
                     onClick={() => document.getElementById("photo-upload")?.click()}
                   >
                     <Camera className="h-4 w-4 mr-2" />
@@ -288,9 +308,14 @@ export default function ProfilePage() {
         </Card>
 
         {/* Profile Information Form */}
-        <Card className="border-2 md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg">Informacion Personal</CardTitle>
+        <Card
+          className="border-2 md:col-span-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}
+        >
+          <CardHeader
+            style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}
+          >
+            <CardTitle className="text-lg" style={{ color: '#14356F' }}>Informacion Personal</CardTitle>
             <CardDescription>
               Actualiza tu informacion de contacto y detalles personales
             </CardDescription>
@@ -309,7 +334,7 @@ export default function ProfilePage() {
                           <Input
                             {...field}
                             placeholder="Ingresa tu nombre"
-                            className="focus-visible:ring-blue-500"
+                            className="focus-visible:ring-[#14356F]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -327,7 +352,7 @@ export default function ProfilePage() {
                           <Input
                             {...field}
                             placeholder="Ingresa tus apellidos"
-                            className="focus-visible:ring-blue-500"
+                            className="focus-visible:ring-[#14356F]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -370,7 +395,7 @@ export default function ProfilePage() {
                           {...field}
                           value={field.value || ""}
                           placeholder="(555) 123-4567"
-                          className="focus-visible:ring-blue-500"
+                          className="focus-visible:ring-[#14356F]"
                         />
                       </FormControl>
                       <FormMessage />
@@ -414,7 +439,8 @@ export default function ProfilePage() {
                   <Button
                     type="submit"
                     disabled={saving}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-500/30"
+                    className="text-white"
+                    style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
                   >
                     {saving ? (
                       <>

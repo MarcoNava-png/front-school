@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 
-import { UserAuth } from "@/types/user-auth";
 import { getCurrentUserProfile } from "@/services/users-service";
+import { UserAuth } from "@/types/user-auth";
 
 // Función para obtener el usuario del localStorage
 function getStoredUser(): UserAuth | null {
@@ -50,7 +50,7 @@ export function useCurrentUser() {
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
         setProfileLoaded(true);
-      } catch (err) {
+      } catch {
         console.warn("No se pudo cargar el perfil del backend");
         setProfileLoaded(true);
       }

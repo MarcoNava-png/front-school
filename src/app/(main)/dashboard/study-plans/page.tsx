@@ -127,8 +127,11 @@ export default function StudyPlansPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <GraduationCap className="h-8 w-8 text-primary" />
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <GraduationCap className="h-8 w-8" style={{ color: '#14356F' }} />
             </div>
             Planes de Estudio
           </h1>
@@ -147,10 +150,13 @@ export default function StudyPlansPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+        <Card
+          className="border-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+        >
           <CardHeader className="pb-2">
-            <CardDescription className="text-blue-600 dark:text-blue-400">Total Planes</CardDescription>
-            <CardTitle className="text-4xl text-blue-700 dark:text-blue-300">
+            <CardDescription style={{ color: '#1e4a8f' }}>Total Planes</CardDescription>
+            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
               {plans.length}
             </CardTitle>
           </CardHeader>
@@ -205,13 +211,16 @@ export default function StudyPlansPage() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-primary/5 hover:bg-primary/5">
-                <TableHead className="font-semibold text-primary">Clave</TableHead>
-                <TableHead className="font-semibold text-primary">Nombre del Plan</TableHead>
-                <TableHead className="font-semibold text-primary text-center">Cuatrimestres</TableHead>
-                <TableHead className="font-semibold text-primary text-center">RVOE</TableHead>
-                <TableHead className="font-semibold text-primary">Estado</TableHead>
-                <TableHead className="font-semibold text-primary text-center">Acciones</TableHead>
+              <TableRow
+                className="hover:bg-transparent"
+                style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+              >
+                <TableHead className="font-semibold text-white">Clave</TableHead>
+                <TableHead className="font-semibold text-white">Nombre del Plan</TableHead>
+                <TableHead className="font-semibold text-white text-center">Cuatrimestres</TableHead>
+                <TableHead className="font-semibold text-white text-center">RVOE</TableHead>
+                <TableHead className="font-semibold text-white">Estado</TableHead>
+                <TableHead className="font-semibold text-white text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -231,14 +240,21 @@ export default function StudyPlansPage() {
                     className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
                   >
                     <TableCell>
-                      <Badge variant="outline" className="font-mono bg-primary/5 text-primary border-primary/20">
+                      <Badge
+                        variant="outline"
+                        className="font-mono"
+                        style={{ background: 'rgba(20, 53, 111, 0.05)', color: '#14356F', borderColor: 'rgba(20, 53, 111, 0.2)' }}
+                      >
                         {plan.clavePlanEstudios ?? "—"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded">
-                          <Award className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div
+                          className="p-1.5 rounded"
+                          style={{ background: 'rgba(20, 53, 111, 0.1)' }}
+                        >
+                          <Award className="h-4 w-4" style={{ color: '#14356F' }} />
                         </div>
                         <div>
                           <span className="font-medium block">{plan.nombrePlanEstudios}</span>

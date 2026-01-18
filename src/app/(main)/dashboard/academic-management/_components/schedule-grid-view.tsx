@@ -1,10 +1,11 @@
 "use client";
 
 import { Clock, MapPin, User } from "lucide-react";
-import { Card } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
-import type { DiaSemana, GrupoMateria } from "@/types/group";
+import { Card } from "@/components/ui/card";
 import { timeToMinutes } from "@/lib/schedule-validation";
+import type { DiaSemana, GrupoMateria } from "@/types/group";
 
 interface ScheduleGridViewProps {
   materias: GrupoMateria[];
@@ -18,12 +19,6 @@ const DIAS_SEMANA: DiaSemana[] = [
   "Jueves",
   "Viernes",
   "Sábado",
-];
-
-const HORAS_DIA = [
-  "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
-  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00",
-  "19:00", "20:00", "21:00", "22:00"
 ];
 
 export function ScheduleGridView({ materias, nombreGrupo }: ScheduleGridViewProps) {

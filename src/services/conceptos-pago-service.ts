@@ -1,4 +1,5 @@
 import { ConceptoPago } from "@/types/receipt";
+
 import apiClient from "./api-client";
 
 // ============================================================================
@@ -55,7 +56,7 @@ export async function listarConceptosPago(
       `/Conceptos?${params.toString()}`
     );
     return data;
-  } catch (error) {
+  } catch {
     console.warn("⚠️ Endpoint /Conceptos no encontrado. Usando datos mock temporales.");
 
     // Datos mock temporales para desarrollo

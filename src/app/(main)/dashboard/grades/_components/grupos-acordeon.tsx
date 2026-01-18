@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import { ChevronDown, ChevronRight, BookOpen, Users } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAcademicManagement, getGroupSubjects } from "@/services/groups-service";
-import { TablaCalificacionesMatricial } from "./tabla-calificaciones-matricial";
 import type { GrupoMateria } from "@/types/group";
+
+import { TablaCalificacionesMatricial } from "./tabla-calificaciones-matricial";
 
 interface GruposAcordeonProps {
   planEstudiosId: number;

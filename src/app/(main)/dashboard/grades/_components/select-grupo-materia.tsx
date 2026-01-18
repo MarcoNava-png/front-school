@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import { toast } from "sonner";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getAcademicManagement, getGroupSubjects } from "@/services/groups-service";
-import type { GrupoMateria } from "@/types/group";
 
 interface SelectGrupoMateriaProps {
   value: number | null;

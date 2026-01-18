@@ -1,6 +1,6 @@
 "use client";
 
-import { Receipt } from "@/types/receipt";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, calcularRecargo, calcularDiasVencido } from "@/lib/payment-utils";
-import { ReceiptStatusBadge } from "./receipt-status-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { formatCurrency, calcularRecargo, calcularDiasVencido } from "@/lib/payment-utils";
+import { Receipt } from "@/types/receipt";
+
+import { ReceiptStatusBadge } from "./receipt-status-badge";
 
 interface ReceiptDetailsModalProps {
   receipt: Receipt | null;

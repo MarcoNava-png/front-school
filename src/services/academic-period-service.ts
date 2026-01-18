@@ -24,7 +24,7 @@ export async function getCurrentAcademicPeriod(): Promise<AcademicPeriod | null>
   try {
     const { data } = await apiClient.get<AcademicPeriod>(`/PeriodoAcademico/actual`);
     return data;
-  } catch (error) {
+  } catch {
     // Si no hay periodo actual, retorna null
     return null;
   }

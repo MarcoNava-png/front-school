@@ -2,7 +2,7 @@ import React from "react";
 
 import { updateCampus } from "@/services/campus-service";
 import { getMunicipalities, getTownships } from "@/services/location-service";
-import { Campus, PayloadUpdateCampus } from "@/types/campus";
+import { Campus } from "@/types/campus";
 import { State, Municipality, Township } from "@/types/location";
 
 import { Button } from "../../../../../components/ui/button";
@@ -78,7 +78,7 @@ export const EditCampusModal: React.FC<EditCampusModalProps> = ({ open, campus, 
       const updatedCampus = await updateCampus(payload);
       onUpdate(updatedCampus);
       onClose();
-    } catch (err) {
+    } catch {
       setError("Error al actualizar campus");
     } finally {
       setLoading(false);

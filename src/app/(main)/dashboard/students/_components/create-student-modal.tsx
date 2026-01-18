@@ -1,7 +1,5 @@
 "use client";
 
-import { ReactNode } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -12,17 +10,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { createStudent } from "@/services/students-service";
-import { PayloadCreateStudent } from "@/types/student";
 
 import { createStudentSchema } from "./schema-create-student";
 
 interface CreateStudentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  children?: ReactNode;
 }
 
-export function CreateStudentModal({ open, onOpenChange, children }: CreateStudentModalProps) {
+export function CreateStudentModal({ open, onOpenChange }: CreateStudentModalProps) {
   const form = useForm({
     resolver: zodResolver(createStudentSchema),
     defaultValues: {

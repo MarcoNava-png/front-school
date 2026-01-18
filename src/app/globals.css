@@ -48,37 +48,48 @@
 
 /* Default theme styles (used when no data-theme-preset is set or when 'default' is selected).
 These serve as the fallback; there is no separate default.css file. */
+
+/* Color institucional USAG: #14356F */
 :root {
   --radius: 0.625rem;
+
+  /* Color institucional primario */
+  --usag-primary: #14356F;
+  --usag-primary-light: #1e4a8f;
+  --usag-primary-lighter: #2a5faa;
+  --usag-primary-dark: #0f2850;
+  --usag-primary-darker: #0a1c38;
+  --usag-accent: #5a8fd4;
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: #14356F;
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary-foreground: #14356F;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: #E8EEF5;
+  --accent-foreground: #14356F;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.3211 0 0);
-  --chart-2: oklch(0.4495 0 0);
-  --chart-3: oklch(0.5693 0 0);
-  --chart-4: oklch(0.6830 0 0);
-  --chart-5: oklch(0.7921 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --ring: #14356F;
+  --chart-1: #14356F;
+  --chart-2: #1e4a8f;
+  --chart-3: #2a5faa;
+  --chart-4: #5a8fd4;
+  --chart-5: #a3c4e8;
+  --sidebar: linear-gradient(to bottom, #14356F, #0f2850);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #5a8fd4;
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --sidebar-ring: #5a8fd4;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
 }
@@ -90,31 +101,31 @@ These serve as the fallback; there is no separate default.css file. */
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #5a8fd4;
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: #1e4a8f;
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.9521 0 0);
-  --chart-2: oklch(0.8576 0 0);
-  --chart-3: oklch(0.7572 0 0);
-  --chart-4: oklch(0.6534 0 0);
-  --chart-5: oklch(0.5452 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --ring: #5a8fd4;
+  --chart-1: #5a8fd4;
+  --chart-2: #a3c4e8;
+  --chart-3: #2a5faa;
+  --chart-4: #1e4a8f;
+  --chart-5: #14356F;
+  --sidebar: linear-gradient(to bottom, #0f2850, #0a1c38);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: #5a8fd4;
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: rgba(90, 143, 212, 0.15);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-border: rgba(90, 143, 212, 0.2);
+  --sidebar-ring: #5a8fd4;
 }
 
 @layer utilities {

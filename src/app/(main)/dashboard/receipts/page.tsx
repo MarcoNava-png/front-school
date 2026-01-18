@@ -1,20 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import {
   FileText,
   Search,
   Download,
   Eye,
   Ban,
-  DollarSign,
-  AlertTriangle,
   Filter,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { ReceiptDetailsModal } from "@/components/receipts/receipt-details-modal";
+import { ReceiptStatusBadge } from "@/components/receipts/receipt-status-badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,32 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { Receipt, ReceiptStatus } from "@/types/receipt";
-import {
-  listarRecibos,
-  cancelarRecibo,
-  descargarReciboPDF,
-  obtenerCarteraVencida,
-  obtenerIngresosPorPeriodo,
-  exportarCarteraVencida,
-  exportarIngresosPeriodo,
-} from "@/services/receipts-service";
-import { getAcademicPeriodsList } from "@/services/academic-period-service";
-import { AcademicPeriod } from "@/types/academic-period";
-import { ReceiptStatusBadge } from "@/components/receipts/receipt-status-badge";
-import { ReceiptDetailsModal } from "@/components/receipts/receipt-details-modal";
 import {
   formatCurrency,
   calcularRecargo,
@@ -58,6 +43,16 @@ import {
   descargarReciboPDF as descargarPDF,
   descargarExcel,
 } from "@/lib/payment-utils";
+import { getAcademicPeriodsList } from "@/services/academic-period-service";
+import {
+  listarRecibos,
+  cancelarRecibo,
+  descargarReciboPDF,
+  exportarCarteraVencida,
+  exportarIngresosPeriodo,
+} from "@/services/receipts-service";
+import { AcademicPeriod } from "@/types/academic-period";
+import { Receipt, ReceiptStatus } from "@/types/receipt";
 
 export default function ReceiptsAdminPage() {
   const [recibos, setRecibos] = useState<Receipt[]>([]);
@@ -150,7 +145,7 @@ export default function ReceiptsAdminPage() {
       const blob = await descargarReciboPDF(recibo.idRecibo);
       descargarPDF(blob, recibo.folio!);
       toast.success("Recibo descargado");
-    } catch (error) {
+    } catch {
       toast.error("Error al descargar recibo");
     }
   }
@@ -163,7 +158,7 @@ export default function ReceiptsAdminPage() {
       );
       descargarExcel(blob, "CarteraVencida");
       toast.success("Reporte exportado");
-    } catch (error) {
+    } catch {
       toast.error("Error al exportar reporte");
     } finally {
       setLoadingReporte(false);
@@ -181,7 +176,7 @@ export default function ReceiptsAdminPage() {
       const blob = await exportarIngresosPeriodo(parseInt(filtros.idPeriodoAcademico));
       descargarExcel(blob, `Ingresos_Periodo_${filtros.idPeriodoAcademico}`);
       toast.success("Reporte exportado");
-    } catch (error) {
+    } catch {
       toast.error("Error al exportar reporte");
     } finally {
       setLoadingReporte(false);

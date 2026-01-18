@@ -59,7 +59,7 @@ export const AssignStudentModal: React.FC<AssignStudentModalProps> = ({
       toast.success("Estudiante asignado correctamente");
       onAssign(student);
       onClose();
-    } catch (err) {
+    } catch {
       setError("Error al asignar estudiante");
       toast.error("Error al asignar estudiante", { description: "Intenta nuevamente." });
     } finally {

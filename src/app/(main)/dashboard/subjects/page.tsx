@@ -130,8 +130,11 @@ export default function SubjectsPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <BookOpen className="h-8 w-8 text-primary" />
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <BookOpen className="h-8 w-8" style={{ color: '#14356F' }} />
             </div>
             Materias
           </h1>
@@ -144,10 +147,13 @@ export default function SubjectsPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+        <Card
+          className="border-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+        >
           <CardHeader className="pb-2">
-            <CardDescription className="text-blue-600 dark:text-blue-400">Total Materias</CardDescription>
-            <CardTitle className="text-4xl text-blue-700 dark:text-blue-300">
+            <CardDescription style={{ color: '#1e4a8f' }}>Total Materias</CardDescription>
+            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
               {subjects.length}
             </CardTitle>
           </CardHeader>
@@ -202,13 +208,16 @@ export default function SubjectsPage() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-primary/5 hover:bg-primary/5">
-                <TableHead className="font-semibold text-primary">Clave</TableHead>
-                <TableHead className="font-semibold text-primary">Nombre</TableHead>
-                <TableHead className="font-semibold text-primary text-center">Cuatrimestre</TableHead>
-                <TableHead className="font-semibold text-primary text-center">Créditos</TableHead>
-                <TableHead className="font-semibold text-primary">Plan de Estudios</TableHead>
-                <TableHead className="font-semibold text-primary text-center">Acciones</TableHead>
+              <TableRow
+                className="hover:bg-transparent"
+                style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+              >
+                <TableHead className="font-semibold text-white">Clave</TableHead>
+                <TableHead className="font-semibold text-white">Nombre</TableHead>
+                <TableHead className="font-semibold text-white text-center">Cuatrimestre</TableHead>
+                <TableHead className="font-semibold text-white text-center">Créditos</TableHead>
+                <TableHead className="font-semibold text-white">Plan de Estudios</TableHead>
+                <TableHead className="font-semibold text-white text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -228,14 +237,21 @@ export default function SubjectsPage() {
                     className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
                   >
                     <TableCell>
-                      <Badge variant="outline" className="font-mono bg-primary/5 text-primary border-primary/20">
+                      <Badge
+                        variant="outline"
+                        className="font-mono"
+                        style={{ background: 'rgba(20, 53, 111, 0.05)', color: '#14356F', borderColor: 'rgba(20, 53, 111, 0.2)' }}
+                      >
                         {s.claveMateria ?? "—"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded">
-                          <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div
+                          className="p-1.5 rounded"
+                          style={{ background: 'rgba(20, 53, 111, 0.1)' }}
+                        >
+                          <BookOpen className="h-4 w-4" style={{ color: '#14356F' }} />
                         </div>
                         <span className="font-medium">{s.nombreMateria ?? s.materia}</span>
                       </div>

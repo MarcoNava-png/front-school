@@ -34,7 +34,7 @@ export default function AcademicManagementPage() {
     if (selectedPlanId) {
       loadAcademicData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [selectedPlanId, selectedPeriodId]);
 
   const loadInitialData = async () => {
@@ -85,17 +85,27 @@ export default function AcademicManagementPage() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <GraduationCap className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <GraduationCap className="w-8 h-8" style={{ color: '#14356F' }} />
+            </div>
             Gestión Académica de Grupos
           </h1>
-          <p className="text-gray-600 text-sm mt-1">
+          <p className="text-muted-foreground mt-1">
             Administra grupos por licenciatura y cuatrimestre
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} disabled={!selectedPlanId}>
+        <Button
+          onClick={() => setShowCreateModal(true)}
+          disabled={!selectedPlanId}
+          className="text-white"
+          style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Crear Grupo
         </Button>
@@ -168,12 +178,18 @@ export default function AcademicManagementPage() {
         </div>
       ) : academicData ? (
         <div className="space-y-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div
+            className="rounded-lg p-4 border-2"
+            style={{
+              background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))',
+              borderColor: 'rgba(20, 53, 111, 0.2)'
+            }}
+          >
             <div className="flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-blue-600" />
+              <BookOpen className="w-6 h-6" style={{ color: '#14356F' }} />
               <div>
-                <h2 className="text-xl font-bold text-blue-900">{academicData.nombrePlan}</h2>
-                <p className="text-blue-700 text-sm">
+                <h2 className="text-xl font-bold" style={{ color: '#14356F' }}>{academicData.nombrePlan}</h2>
+                <p style={{ color: '#1e4a8f' }} className="text-sm">
                   Duración: {academicData.duracionCuatrimestres} cuatrimestres
                 </p>
               </div>

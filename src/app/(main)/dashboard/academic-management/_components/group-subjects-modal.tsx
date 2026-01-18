@@ -5,13 +5,6 @@ import { useEffect, useState } from "react";
 import { BookOpen, Plus, Trash2, User, MapPin, Clock, Edit, Zap } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { getGroupSubjects, removeSubjectFromGroup, addSubjectToGroup } from "@/services/groups-service";
-import { GrupoMateria } from "@/types/group";
-import { generateScheduleSummary, calculateWeeklyHours } from "@/lib/schedule-validation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,12 +15,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { generateScheduleSummary, calculateWeeklyHours } from "@/lib/schedule-validation";
+import { getGroupSubjects, removeSubjectFromGroup, addSubjectToGroup } from "@/services/groups-service";
 import { getMattersByStudyPlan } from "@/services/matter-plan-service";
+import { GrupoMateria } from "@/types/group";
 
 import { AddSubjectModal } from "./add-subject-modal";
-import { ScheduleGridView } from "./schedule-grid-view";
-import { EditSubjectScheduleModal } from "./edit-subject-schedule-modal";
 import { AssignTeacherModal } from "./assign-teacher-modal";
+import { EditSubjectScheduleModal } from "./edit-subject-schedule-modal";
+import { ScheduleGridView } from "./schedule-grid-view";
 
 interface GroupSubjectsModalProps {
   open: boolean;

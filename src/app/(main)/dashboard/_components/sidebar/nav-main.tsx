@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { PlusCircleIcon, MailIcon, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
@@ -55,7 +54,7 @@ const NavItemExpanded = ({
               disabled={item.comingSoon}
               isActive={isActive(item.url, item.subItems)}
               tooltip={item.title}
-              className="group/item relative hover:bg-sidebar-accent/80 data-[active=true]:bg-gradient-to-r data-[active=true]:from-blue-500 data-[active=true]:to-indigo-500 data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
+              className="group/item relative text-white/80 hover:text-white hover:bg-white/10 data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5a8fd4] data-[active=true]:to-[#2a5faa] data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
             >
               {item.icon && (
                 <item.icon className="group-data-[active=true]/item:drop-shadow-sm transition-transform group-hover/item:scale-110" />
@@ -70,7 +69,7 @@ const NavItemExpanded = ({
               aria-disabled={item.comingSoon}
               isActive={isActive(item.url)}
               tooltip={item.title}
-              className="group/item relative hover:bg-sidebar-accent/80 data-[active=true]:bg-gradient-to-r data-[active=true]:from-blue-500 data-[active=true]:to-indigo-500 data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
+              className="group/item relative text-white/80 hover:text-white hover:bg-white/10 data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5a8fd4] data-[active=true]:to-[#2a5faa] data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
             >
               <Link href={item.url} target={item.newTab ? "_blank" : undefined}>
                 {item.icon && (
@@ -84,14 +83,14 @@ const NavItemExpanded = ({
         </CollapsibleTrigger>
         {item.subItems && (
           <CollapsibleContent className="transition-all duration-200">
-            <SidebarMenuSub className="ml-4 border-l-2 border-sidebar-border pl-2 space-y-1">
+            <SidebarMenuSub className="ml-4 border-l-2 border-white/20 pl-2 space-y-1">
               {item.subItems.map((subItem) => (
                 <SidebarMenuSubItem key={subItem.title}>
                   <SidebarMenuSubButton
                     aria-disabled={subItem.comingSoon}
                     isActive={isActive(subItem.url)}
                     asChild
-                    className="group/subitem hover:bg-sidebar-accent/60 data-[active=true]:bg-blue-100 dark:data-[active=true]:bg-blue-900/30 data-[active=true]:text-blue-700 dark:data-[active=true]:text-blue-300 data-[active=true]:font-semibold rounded-md transition-all duration-150"
+                    className="group/subitem text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white data-[active=true]:font-semibold rounded-md transition-all duration-150"
                   >
                     <Link href={subItem.url} target={subItem.newTab ? "_blank" : undefined}>
                       {subItem.icon && <subItem.icon className="transition-transform group-hover/subitem:scale-110" />}
@@ -124,7 +123,7 @@ const NavItemCollapsed = ({
             disabled={item.comingSoon}
             tooltip={item.title}
             isActive={isActive(item.url, item.subItems)}
-            className="group/item hover:bg-sidebar-accent/80 data-[active=true]:bg-gradient-to-r data-[active=true]:from-blue-500 data-[active=true]:to-indigo-500 data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
+            className="group/item text-white/80 hover:text-white hover:bg-white/10 data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5a8fd4] data-[active=true]:to-[#2a5faa] data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
           >
             {item.icon && (
               <item.icon className="group-data-[active=true]/item:drop-shadow-sm transition-transform group-hover/item:scale-110" />
@@ -133,13 +132,13 @@ const NavItemCollapsed = ({
             <ChevronRight className="transition-transform group-hover/item:translate-x-0.5" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 rounded-xl shadow-xl border-2 p-2" side="right" align="start" sideOffset={8}>
+        <DropdownMenuContent className="w-56 rounded-xl shadow-xl border-2 border-[#14356F]/20 p-2" side="right" align="start" sideOffset={8}>
           <div className="space-y-1">
             {item.subItems?.map((subItem) => (
               <DropdownMenuItem key={subItem.title} asChild className="rounded-lg">
                 <SidebarMenuSubButton
                   asChild
-                  className="focus-visible:ring-0 hover:bg-blue-50 dark:hover:bg-blue-900/30 data-[active=true]:bg-blue-100 dark:data-[active=true]:bg-blue-900/40 data-[active=true]:text-blue-700 dark:data-[active=true]:text-blue-300 data-[active=true]:font-semibold transition-all duration-150 cursor-pointer"
+                  className="focus-visible:ring-0 hover:bg-[#14356F]/10 data-[active=true]:bg-[#14356F]/15 data-[active=true]:text-[#14356F] data-[active=true]:font-semibold transition-all duration-150 cursor-pointer"
                   aria-disabled={subItem.comingSoon}
                   isActive={isActive(subItem.url)}
                 >
@@ -178,10 +177,10 @@ export function NavMain({ items }: NavMainProps) {
       {items.map((group) => (
         <SidebarGroup key={group.id} className="mb-2">
           {group.label && (
-            <SidebarGroupLabel className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-2">
-              <div className="h-1 w-1 rounded-full bg-blue-500"></div>
+            <SidebarGroupLabel className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-white/60 flex items-center gap-2">
+              <div className="h-1 w-1 rounded-full bg-[#5a8fd4]"></div>
               {group.label}
-              <div className="flex-1 h-px bg-gradient-to-r from-blue-200 to-transparent dark:from-blue-800"></div>
+              <div className="flex-1 h-px bg-gradient-to-r from-white/20 to-transparent"></div>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent className="flex flex-col gap-1.5">
@@ -197,7 +196,7 @@ export function NavMain({ items }: NavMainProps) {
                           aria-disabled={item.comingSoon}
                           tooltip={item.title}
                           isActive={isItemActive(item.url)}
-                          className="group/item hover:bg-sidebar-accent/80 data-[active=true]:bg-gradient-to-r data-[active=true]:from-blue-500 data-[active=true]:to-indigo-500 data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
+                          className="group/item text-white/80 hover:text-white hover:bg-white/10 data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5a8fd4] data-[active=true]:to-[#2a5faa] data-[active=true]:text-white data-[active=true]:shadow-md transition-all duration-200"
                         >
                           <Link href={item.url} target={item.newTab ? "_blank" : undefined}>
                             {item.icon && (

@@ -10,7 +10,7 @@ export default function NotFound() {
       <h1 className="text-2xl font-semibold">Page not found.</h1>
       <p className="text-muted-foreground">The page you are looking for could not be found.</p>
       <Link replace href="/dashboard/default">
-        <Button variant="outline">Go back home</Button>
+        <Button variant="outline">Volver al inicio</Button>
       </Link>
     </div>
   );

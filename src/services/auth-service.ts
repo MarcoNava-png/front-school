@@ -15,7 +15,7 @@ export async function login({ email, password }: { email: string; password: stri
       return { success: true, token: data.data.token, user: data.data };
     }
     return { success: false, error: data.messageError ?? "Invalid credentials" };
-  } catch (error) {
+  } catch {
     return { success: false, error: "Network error" };
   }
 }

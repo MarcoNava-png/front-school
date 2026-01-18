@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getApplicantReceipts } from "@/services/applicants-service";
 import { getPaymentMethods } from "@/services/catalogs-service";
 import { registrarYAplicarPago } from "@/services/payments-service";
-import { Applicant, ReciboDto, EstatusRecibo } from "@/types/applicant";
+import { Applicant, ReciboDto } from "@/types/applicant";
 import { PaymentMethod } from "@/types/catalog";
 
 interface PaymentRegistrationModalProps {

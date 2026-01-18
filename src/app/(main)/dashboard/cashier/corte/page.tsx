@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, DollarSign, Download, FileText, Lock, RefreshCcw, User } from "lucide-react";
-import { toast } from "sonner";
+
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Calendar, DollarSign, FileText, Lock, RefreshCcw, User } from "lucide-react";
+import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +19,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -29,23 +29,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-
-import {
-  UsuarioCajero,
-  PagoDetallado,
-  ResumenCorteCajaDetallado,
-  GenerarCorteCajaRequest,
-} from "@/types/payment";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { formatCurrency } from "@/lib/payment-utils";
+import { cn } from "@/lib/utils";
 import {
   obtenerCajeros,
   generarCorteCajaDetallado,
   generarPdfCorteCaja,
   cerrarCorteCaja,
 } from "@/services/payments-service";
-import { formatCurrency } from "@/lib/payment-utils";
-import { cn } from "@/lib/utils";
+import {
+  UsuarioCajero,
+  ResumenCorteCajaDetallado,
+  GenerarCorteCajaRequest,
+} from "@/types/payment";
 
 export default function CorteCajaPage() {
   // Estado para filtros
@@ -460,7 +459,7 @@ export default function CorteCajaPage() {
             <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Genera un corte de caja</h3>
             <p className="text-muted-foreground">
-              Selecciona los filtros deseados y haz clic en "Generar" para ver el reporte
+              Selecciona los filtros deseados y haz clic en &quot;Generar&quot; para ver el reporte
             </p>
           </CardContent>
         </Card>

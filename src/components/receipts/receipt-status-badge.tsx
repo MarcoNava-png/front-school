@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
-import { ReceiptStatus } from "@/types/receipt";
 import { formatReceiptStatus, getReceiptStatusVariant } from "@/lib/payment-utils";
+import { ReceiptStatus } from "@/types/receipt";
 
 interface ReceiptStatusBadgeProps {
   status: ReceiptStatus;

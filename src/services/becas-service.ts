@@ -129,7 +129,7 @@ export async function verificarBecasActivas(
 export async function listarBecasEstudiante(idEstudiante: number): Promise<BecaEstudiante[]> {
   try {
     return await obtenerBecasEstudiante(idEstudiante);
-  } catch (error) {
+  } catch {
     console.warn("⚠️ Endpoint de becas no encontrado. Usando datos mock temporales.");
 
     // Datos mock temporales para desarrollo

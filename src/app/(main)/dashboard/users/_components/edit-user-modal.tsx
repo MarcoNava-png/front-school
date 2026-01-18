@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { Pencil, Loader2 } from "lucide-react";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Pencil, Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -25,10 +28,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-
 import { updateUser } from "@/services/users-service";
 import type { User, UpdateUserRequest } from "@/types/user";
 
@@ -107,7 +107,10 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+            <div
+              className="p-2 rounded-lg text-white"
+              style={{ background: 'linear-gradient(to bottom right, #1e4a8f, #2a5faa)' }}
+            >
               <Pencil className="h-5 w-5" />
             </div>
             Editar Usuario
@@ -121,7 +124,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge className="bg-blue-600">Informacion de Cuenta</Badge>
+                <Badge style={{ background: '#14356F' }}>Informacion de Cuenta</Badge>
               </div>
 
               <FormField
@@ -136,7 +139,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
                       <Input
                         type="email"
                         placeholder="usuario@ejemplo.com"
-                        className="focus-visible:ring-blue-500"
+                        className="focus-visible:ring-[#14356F]"
                         {...field}
                       />
                     </FormControl>
@@ -148,7 +151,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
 
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge className="bg-indigo-600">Informacion Personal</Badge>
+                <Badge style={{ background: '#1e4a8f' }}>Informacion Personal</Badge>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,7 +166,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
                       <FormControl>
                         <Input
                           placeholder="Juan Carlos"
-                          className="focus-visible:ring-blue-500"
+                          className="focus-visible:ring-[#14356F]"
                           {...field}
                         />
                       </FormControl>
@@ -183,7 +186,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
                       <FormControl>
                         <Input
                           placeholder="Perez Garcia"
-                          className="focus-visible:ring-blue-500"
+                          className="focus-visible:ring-[#14356F]"
                           {...field}
                         />
                       </FormControl>
@@ -203,7 +206,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
                       <Input
                         type="tel"
                         placeholder="5551234567"
-                        className="focus-visible:ring-blue-500"
+                        className="focus-visible:ring-[#14356F]"
                         {...field}
                       />
                     </FormControl>
@@ -222,7 +225,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
                     <FormControl>
                       <Textarea
                         placeholder="Informacion adicional sobre el usuario..."
-                        className="resize-none focus-visible:ring-blue-500"
+                        className="resize-none focus-visible:ring-[#14356F]"
                         rows={3}
                         {...field}
                       />
@@ -246,7 +249,8 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800"
+                className="text-white"
+                style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
               >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSubmitting ? "Guardando..." : "Guardar Cambios"}

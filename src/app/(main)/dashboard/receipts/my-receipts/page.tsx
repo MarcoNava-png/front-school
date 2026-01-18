@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { Download, FileText, Eye, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { ReceiptDetailsModal } from "@/components/receipts/receipt-details-modal";
+import { ReceiptStatusBadge } from "@/components/receipts/receipt-status-badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,20 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-import { Receipt, ReceiptStatus } from "@/types/receipt";
-import { listarRecibos, descargarReciboPDF } from "@/services/receipts-service";
-import { getAcademicPeriodsList } from "@/services/academic-period-service";
-import { AcademicPeriod } from "@/types/academic-period";
-import { ReceiptStatusBadge } from "@/components/receipts/receipt-status-badge";
-import { ReceiptDetailsModal } from "@/components/receipts/receipt-details-modal";
 import {
   formatCurrency,
   calcularRecargo,
   calcularDiasVencido,
   descargarReciboPDF as descargarPDF,
 } from "@/lib/payment-utils";
+import { getAcademicPeriodsList } from "@/services/academic-period-service";
+import { listarRecibos, descargarReciboPDF } from "@/services/receipts-service";
+import { AcademicPeriod } from "@/types/academic-period";
+import { Receipt, ReceiptStatus } from "@/types/receipt";
 
 // TODO: Obtener del contexto de autenticación
 const MOCK_STUDENT_ID = 1;
@@ -84,7 +84,7 @@ export default function MyReceiptsPage() {
       const blob = await descargarReciboPDF(recibo.idRecibo);
       descargarPDF(blob, recibo.folio!);
       toast.success("Recibo descargado");
-    } catch (error) {
+    } catch {
       toast.error("Error al descargar recibo");
     }
   }

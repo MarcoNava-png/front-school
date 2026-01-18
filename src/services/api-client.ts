@@ -10,7 +10,7 @@ function isTokenExpired(token: string): boolean {
     const payload = JSON.parse(atob(token.split('.')[1]))
     const expirationTime = payload.exp * 1000 // Convertir a milisegundos
     return Date.now() >= expirationTime
-  } catch (error) {
+  } catch {
     return true // Si hay error al parsear, consideramos el token como expirado
   }
 }

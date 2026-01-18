@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
-  const [reportType, setReportType] = useState<string>("corte-caja");
   const [fechaInicio, setFechaInicio] = useState<string>("");
   const [fechaFin, setFechaFin] = useState<string>("");
   const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("1");
@@ -30,7 +29,7 @@ export default function ReportsPage() {
       // Aquí se implementaría la generación del reporte
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Reporte generado exitosamente");
-    } catch (error) {
+    } catch {
       toast.error("Error al generar el reporte");
     } finally {
       setLoading(false);

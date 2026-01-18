@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,15 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-
-import { ConceptoPago } from "@/types/receipt";
+import { Textarea } from "@/components/ui/textarea";
 import {
   crearConceptoPago,
   actualizarConceptoPago,
   CreateConceptoPagoDto,
 } from "@/services/conceptos-pago-service";
+import { ConceptoPago } from "@/types/receipt";
 
 interface Props {
   open: boolean;

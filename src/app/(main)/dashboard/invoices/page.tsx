@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { FileText, Plus, X } from "lucide-react";
 import { toast } from "sonner";

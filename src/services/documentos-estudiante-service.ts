@@ -1,4 +1,3 @@
-import axiosInstance from './api-client'
 import type {
   TipoDocumento,
   SolicitudDocumento,
@@ -8,6 +7,8 @@ import type {
   VerificacionDocumento,
   KardexEstudiante,
 } from '@/types/documentos-estudiante'
+
+import axiosInstance from './api-client'
 
 const API_URL = '/documentoestudiante'
 

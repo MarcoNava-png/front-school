@@ -44,7 +44,7 @@ export function CreateAcademicPeriodDialog({ open, setOpen }: CreateAcademicPeri
       });
       setOpen(false);
       form.reset();
-    } catch (e) {
+    } catch {
       // Manejar error
     } finally {
       setLoading(false);

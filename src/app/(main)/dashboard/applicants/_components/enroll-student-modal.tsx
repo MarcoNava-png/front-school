@@ -35,7 +35,6 @@ interface EnrollStudentModalProps {
   onEnrollmentSuccess: () => void;
 }
 
-/* eslint-disable complexity */
 export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSuccess }: EnrollStudentModalProps) {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);

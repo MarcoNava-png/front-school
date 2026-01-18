@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-import { EllipsisVertical, CircleUser, CreditCard, MessageSquareDot, LogOut } from "lucide-react";
+import Link from "next/link";
+
+import { CircleUser, CreditCard, EllipsisVertical, LogOut, MessageSquareDot } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -38,34 +40,43 @@ export function NavUser() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="group/user data-[state=open]:bg-gradient-to-r data-[state=open]:from-blue-50 data-[state=open]:to-indigo-50 dark:data-[state=open]:from-blue-950/40 dark:data-[state=open]:to-indigo-950/40 hover:bg-sidebar-accent/80 transition-all duration-200 rounded-xl"
+                className="group/user data-[state=open]:bg-white/10 hover:bg-white/10 transition-all duration-200 rounded-xl"
               >
-                <Avatar className="h-9 w-9 rounded-xl ring-2 ring-blue-500/20 transition-all duration-200 group-hover/user:ring-blue-500/40">
+                <Avatar className="h-9 w-9 rounded-xl ring-2 ring-white/20 transition-all duration-200 group-hover/user:ring-white/40">
                   <AvatarImage src={""} alt={user.nombres} />
-                  <AvatarFallback className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
+                  <AvatarFallback
+                    className="rounded-xl text-white font-semibold"
+                    style={{ background: 'linear-gradient(to bottom right, #5a8fd4, #2a5faa)' }}
+                  >
                     {getInitials(`${user.nombres ?? ""} ${user.apellidos ?? ""}`)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold text-foreground">
+                  <span className="truncate font-semibold text-white">
                     {user.nombres} {user.apellidos}
                   </span>
-                  <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                  <span className="text-white/60 truncate text-xs">{user.email}</span>
                 </div>
-                <EllipsisVertical className="ml-auto size-4 transition-transform group-hover/user:scale-110" />
+                <EllipsisVertical className="ml-auto size-4 text-white/60 transition-transform group-hover/user:scale-110" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl shadow-xl border-2"
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl shadow-xl border-2 border-[#14356F]/20"
               side={isMobile ? "bottom" : "right"}
               align="end"
               sideOffset={8}
             >
               <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-3 px-3 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-t-xl">
+                <div
+                  className="flex items-center gap-3 px-3 py-3 rounded-t-xl"
+                  style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+                >
                   <Avatar className="h-10 w-10 rounded-xl ring-2 ring-white dark:ring-gray-800">
                     <AvatarImage src={user.photoUrl ?? undefined} alt={user.nombres} />
-                    <AvatarFallback className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold">
+                    <AvatarFallback
+                      className="rounded-xl text-white font-bold"
+                      style={{ background: 'linear-gradient(to bottom right, #14356F, #1e4a8f)' }}
+                    >
                       {getInitials(`${user.nombres ?? ""} ${user.apellidos ?? ""}`)}
                     </AvatarFallback>
                   </Avatar>
@@ -79,18 +90,18 @@ export function NavUser() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup className="px-1">
-                <DropdownMenuItem asChild className="cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
-                  <a href="/dashboard/profile">
-                    <CircleUser className="text-blue-600" />
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg hover:bg-[#14356F]/10 transition-colors">
+                  <Link href="/dashboard/profile">
+                    <CircleUser className="text-[#14356F]" />
                     <span className="font-medium">Mi Cuenta</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
-                  <CreditCard className="text-green-600" />
+                <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-[#14356F]/10 transition-colors">
+                  <CreditCard className="text-[#1e4a8f]" />
                   <span className="font-medium">Facturación</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
-                  <MessageSquareDot className="text-purple-600" />
+                <DropdownMenuItem className="cursor-pointer rounded-lg hover:bg-[#14356F]/10 transition-colors">
+                  <MessageSquareDot className="text-[#5a8fd4]" />
                   <span className="font-medium">Notificaciones</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>

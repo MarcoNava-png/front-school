@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { Plus, DollarSign, Edit, Power, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -16,13 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { ConceptoPago } from "@/types/receipt";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   listarConceptosPago,
   cambiarEstadoConceptoPago,
   eliminarConceptoPago,
 } from "@/services/conceptos-pago-service";
+import { ConceptoPago } from "@/types/receipt";
+
 import { CreateConceptModal } from "./_components/create-concept-modal";
 
 export default function PaymentConceptsPage() {

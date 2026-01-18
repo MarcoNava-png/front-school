@@ -80,7 +80,6 @@ const COLUMN_MAPPING: Record<string, keyof ImportarEstudianteDto> = {
 
 type Step = 'upload' | 'preview' | 'validate' | 'import' | 'results'
 
-// eslint-disable-next-line complexity
 export default function ImportarEstudiantesPage() {
   const [step, setStep] = useState<Step>('upload')
   const [estudiantes, setEstudiantes] = useState<ImportarEstudianteDto[]>([])
@@ -124,8 +123,8 @@ export default function ImportarEstudiantesPage() {
       }
 
       // Primera fila son los headers
-      const headers = (jsonData[0] as unknown[]).map((h) => String(h).toLowerCase().trim())
-      const rows = jsonData.slice(1) as unknown[][]
+      const headers = (jsonData[0]).map((h) => String(h).toLowerCase().trim())
+      const rows = jsonData.slice(1)
 
       // Mapear datos
       const mapped: ImportarEstudianteDto[] = []
@@ -284,8 +283,11 @@ export default function ImportarEstudiantesPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Upload className="h-8 w-8 text-primary" />
+            <div
+              className="rounded-lg p-2"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <Upload className="h-8 w-8" style={{ color: '#14356F' }} />
             </div>
             Importar Estudiantes
           </h1>
@@ -293,7 +295,11 @@ export default function ImportarEstudiantesPage() {
             Carga masiva de estudiantes desde archivo Excel
           </p>
         </div>
-        <Button variant="outline" onClick={downloadTemplate}>
+        <Button
+          variant="outline"
+          onClick={downloadTemplate}
+          style={{ borderColor: '#14356F', color: '#14356F' }}
+        >
           <Download className="mr-2 h-4 w-4" />
           Descargar Plantilla
         </Button>
@@ -305,12 +311,13 @@ export default function ImportarEstudiantesPage() {
           <div key={s} className="flex items-center">
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-                step === s
-                  ? 'bg-primary text-primary-foreground'
-                  : ['upload', 'preview', 'validate', 'import', 'results'].indexOf(step) > i
-                    ? 'bg-green-500 text-white'
-                    : 'bg-muted text-muted-foreground'
+                ['upload', 'preview', 'validate', 'import', 'results'].indexOf(step) > i
+                  ? 'bg-green-500 text-white'
+                  : step !== s
+                    ? 'bg-muted text-muted-foreground'
+                    : ''
               }`}
+              style={step === s ? { background: 'linear-gradient(to right, #14356F, #1e4a8f)', color: 'white' } : undefined}
             >
               {['upload', 'preview', 'validate', 'import', 'results'].indexOf(step) > i ? (
                 <Check className="h-4 w-4" />

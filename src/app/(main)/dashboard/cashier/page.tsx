@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, DollarSign, Check, X, Receipt as ReceiptIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Check, DollarSign, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -18,20 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-import { Receipt, ReceiptStatus } from "@/types/receipt";
-import { MedioPago, RecibosParaCobro } from "@/types/payment";
-import { buscarRecibosParaCobro, registrarPagoCaja, obtenerMediosPago, descargarComprobantePago } from "@/services/payments-service";
 import {
-  calcularRecargo,
   calcularDiasVencido,
+  calcularRecargo,
   calcularTotalAPagarHoy,
+  descargarComprobantePDF,
   formatCurrency,
   formatReceiptStatus,
   getReceiptStatusVariant,
-  descargarComprobantePDF,
 } from "@/lib/payment-utils";
+import { buscarRecibosParaCobro, descargarComprobantePago, obtenerMediosPago, registrarPagoCaja } from "@/services/payments-service";
+import type { MedioPago, RecibosParaCobro } from "@/types/payment";
 
 export default function CashierPage() {
   // Estado de búsqueda
@@ -89,8 +88,9 @@ export default function CashierPage() {
         setRecibosSeleccionados(new Set());
         toast.success(`Se encontraron ${data.recibos.length} recibo(s) pendiente(s)`);
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "No se encontró el estudiante o recibo");
+    } catch (error: unknown) {
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(message ?? "No se encontró el estudiante o recibo");
       setResultado(null);
     } finally {
       setBuscando(false);
@@ -127,10 +127,10 @@ export default function CashierPage() {
       }, 0);
   }
 
-  async function procesarPago() {
+  function validarPago(): { valido: boolean; montoIngresado: number; totalSeleccionado: number } {
     if (recibosSeleccionados.size === 0) {
       toast.error("Selecciona al menos un recibo");
-      return;
+      return { valido: false, montoIngresado: 0, totalSeleccionado: 0 };
     }
 
     const totalSeleccionado = calcularTotalSeleccionado();
@@ -138,15 +138,22 @@ export default function CashierPage() {
 
     if (!montoIngresado || montoIngresado <= 0) {
       toast.error("Ingresa un monto válido");
-      return;
+      return { valido: false, montoIngresado, totalSeleccionado };
     }
 
     if (Math.abs(montoIngresado - totalSeleccionado) > 0.01) {
       toast.error(
         `El monto ingresado (${formatCurrency(montoIngresado)}) no coincide con el total seleccionado (${formatCurrency(totalSeleccionado)})`
       );
-      return;
+      return { valido: false, montoIngresado, totalSeleccionado };
     }
+
+    return { valido: true, montoIngresado, totalSeleccionado };
+  }
+
+  async function procesarPago() {
+    const { valido, montoIngresado } = validarPago();
+    if (!valido) return;
 
     setProcesando(true);
     try {
@@ -168,16 +175,15 @@ export default function CashierPage() {
 
       toast.success(`Pago registrado exitosamente: ${pagoRegistrado.folioPago}`);
 
-      // Descargar comprobante si está disponible
       if (pagoRegistrado.comprobante) {
         const blob = await descargarComprobantePago(pagoRegistrado.idPago);
         descargarComprobantePDF(blob, pagoRegistrado.folioPago);
       }
 
-      // Limpiar formulario
       limpiarFormulario();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error al procesar el pago");
+    } catch (error: unknown) {
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(message ?? "Error al procesar el pago");
     } finally {
       setProcesando(false);
     }
@@ -199,18 +205,23 @@ export default function CashierPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <DollarSign className="h-8 w-8" />
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <DollarSign className="h-8 w-8" style={{ color: '#14356F' }} />
+            </div>
             Caja
           </h1>
-          <p className="text-muted-foreground">Cobro de recibos y gestión de pagos</p>
+          <p className="text-muted-foreground mt-1">Cobro de recibos y gestión de pagos</p>
         </div>
       </div>
 
       {/* Búsqueda */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Buscar Alumno o Recibo</CardTitle>
+      <Card className="border-2" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
+        <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
+          <CardTitle style={{ color: '#14356F' }}>Buscar Alumno o Recibo</CardTitle>
           <CardDescription>
             Ingresa la matrícula del estudiante, nombre o folio del recibo
           </CardDescription>
@@ -226,7 +237,12 @@ export default function CashierPage() {
                 disabled={buscando}
               />
             </div>
-            <Button onClick={buscar} disabled={buscando}>
+            <Button
+              onClick={buscar}
+              disabled={buscando}
+              className="text-white"
+              style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+            >
               <Search className="w-4 h-4 mr-2" />
               {buscando ? "Buscando..." : "Buscar"}
             </Button>
@@ -238,9 +254,9 @@ export default function CashierPage() {
       {resultado && resultado.estudiante && (
         <>
           {/* Datos del Estudiante */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Estudiante</CardTitle>
+          <Card className="border-2" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
+            <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
+              <CardTitle style={{ color: '#14356F' }}>Estudiante</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
@@ -267,28 +283,28 @@ export default function CashierPage() {
           </Card>
 
           {/* Recibos Pendientes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recibos Pendientes ({resultado.recibos.length})</CardTitle>
+          <Card className="border-2 overflow-hidden" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
+            <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
+              <CardTitle style={{ color: '#14356F' }}>Recibos Pendientes ({resultado.recibos.length})</CardTitle>
               <CardDescription>Selecciona los recibos a pagar</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}>
                     <TableHead className="w-12">
                       <Checkbox
                         checked={recibosSeleccionados.size === resultado.recibos.length}
                         onCheckedChange={toggleTodos}
                       />
                     </TableHead>
-                    <TableHead>Folio</TableHead>
-                    <TableHead>Periodo</TableHead>
-                    <TableHead>Vencimiento</TableHead>
-                    <TableHead className="text-right">Saldo</TableHead>
-                    <TableHead className="text-right">Recargo</TableHead>
-                    <TableHead className="text-right">Total a Pagar</TableHead>
-                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-white font-semibold">Folio</TableHead>
+                    <TableHead className="text-white font-semibold">Periodo</TableHead>
+                    <TableHead className="text-white font-semibold">Vencimiento</TableHead>
+                    <TableHead className="text-right text-white font-semibold">Saldo</TableHead>
+                    <TableHead className="text-right text-white font-semibold">Recargo</TableHead>
+                    <TableHead className="text-right text-white font-semibold">Total a Pagar</TableHead>
+                    <TableHead className="text-white font-semibold">Estado</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -341,9 +357,9 @@ export default function CashierPage() {
 
           {/* Formulario de Pago */}
           {recibosSeleccionados.size > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Procesar Pago</CardTitle>
+            <Card className="border-2" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
+              <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
+                <CardTitle style={{ color: '#14356F' }}>Procesar Pago</CardTitle>
                 <CardDescription>
                   Completa la información del pago
                 </CardDescription>
@@ -421,10 +437,20 @@ export default function CashierPage() {
                   </Button>
 
                   <div className="flex gap-2 items-center">
-                    <Button variant="outline" onClick={() => setMonto(totalSeleccionado.toFixed(2))}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setMonto(totalSeleccionado.toFixed(2))}
+                      style={{ borderColor: '#14356F', color: '#14356F' }}
+                    >
                       Aplicar Total
                     </Button>
-                    <Button onClick={procesarPago} disabled={procesando} size="lg">
+                    <Button
+                      onClick={procesarPago}
+                      disabled={procesando}
+                      size="lg"
+                      className="text-white"
+                      style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+                    >
                       <Check className="w-4 h-4 mr-2" />
                       {procesando ? "Procesando..." : `Cobrar ${formatCurrency(parseFloat(monto) || 0)}`}
                     </Button>

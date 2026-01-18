@@ -18,8 +18,11 @@ export default function GradesPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <GraduationCap className="h-8 w-8 text-primary" />
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <GraduationCap className="h-8 w-8" style={{ color: '#14356F' }} />
             </div>
             Calificaciones
           </h1>
@@ -31,13 +34,16 @@ export default function GradesPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+        <Card
+          className="border-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+        >
           <CardHeader className="pb-2">
-            <CardDescription className="text-blue-600 dark:text-blue-400 flex items-center gap-1">
+            <CardDescription className="flex items-center gap-1" style={{ color: '#1e4a8f' }}>
               <BookOpen className="h-4 w-4" />
               Plan Seleccionado
             </CardDescription>
-            <CardTitle className="text-lg text-blue-700 dark:text-blue-300 truncate">
+            <CardTitle className="text-lg truncate" style={{ color: '#14356F' }}>
               {selectedPlanEstudios ? "Activo" : "Ninguno"}
             </CardTitle>
           </CardHeader>

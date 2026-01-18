@@ -1,19 +1,15 @@
 import {
-  ApplyPaymentDto,
-  PaymentApplication,
-  RegisterPaymentDto,
-  RegistrarPagoRequest,
-  PagoRegistrado,
   CancelarPagoRequest,
-  MedioPago,
-  RecibosParaCobro,
-  CorteCaja,
-  ResumenCorteCaja,
   CerrarCorteRequest,
-  Payment,
-  UsuarioCajero,
+  CorteCaja,
   GenerarCorteCajaRequest,
+  MedioPago,
+  PagoRegistrado,
+  RecibosParaCobro,
+  RegistrarPagoRequest,
+  ResumenCorteCaja,
   ResumenCorteCajaDetallado,
+  UsuarioCajero,
 } from "@/types/payment";
 
 import apiClient from "./api-client";
@@ -260,7 +256,7 @@ export async function obtenerMediosPago(): Promise<MedioPago[]> {
   try {
     const { data } = await apiClient.get<MedioPago[]>("/medios-pago");
     return data;
-  } catch (error) {
+  } catch {
     // Si el endpoint no existe, retorna datos mock
     console.warn("⚠️ Endpoint /medios-pago no encontrado. Usando datos mock temporales.");
     return [

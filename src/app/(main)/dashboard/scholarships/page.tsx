@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, Award, Power, Edit } from "lucide-react";
+import { useState } from "react";
+
+import { Plus, Award, Power } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-import { BecaEstudiante } from "@/types/receipt";
 import { listarBecasEstudiante, desactivarBeca } from "@/services/becas-service";
+import { BecaEstudiante } from "@/types/receipt";
+
 import { CreateBecaModal } from "./_components/create-beca-modal";
 
 export default function ScholarshipsPage() {

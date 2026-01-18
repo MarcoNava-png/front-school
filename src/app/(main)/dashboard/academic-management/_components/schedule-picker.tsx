@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
+
 import { Plus, Trash2, Clock, AlertCircle } from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,15 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { HorarioMateria, DiaSemana } from "@/types/group";
 import {
   validateNewSchedule,
   calculateWeeklyHours,
   generateScheduleSummary,
 } from "@/lib/schedule-validation";
+import type { HorarioMateria, DiaSemana } from "@/types/group";
 
 const DIAS_SEMANA: DiaSemana[] = [
   "Lunes",

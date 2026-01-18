@@ -1,4 +1,4 @@
-/* eslint-disable complexity */
+
 "use client";
 import { useCallback, useEffect, useState } from "react";
 
@@ -238,8 +238,11 @@ export default function Page() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Users className="h-8 w-8 text-primary" />
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <Users className="h-8 w-8" style={{ color: '#14356F' }} />
             </div>
             Estudiantes
           </h1>
@@ -258,10 +261,13 @@ export default function Page() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+        <Card
+          className="border-2"
+          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+        >
           <CardHeader className="pb-2">
-            <CardDescription className="text-blue-600 dark:text-blue-400">Total Estudiantes</CardDescription>
-            <CardTitle className="text-4xl text-blue-700 dark:text-blue-300">
+            <CardDescription style={{ color: '#1e4a8f' }}>Total Estudiantes</CardDescription>
+            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
               {totalStudents}
             </CardTitle>
           </CardHeader>

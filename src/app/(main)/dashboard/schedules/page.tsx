@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { Calendar, Clock, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -14,15 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-
 import { getStudyPlans, getAcademicPeriods } from "@/services/catalogs-service";
 import { getAcademicManagement } from "@/services/groups-service";
-import { ScheduleGridView } from "../academic-management/_components/schedule-grid-view";
-
-import type { StudyPlan } from "@/types/catalog";
 import type { AcademicPeriod } from "@/types/academic-period";
+import type { StudyPlan } from "@/types/catalog";
 import type { GestionAcademicaResponse, GrupoMateria } from "@/types/group";
+
+import { ScheduleGridView } from "../academic-management/_components/schedule-grid-view";
 
 export default function SchedulesPage() {
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);

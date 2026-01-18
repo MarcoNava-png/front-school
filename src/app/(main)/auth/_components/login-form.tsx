@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -66,7 +66,7 @@ export function LoginForm() {
                   type="email"
                   placeholder="correo@ejemplo.com"
                   autoComplete="email"
-                  className="h-11 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                  className="h-11 focus-visible:ring-[#14356F]"
                   {...field}
                 />
               </FormControl>
@@ -83,7 +83,7 @@ export function LoginForm() {
                 <FormLabel className="text-sm font-medium">Contraseña</FormLabel>
                 <Link
                   href="/auth/v2/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                  className="text-sm text-[#14356F] hover:text-[#1e4a8f] dark:text-[#5a8fd4] dark:hover:text-[#a3c4e8] transition-colors"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -94,7 +94,7 @@ export function LoginForm() {
                   type="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className="h-11 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400"
+                  className="h-11 focus-visible:ring-[#14356F]"
                   {...field}
                 />
               </FormControl>
@@ -103,7 +103,11 @@ export function LoginForm() {
           )}
         />
         <Button
-          className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium shadow-lg shadow-blue-500/30 transition-all duration-200"
+          className="w-full h-11 text-white font-medium shadow-lg transition-all duration-200"
+          style={{
+            background: 'linear-gradient(to right, #14356F, #1e4a8f)',
+            boxShadow: '0 10px 15px -3px rgba(20, 53, 111, 0.3)',
+          }}
           type="submit"
           disabled={form.formState.isSubmitting}
         >

@@ -1,17 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import { Save, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-import { getStudentsByGroupSubject } from "@/services/groups-service";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   getConcentradoGrupoParcial,
   upsertCalificacion,
@@ -19,9 +18,9 @@ import {
   getCalificacionesPorGrupo,
   getParciales
 } from "@/services/calificaciones-service";
-import { TipoEvaluacion } from "@/types/calificaciones";
+import { getStudentsByGroupSubject } from "@/services/groups-service";
+import { TipoEvaluacion, type Parcial } from "@/types/calificaciones";
 import type { StudentInGroup } from "@/types/group";
-import type { Parcial } from "@/types/calificaciones";
 
 interface TablaCalificacionesMatricialProps {
   grupoMateriaId: number;
@@ -68,7 +67,7 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
           if (actas.length > 0) {
             actasMap[parcial.id] = actas[0].id;
           }
-        } catch (error) {
+        } catch {
           console.log(`No existe acta para parcial ${parcial.id}`);
         }
       }
@@ -81,7 +80,7 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
         try {
           const concentrado = await getConcentradoGrupoParcial(grupoMateriaId, parcial.id);
           calificacionesPorParcial[parcial.id] = concentrado.calificaciones;
-        } catch (error) {
+        } catch {
           calificacionesPorParcial[parcial.id] = [];
         }
       }

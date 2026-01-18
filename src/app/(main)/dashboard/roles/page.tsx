@@ -1,19 +1,25 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { Shield, Check, X, Save, Loader2, ChevronDown, ChevronRight } from "lucide-react"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Shield, Check, X, Save, Loader2, ChevronDown, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import permissionsService from "@/services/permissions-service"
-import type { RoleWithPermissions, ModulePermissions, BulkAssignPermissionsRequest, PermissionAssignment } from "@/types/permissions"
-import { ROLE_LABELS, ROLE_COLORS } from "@/types/permissions"
+import {
+  ROLE_COLORS,
+  ROLE_LABELS,
+  type BulkAssignPermissionsRequest,
+  type ModulePermissions,
+  type PermissionAssignment,
+  type RoleWithPermissions,
+} from "@/types/permissions"
 
 export default function RolesPermissionsPage() {
   const [roles, setRoles] = useState<RoleWithPermissions[]>([])
@@ -186,10 +192,16 @@ export default function RolesPermissionsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8 text-blue-600" />
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <div
+              className="p-2 rounded-lg"
+              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+            >
+              <Shield className="h-8 w-8" style={{ color: '#14356F' }} />
+            </div>
             Roles y Permisos
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -197,7 +209,12 @@ export default function RolesPermissionsPage() {
           </p>
         </div>
         {hasChanges && (
-          <Button onClick={saveChanges} disabled={isSaving}>
+          <Button
+            onClick={saveChanges}
+            disabled={isSaving}
+            className="text-white"
+            style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+          >
             {isSaving ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
@@ -229,13 +246,18 @@ export default function RolesPermissionsPage() {
 
         {roles.map((role) => (
           <TabsContent key={role.roleId} value={role.roleId} className="space-y-4">
-            <Card>
-              <CardHeader>
+            <Card
+              className="border-2"
+              style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}
+            >
+              <CardHeader
+                style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}
+              >
                 <CardTitle className="flex items-center gap-2">
                   <span className={`px-2 py-1 rounded text-sm ${ROLE_COLORS[role.roleName]?.bg || "bg-gray-100"} ${ROLE_COLORS[role.roleName]?.text || "text-gray-700"}`}>
                     {ROLE_LABELS[role.roleName] || role.roleName}
                   </span>
-                  <span>- Configuración de Permisos</span>
+                  <span style={{ color: '#14356F' }}>- Configuración de Permisos</span>
                 </CardTitle>
                 <CardDescription>
                   Selecciona los permisos que tendrá este rol en cada módulo del sistema
@@ -248,17 +270,28 @@ export default function RolesPermissionsPage() {
                     open={expandedModules.has(moduleGroup.module)}
                     onOpenChange={() => toggleModule(moduleGroup.module)}
                   >
-                    <div className="border rounded-lg">
+                    <div
+                      className="border rounded-lg overflow-hidden"
+                      style={{ borderColor: 'rgba(20, 53, 111, 0.15)' }}
+                    >
                       <CollapsibleTrigger asChild>
-                        <div className="flex items-center justify-between p-4 hover:bg-muted/50 cursor-pointer">
+                        <div
+                          className="flex items-center justify-between p-4 cursor-pointer transition-colors"
+                          style={{ background: expandedModules.has(moduleGroup.module) ? 'rgba(20, 53, 111, 0.05)' : 'transparent' }}
+                        >
                           <div className="flex items-center gap-3">
                             {expandedModules.has(moduleGroup.module) ? (
-                              <ChevronDown className="h-5 w-5" />
+                              <ChevronDown className="h-5 w-5" style={{ color: '#14356F' }} />
                             ) : (
-                              <ChevronRight className="h-5 w-5" />
+                              <ChevronRight className="h-5 w-5" style={{ color: '#14356F' }} />
                             )}
-                            <h3 className="font-semibold text-lg">{moduleGroup.module}</h3>
-                            <Badge variant="outline">{moduleGroup.permissions.length} permisos</Badge>
+                            <h3 className="font-semibold text-lg" style={{ color: '#14356F' }}>{moduleGroup.module}</h3>
+                            <Badge
+                              variant="outline"
+                              style={{ borderColor: 'rgba(20, 53, 111, 0.3)', color: '#14356F' }}
+                            >
+                              {moduleGroup.permissions.length} permisos
+                            </Badge>
                           </div>
                           <div className="flex items-center gap-2">
                             <Button
@@ -268,6 +301,7 @@ export default function RolesPermissionsPage() {
                                 e.stopPropagation()
                                 toggleModulePermissions(moduleGroup.module, true)
                               }}
+                              className="text-green-600 border-green-300 hover:bg-green-50"
                             >
                               <Check className="h-4 w-4 mr-1" />
                               Todos
@@ -279,6 +313,7 @@ export default function RolesPermissionsPage() {
                                 e.stopPropagation()
                                 toggleModulePermissions(moduleGroup.module, false)
                               }}
+                              className="text-red-600 border-red-300 hover:bg-red-50"
                             >
                               <X className="h-4 w-4 mr-1" />
                               Ninguno
@@ -290,12 +325,12 @@ export default function RolesPermissionsPage() {
                         <div className="border-t">
                           <table className="w-full">
                             <thead>
-                              <tr className="bg-muted/50">
-                                <th className="text-left p-3 font-medium">Permiso</th>
-                                <th className="text-center p-3 font-medium w-24">Ver</th>
-                                <th className="text-center p-3 font-medium w-24">Crear</th>
-                                <th className="text-center p-3 font-medium w-24">Editar</th>
-                                <th className="text-center p-3 font-medium w-24">Eliminar</th>
+                              <tr style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}>
+                                <th className="text-left p-3 font-semibold text-white">Permiso</th>
+                                <th className="text-center p-3 font-semibold text-white w-24">Ver</th>
+                                <th className="text-center p-3 font-semibold text-white w-24">Crear</th>
+                                <th className="text-center p-3 font-semibold text-white w-24">Editar</th>
+                                <th className="text-center p-3 font-semibold text-white w-24">Eliminar</th>
                               </tr>
                             </thead>
                             <tbody>

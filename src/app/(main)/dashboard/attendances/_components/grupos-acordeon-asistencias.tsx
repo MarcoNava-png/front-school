@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, Users, BookOpen, ClipboardCheck, Calendar } from "lucide-react";
+
+import { ChevronDown, ChevronRight, Users, BookOpen, ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAcademicManagement, getGroupSubjects } from "@/services/groups-service";
-import type { GrupoConMaterias, GrupoMateria } from "@/types/group";
+import type { GrupoConMaterias } from "@/types/group";
 
 import { TablaAsistencias } from "./tabla-asistencias";
 

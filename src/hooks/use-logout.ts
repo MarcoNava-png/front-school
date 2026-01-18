@@ -2,6 +2,7 @@ import { useCallback } from "react";
 
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter } from "next/navigation";
+
 import { clearPermissionsCache } from "./use-permissions";
 
 export function useLogout() {

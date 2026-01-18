@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { useParams } from 'next/navigation'
+
 import {
   AlertTriangle,
   Calendar,
@@ -13,7 +15,6 @@ import {
   User,
   XCircle,
 } from 'lucide-react'
-import { useParams } from 'next/navigation'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'

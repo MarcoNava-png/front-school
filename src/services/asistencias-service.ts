@@ -1,14 +1,12 @@
-import type { DiaSemana } from "@/types/group";
 import type {
-  RegistroAsistencia,
   ResumenAsistencias,
-  AsistenciaPorFecha,
   RegistrarAsistenciaRequest,
   ResumenGrupoMateriaAsistencias,
   AsistenciaEstudiante,
   ValidacionFechaClase,
   DiasClaseMateria,
 } from "@/types/asistencia";
+import type { DiaSemana } from "@/types/group";
 
 // ============================================================================
 // VALIDACIÓN DE DÍAS DE CLASE
@@ -96,7 +94,7 @@ export async function getAsistenciasPorFecha(
  * Obtiene todas las fechas con asistencias registradas para un grupo-materia
  * TODO: Habilitar cuando el backend tenga el endpoint implementado
  */
-export async function getFechasConAsistencias(idGrupoMateria: number): Promise<string[]> {
+export async function getFechasConAsistencias(_idGrupoMateria: number): Promise<string[]> {
   // Mock: devolver algunas fechas de ejemplo
   return [
     "2025-11-18",
@@ -124,7 +122,7 @@ export async function getResumenAsistencias(idGrupoMateria: number): Promise<Res
  */
 export async function getResumenAsistenciasEstudiante(
   idEstudiante: number,
-  idGrupoMateria?: number
+  _idGrupoMateria?: number
 ): Promise<ResumenAsistencias[]> {
   // Mock: devolver datos de ejemplo para el estudiante
   return [
@@ -197,8 +195,8 @@ export async function getEstudiantesConAlerta(idGrupoMateria: number): Promise<R
  * TODO: Reemplazar con API real cuando esté disponible
  */
 export async function getAsistenciasPorFechaMock(
-  idGrupoMateria: number,
-  fecha: string
+  _idGrupoMateria: number,
+  _fecha: string
 ): Promise<AsistenciaEstudiante[]> {
   // Simular delay de red
   await new Promise((resolve) => setTimeout(resolve, 500));
@@ -257,7 +255,7 @@ export async function getAsistenciasPorFechaMock(
  * Función mock para obtener resumen de asistencias
  * TODO: Reemplazar con API real cuando esté disponible
  */
-export async function getResumenAsistenciasMock(idGrupoMateria: number): Promise<ResumenAsistencias[]> {
+export async function getResumenAsistenciasMock(_idGrupoMateria: number): Promise<ResumenAsistencias[]> {
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   return [

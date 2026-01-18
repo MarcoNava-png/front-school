@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { Download, Eye, FileText, Loader2, Plus, QrCode } from 'lucide-react'
+import { Download, FileText, Loader2, Plus, QrCode } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -33,12 +33,14 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import documentosEstudianteService from '@/services/documentos-estudiante-service'
-import type {
-  SolicitudDocumento,
-  TipoDocumento,
-  VarianteDocumento,
+import {
+  ESTATUS_COLORS,
+  ESTATUS_LABELS,
+  VARIANTE_LABELS,
+  type SolicitudDocumento,
+  type TipoDocumento,
+  type VarianteDocumento,
 } from '@/types/documentos-estudiante'
-import { ESTATUS_COLORS, ESTATUS_LABELS, VARIANTE_LABELS } from '@/types/documentos-estudiante'
 
 interface StudentDocumentsModalProps {
   open: boolean

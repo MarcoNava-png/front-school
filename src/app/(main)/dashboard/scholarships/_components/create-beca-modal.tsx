@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -22,9 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
-import { CreateBecaEstudianteDto } from "@/types/receipt";
 import { crearBeca } from "@/services/becas-service";
+import { CreateBecaEstudianteDto } from "@/types/receipt";
 
 interface Props {
   open: boolean;

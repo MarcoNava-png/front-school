@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { FileText, Loader2, Users, CheckCircle, AlertTriangle, Receipt } from "lucide-react";
 import { toast } from "sonner";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -21,9 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -32,7 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { formatCurrency } from "@/lib/payment-utils";
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
 import { generarRecibosMasivo } from "@/services/plantillas-service";
 import { AcademicPeriod } from "@/types/academic-period";
@@ -40,7 +41,6 @@ import {
   PlantillaCobro,
   GenerarRecibosMasivosResult,
 } from "@/types/receipt";
-import { formatCurrency } from "@/lib/payment-utils";
 
 interface Props {
   open: boolean;

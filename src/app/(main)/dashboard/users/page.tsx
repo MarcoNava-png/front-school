@@ -1,26 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil, Trash2, Search, UserPlus } from "lucide-react";
+
+import { Pencil, Trash2, Search, UserPlus, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,12 +16,30 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getAllUsers, deleteUser } from "@/services/users-service";
 import type { User } from "@/types/user";
+
 import { CreateUserModal } from "./_components/create-user-modal";
 import { EditUserModal } from "./_components/edit-user-modal";
+import { ResetPasswordModal } from "./_components/reset-password-modal";
 
 const getRoleBadgeColor = (role: string) => {
   const roleMap: Record<string, string> = {
@@ -71,6 +73,7 @@ export default function UsersPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const loadUsers = async () => {
@@ -79,7 +82,7 @@ export default function UsersPage() {
       const data = await getAllUsers();
       setUsers(data);
       setFilteredUsers(data);
-    } catch (error) {
+    } catch {
       toast.error("Error al cargar usuarios", {
         description: "No se pudieron cargar los usuarios",
       });
@@ -111,7 +114,7 @@ export default function UsersPage() {
         description: `${selectedUser.nombres} ${selectedUser.apellidos} ha sido eliminado`,
       });
       loadUsers();
-    } catch (error) {
+    } catch {
       toast.error("Error al eliminar usuario", {
         description: "No se pudo eliminar el usuario",
       });
@@ -131,12 +134,22 @@ export default function UsersPage() {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleResetPasswordClick = (user: User) => {
+    setSelectedUser(user);
+    setIsResetPasswordModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
+            <h1
+              className="text-3xl font-bold tracking-tight bg-clip-text text-transparent"
+              style={{
+                backgroundImage: 'linear-gradient(to right, #14356F, #1e4a8f)',
+              }}
+            >
               Gestion de Usuarios
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -145,7 +158,10 @@ export default function UsersPage() {
           </div>
           <Button
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-500/30"
+            className="text-white shadow-lg"
+            style={{
+              background: 'linear-gradient(to right, #14356F, #1e4a8f)',
+            }}
           >
             <UserPlus className="h-4 w-4 mr-2" />
             Crear Usuario
@@ -168,7 +184,7 @@ export default function UsersPage() {
               placeholder="Buscar por nombre, apellido o email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 focus-visible:ring-blue-500"
+              className="pl-10 focus-visible:ring-[#14356F]"
             />
           </div>
         </CardContent>
@@ -183,7 +199,11 @@ export default function UsersPage() {
                 {filteredUsers.length} usuario{filteredUsers.length !== 1 ? "s" : ""} encontrado{filteredUsers.length !== 1 ? "s" : ""}
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-blue-600 border-blue-600">
+            <Badge
+              variant="outline"
+              className="border-[#14356F]"
+              style={{ color: '#14356F' }}
+            >
               {users.length} Total
             </Badge>
           </div>
@@ -192,7 +212,10 @@ export default function UsersPage() {
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-center space-y-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div
+                  className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto"
+                  style={{ borderColor: '#14356F' }}
+                ></div>
                 <p className="text-sm text-muted-foreground">Cargando usuarios...</p>
               </div>
             </div>
@@ -201,21 +224,34 @@ export default function UsersPage() {
               <p className="text-muted-foreground">No se encontraron usuarios</p>
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-hidden shadow-md">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="font-semibold">Nombre</TableHead>
-                    <TableHead className="font-semibold">Email</TableHead>
-                    <TableHead className="font-semibold">Rol</TableHead>
-                    <TableHead className="font-semibold">Telefono</TableHead>
-                    <TableHead className="font-semibold">Biografia</TableHead>
-                    <TableHead className="text-right font-semibold">Acciones</TableHead>
+                  <TableRow
+                    className="border-b-0"
+                    style={{
+                      background: 'linear-gradient(to bottom, #14356F, #0f2850)',
+                    }}
+                  >
+                    <TableHead className="font-semibold text-white">Nombre</TableHead>
+                    <TableHead className="font-semibold text-white">Email</TableHead>
+                    <TableHead className="font-semibold text-white">Rol</TableHead>
+                    <TableHead className="font-semibold text-white">Telefono</TableHead>
+                    <TableHead className="font-semibold text-white">Biografia</TableHead>
+                    <TableHead className="text-right font-semibold text-white">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id} className="hover:bg-blue-50/50 dark:hover:bg-blue-950/20">
+                  {filteredUsers.map((user, index) => (
+                    <TableRow
+                      key={user.id}
+                      className="hover:brightness-95 transition-all"
+                      style={{
+                        background: index % 2 === 0
+                          ? 'linear-gradient(to bottom, #FFFFFF, #F0F4F8)'
+                          : 'linear-gradient(to bottom, #E8EEF5, #D6E0EC)'
+                      }}
+                    >
                       <TableCell className="font-medium">
                         {user.nombres} {user.apellidos}
                       </TableCell>
@@ -248,8 +284,18 @@ export default function UsersPage() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => handleResetPasswordClick(user)}
+                            className="hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400"
+                            title="Restablecer contraseña"
+                          >
+                            <KeyRound className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleEdit(user)}
-                            className="hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
+                            className="hover:bg-[#14356F]/10 hover:text-[#14356F] dark:hover:bg-[#14356F]/30 dark:hover:text-[#5a8fd4]"
+                            title="Editar usuario"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -258,6 +304,7 @@ export default function UsersPage() {
                             size="icon"
                             onClick={() => handleDeleteClick(user)}
                             className="hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                            title="Eliminar usuario"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -286,6 +333,13 @@ export default function UsersPage() {
           onSuccess={loadUsers}
         />
       )}
+
+      <ResetPasswordModal
+        open={isResetPasswordModalOpen}
+        onOpenChange={setIsResetPasswordModalOpen}
+        user={selectedUser}
+        onSuccess={loadUsers}
+      />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>

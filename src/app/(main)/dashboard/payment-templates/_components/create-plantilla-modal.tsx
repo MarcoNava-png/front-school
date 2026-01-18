@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -22,9 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
 import { crearPlantilla, actualizarPlantilla, obtenerConceptosPago, obtenerCuatrimestresPorPlan } from "@/services/plantillas-service";
 import { getStudyPlansList } from "@/services/study-plans-service";

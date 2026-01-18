@@ -1,4 +1,3 @@
-import axiosInstance from './api-client'
 import type {
   Permission,
   RoleWithPermissions,
@@ -8,6 +7,8 @@ import type {
   BulkAssignPermissionsRequest,
   RolePermission,
 } from '@/types/permissions'
+
+import axiosInstance from './api-client'
 
 const API_URL = '/permission'
 

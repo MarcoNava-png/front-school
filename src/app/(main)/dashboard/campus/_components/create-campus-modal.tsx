@@ -91,7 +91,7 @@ export const CreateCampusModal: React.FC<CreateCampusModalProps> = ({ open, stat
       setCodigoPostalId("");
       onCreate(campus);
       onClose();
-    } catch (err) {
+    } catch {
       setError("Error al crear campus");
     } finally {
       setLoading(false);

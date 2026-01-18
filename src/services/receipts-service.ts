@@ -34,7 +34,7 @@ export async function getReceiptById(id: number): Promise<Receipt | null> {
   try {
     const { data } = await apiClient.get<Receipt>(`/recibos/${id}`);
     return data;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -48,7 +48,7 @@ export async function buscarReciboPorFolio(folio: string): Promise<Receipt | nul
   try {
     const { data } = await apiClient.get<Receipt>(`/recibos/folio/${folio}`);
     return data;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

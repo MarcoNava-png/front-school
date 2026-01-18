@@ -1,4 +1,3 @@
-import apiClient from "./api-client";
 import type {
   CalificacionParcial,
   CalificacionParcialCreateRequest,
@@ -12,6 +11,8 @@ import type {
   ParcialesRequest,
 } from "@/types/calificaciones";
 import type { PaginatedResponse } from "@/types/paginated-response";
+
+import apiClient from "./api-client";
 
 // ============================================================================
 // PARCIALES (Periodos: P1, P2, P3...)

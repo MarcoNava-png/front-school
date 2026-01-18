@@ -6,68 +6,102 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
   return (
     <main>
       <div className="grid h-dvh justify-center p-2 lg:grid-cols-2">
-        {/* Panel izquierdo con gradiente azul */}
-        <div className="relative order-2 hidden h-full rounded-3xl lg:flex bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 overflow-hidden">
+        {/* Panel izquierdo con gradiente institucional */}
+        <div
+          className="relative order-2 hidden h-full rounded-3xl lg:flex overflow-hidden"
+          style={{
+            background: 'linear-gradient(to bottom right, #14356F, #0f2850, #0a1c38)',
+          }}
+        >
           {/* Decoración de fondo */}
-          <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-grid-white/[0.03] bg-[size:20px_20px]" />
+          <div
+            className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl"
+            style={{ background: 'rgba(90, 143, 212, 0.15)' }}
+          />
+          <div
+            className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl"
+            style={{ background: 'rgba(42, 95, 170, 0.1)' }}
+          />
 
           <div className="relative z-10 flex flex-col justify-between w-full p-10">
-            {/* Header con logo */}
-            <div className="text-white space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="relative bg-white rounded-2xl p-3 shadow-2xl">
-                  <Image
-                    src="/Logousag.png"
-                    alt="Logo USAG"
-                    width={80}
-                    height={80}
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold leading-tight">Colegio de San Andrés</h1>
-                  <h2 className="text-xl font-semibold text-blue-100">de Guanajuato</h2>
-                </div>
+            {/* Header con logo grande */}
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="relative bg-white rounded-3xl p-6 shadow-2xl mb-8 transform hover:scale-105 transition-transform duration-300">
+                <Image
+                  src="/Logousag.png"
+                  alt="Logo USAG"
+                  width={200}
+                  height={200}
+                  className="object-contain w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64"
+                  priority
+                />
               </div>
-              <p className="text-blue-100 text-sm font-medium">Sistema de Gestión Escolar</p>
-            </div>
-
-            {/* Contenido central */}
-            <div className="text-white space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl font-semibold">Bienvenido de vuelta</h2>
-                <p className="text-blue-100 text-lg">
-                  Gestiona tu institución educativa de manera eficiente y moderna
+              <div className="text-center text-white space-y-3">
+                <h1 className="text-3xl xl:text-4xl font-bold leading-tight">
+                  Colegio de San Andrés
+                </h1>
+                <h2
+                  className="text-2xl xl:text-3xl font-semibold"
+                  style={{ color: '#a3c4e8' }}
+                >
+                  de Guanajuato
+                </h2>
+                <p
+                  className="text-sm font-medium mt-4"
+                  style={{ color: '#5a8fd4' }}
+                >
+                  Sistema de Gestión Escolar
                 </p>
               </div>
+            </div>
 
-              <div className="grid gap-4 mt-8">
-                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20">
-                  <div className="w-2 h-2 rounded-full bg-blue-300 mt-2" />
+            {/* Características */}
+            <div className="text-white space-y-4 mt-8">
+              <div className="grid gap-3">
+                <div
+                  className="flex items-center gap-3 backdrop-blur-sm p-4 rounded-xl border"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                  }}
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: '#5a8fd4' }}
+                  />
                   <div>
-                    <h3 className="font-medium mb-1">Gestión Académica</h3>
-                    <p className="text-sm text-blue-100">Control total de estudiantes, grupos y calificaciones</p>
+                    <h3 className="font-medium text-sm">Gestión Académica Integral</h3>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20">
-                  <div className="w-2 h-2 rounded-full bg-blue-300 mt-2" />
+                <div
+                  className="flex items-center gap-3 backdrop-blur-sm p-4 rounded-xl border"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                  }}
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: '#5a8fd4' }}
+                  />
                   <div>
-                    <h3 className="font-medium mb-1">Sistema de Cobros</h3>
-                    <p className="text-sm text-blue-100">Administra colegiaturas y pagos de forma sencilla</p>
+                    <h3 className="font-medium text-sm">Sistema de Cobros y Finanzas</h3>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between text-blue-100 text-sm">
-              <div>
+            <div
+              className="flex items-center justify-center text-sm mt-8 pt-6 border-t"
+              style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+            >
+              <div className="text-center">
                 <p className="font-medium text-white">Versión 1.0.0</p>
-                <p className="text-xs">© 2025 Colegio de San Andrés de Guanajuato</p>
-                <p className="text-xs mt-0.5">Todos los derechos reservados</p>
+                <p className="text-xs" style={{ color: '#a3c4e8' }}>
+                  © 2025 Colegio de San Andrés de Guanajuato
+                </p>
               </div>
             </div>
           </div>
