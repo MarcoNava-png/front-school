@@ -563,15 +563,22 @@ export default function ImportarEstudiantesPage() {
                   Actualizar estudiantes existentes (por matricula)
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start space-x-2">
                 <Checkbox
                   id="inscribir"
                   checked={inscribirAGrupo}
                   onCheckedChange={(checked) => setInscribirAGrupo(checked === true)}
+                  className="mt-1"
                 />
-                <Label htmlFor="inscribir" className="cursor-pointer">
-                  Inscribir automaticamente al grupo indicado
-                </Label>
+                <div>
+                  <Label htmlFor="inscribir" className="cursor-pointer">
+                    Inscribir automáticamente al grupo indicado
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Crea el grupo si no existe (requiere columnas Periodo y Grupo).
+                    Formato Grupo: &quot;31&quot; = Turno 3, Grupo 1
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

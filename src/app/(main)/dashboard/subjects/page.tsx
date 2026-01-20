@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { BookOpen, Edit, GraduationCap, Hash, Search, Trash2 } from "lucide-react";
+import { BookOpen, Edit, GraduationCap, Hash, Search, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
@@ -19,10 +19,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deleteMatterPlan, getMatterPlanList } from "@/services/matter-plan-service";
+import { getStudyPlansList } from "@/services/study-plans-service";
 import { MatterPlan } from "@/types/matter-plan";
+import { StudyPlan } from "@/types/study-plan";
 
 import { CreateSubjectDialog } from "./_components/create-subject-dialog";
 import { EditSubjectDialog } from "./_components/edit-subject-dialog";
+import { ImportSubjectsModal } from "./_components/import-subjects-modal";
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState<MatterPlan[]>([]);
@@ -35,10 +38,22 @@ export default function SubjectsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [subjectToEdit, setSubjectToEdit] = useState<MatterPlan | null>(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [planes, setPlanes] = useState<StudyPlan[]>([]);
 
   useEffect(() => {
     loadSubjects();
+    loadPlanes();
   }, []);
+
+  const loadPlanes = async () => {
+    try {
+      const res = await getStudyPlansList(1, 100);
+      setPlanes(res?.data ?? []);
+    } catch {
+      // Silently fail - planes are optional for import
+    }
+  };
 
   const loadSubjects = async () => {
     setLoading(true);
@@ -142,7 +157,17 @@ export default function SubjectsPage() {
             Gestiona el catálogo de materias del plan de estudios
           </p>
         </div>
-        <CreateSubjectDialog open={open} setOpen={setOpen} />
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setImportModalOpen(true)}
+            className="gap-2"
+          >
+            <Upload className="h-4 w-4" />
+            Importar
+          </Button>
+          <CreateSubjectDialog open={open} setOpen={setOpen} />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -315,6 +340,13 @@ export default function SubjectsPage() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         subject={subjectToEdit}
+        onSuccess={loadSubjects}
+      />
+
+      <ImportSubjectsModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        planes={planes}
         onSuccess={loadSubjects}
       />
     </div>

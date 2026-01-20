@@ -121,6 +121,27 @@ export const importacionService = {
     )
     return response.data
   },
+
+  // ========================================
+  // Importación de Materias
+  // ========================================
+
+  async importarMaterias(
+    request: ImportarMateriasRequest
+  ): Promise<ImportarMateriasResponse> {
+    const response = await axiosInstance.post<{ data: ImportarMateriasResponse }>(
+      '/materiaplan/importar',
+      request
+    )
+    return response.data.data
+  },
+
+  async getMateriasPorPlan(idPlanEstudios: number): Promise<unknown[]> {
+    const response = await axiosInstance.get<{ data: unknown[] }>(
+      `/materiaplan/por-plan/${idPlanEstudios}`
+    )
+    return response.data.data
+  },
 }
 
 // ========================================
@@ -197,6 +218,53 @@ export interface ImportarPlanesEstudiosResponse {
   fallidos: number
   actualizados: number
   resultados: ResultadoImportacionPlanEstudios[]
+}
+
+// ========================================
+// Interfaces para Importación de Materias
+// ========================================
+
+export interface MateriaImportItem {
+  clave: string
+  nombre: string
+  creditos: number
+  horasTeoria?: number
+  horasPractica?: number
+  grado: string
+  esOptativa?: boolean
+  campus?: string
+  curso?: string
+}
+
+export interface ImportarMateriasRequest {
+  idPlanEstudios?: number
+  clavePlanEstudios?: string
+  materias: MateriaImportItem[]
+}
+
+export interface ImportarMateriaResultItem {
+  clave: string
+  nombre: string
+  cuatrimestre: number
+  estado: string
+  mensajeError?: string
+  idMateria?: number
+  idMateriaPlan?: number
+}
+
+export interface ImportarMateriasResponse {
+  exito: boolean
+  mensaje: string
+  idPlanEstudios?: number
+  clavePlanEstudios?: string
+  nombrePlanEstudios?: string
+  totalProcesadas: number
+  materiasCreadas: number
+  materiasExistentes: number
+  asignacionesCreadas: number
+  asignacionesExistentes: number
+  errores: number
+  detalle: ImportarMateriaResultItem[]
 }
 
 export default importacionService
