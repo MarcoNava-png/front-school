@@ -142,6 +142,26 @@ export const importacionService = {
     )
     return response.data.data
   },
+
+  // Validar materias antes de importar
+  async validarMaterias(materias: ImportarMateriaDto[]): Promise<ValidarMateriasResponse> {
+    const response = await axiosInstance.post<{ data: ValidarMateriasResponse }>(
+      '/materiaplan/validar',
+      { materias }
+    )
+    return response.data.data
+  },
+
+  // Descargar plantilla de materias
+  async descargarPlantillaMaterias(idPlanEstudios?: number): Promise<Blob> {
+    const url = idPlanEstudios
+      ? `/materiaplan/plantilla?idPlanEstudios=${idPlanEstudios}`
+      : '/materiaplan/plantilla'
+    const response = await axiosInstance.get(url, {
+      responseType: 'blob'
+    })
+    return response.data
+  },
 }
 
 // ========================================
@@ -224,6 +244,43 @@ export interface ImportarPlanesEstudiosResponse {
 // Interfaces para Importación de Materias
 // ========================================
 
+// DTO para importar una materia desde archivo Excel/CSV
+export interface ImportarMateriaDto {
+  clave: string
+  nombre: string
+  planEstudios: string
+  cuatrimestre: string
+  creditos?: number
+  horasTeoria?: number
+  horasPractica?: number
+  esOptativa?: string
+  tipo?: string
+}
+
+// Resultado de validación de materias
+export interface ResultadoValidacionMateria {
+  fila: number
+  clave: string
+  nombre: string
+  planEstudios: string
+  cuatrimestre: number
+  exito: boolean
+  mensaje: string
+  advertencias: string[]
+}
+
+// Respuesta de validación de materias
+export interface ValidarMateriasResponse {
+  esValido: boolean
+  totalRegistros: number
+  registrosValidos: number
+  registrosConErrores: number
+  planesEncontrados: string[]
+  planesNoEncontrados: string[]
+  clavesDuplicadas: string[]
+  detalleValidacion: ResultadoValidacionMateria[]
+}
+
 export interface MateriaImportItem {
   clave: string
   nombre: string
@@ -239,7 +296,9 @@ export interface MateriaImportItem {
 export interface ImportarMateriasRequest {
   idPlanEstudios?: number
   clavePlanEstudios?: string
-  materias: MateriaImportItem[]
+  materias: MateriaImportItem[] | ImportarMateriaDto[]
+  actualizarExistentes?: boolean
+  crearRelacionSiExiste?: boolean
 }
 
 export interface ImportarMateriaResultItem {
@@ -252,6 +311,17 @@ export interface ImportarMateriaResultItem {
   idMateriaPlan?: number
 }
 
+export interface ImportarMateriasResultado {
+  fila: number
+  clave: string
+  nombre: string
+  planEstudios: string
+  cuatrimestre: number
+  exito: boolean
+  mensaje: string
+  advertencias: string[]
+}
+
 export interface ImportarMateriasResponse {
   exito: boolean
   mensaje: string
@@ -259,12 +329,17 @@ export interface ImportarMateriasResponse {
   clavePlanEstudios?: string
   nombrePlanEstudios?: string
   totalProcesadas: number
+  totalProcesados: number
   materiasCreadas: number
+  materiasActualizadas: number
   materiasExistentes: number
   asignacionesCreadas: number
+  relacionesCreadas: number
   asignacionesExistentes: number
   errores: number
+  fallidos: number
   detalle: ImportarMateriaResultItem[]
+  resultados: ImportarMateriasResultado[]
 }
 
 export default importacionService

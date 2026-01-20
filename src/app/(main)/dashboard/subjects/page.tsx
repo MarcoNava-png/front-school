@@ -49,7 +49,7 @@ export default function SubjectsPage() {
   const loadPlanes = async () => {
     try {
       const res = await getStudyPlansList(1, 100);
-      setPlanes(res?.data ?? []);
+      setPlanes(res?.items ?? []);
     } catch {
       // Silently fail - planes are optional for import
     }
