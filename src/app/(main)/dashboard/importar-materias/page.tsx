@@ -61,6 +61,10 @@ const COLUMN_MAPPING: Record<string, keyof ImportarMateriaDto> = {
   plan: 'planEstudios',
   curso: 'planEstudios',
   carrera: 'planEstudios',
+  clavecampus: 'claveCampus',
+  'clave campus': 'claveCampus',
+  campus: 'claveCampus',
+  sede: 'claveCampus',
   cuatrimestre: 'cuatrimestre',
   grado: 'cuatrimestre',
   semestre: 'cuatrimestre',
@@ -266,10 +270,11 @@ export default function ImportarMateriasPage() {
 
   const downloadLocalTemplate = () => {
     const template = [
-      ['Clave', 'Nombre', 'PlanEstudios', 'Cuatrimestre', 'Creditos', 'HorasTeoria', 'HorasPractica', 'EsOptativa', 'Tipo'],
-      ['EECI101', 'Fundamentos Básicos De Enfermería', 'Especialidad En Cuidados Intensivos', '1', '6', '4', '2', 'No', 'Formación Académica'],
-      ['EECI102', 'Fisiopatología I', 'Especialidad En Cuidados Intensivos', '1', '6', '4', '2', 'No', 'Formación Académica'],
-      ['EECI201', 'Cuidados Intensivos I', 'Especialidad En Cuidados Intensivos', '2', '8', '4', '4', 'No', 'Formación Académica'],
+      ['Clave', 'Nombre', 'PlanEstudios', 'ClaveCampus', 'Cuatrimestre', 'Creditos', 'HorasTeoria', 'HorasPractica', 'EsOptativa', 'Tipo'],
+      ['EECI101', 'Fundamentos Básicos De Enfermería', 'Especialidad En Cuidados Intensivos', 'NORTE', '1', '6', '4', '2', 'No', 'Formación Académica'],
+      ['EECI101', 'Fundamentos Básicos De Enfermería', 'Especialidad En Cuidados Intensivos', 'SUR', '1', '6', '4', '2', 'No', 'Formación Académica'],
+      ['EECI102', 'Fisiopatología I', 'Especialidad En Cuidados Intensivos', 'NORTE', '1', '6', '4', '2', 'No', 'Formación Académica'],
+      ['EECI201', 'Cuidados Intensivos I', 'Especialidad En Cuidados Intensivos', 'NORTE', '2', '8', '4', '4', 'No', 'Formación Académica'],
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(template)
@@ -283,7 +288,8 @@ export default function ImportarMateriasPage() {
       ['Columnas requeridas:'],
       ['• Clave: Clave única de la materia (ej: MAT101)'],
       ['• Nombre: Nombre completo de la materia'],
-      ['• PlanEstudios: Nombre exacto del plan de estudios'],
+      ['• PlanEstudios: Nombre o clave del plan de estudios'],
+      ['• ClaveCampus: Clave del campus (ej: NORTE, SUR, CENTRO)'],
       ['• Cuatrimestre: Número (1, 2, 3) o texto (1ero., 2do.)'],
       [''],
       ['Columnas opcionales:'],
@@ -292,6 +298,11 @@ export default function ImportarMateriasPage() {
       ['• HorasPractica: Horas de práctica por semana'],
       ['• EsOptativa: Si/No'],
       ['• Tipo: Tipo de materia (informativo)'],
+      [''],
+      ['NOTA IMPORTANTE:'],
+      ['Si deseas asignar la misma materia a varios campus,'],
+      ['duplica la fila cambiando solo la columna ClaveCampus.'],
+      ['La materia se creará una sola vez y se asignará a cada plan.'],
     ]
     const wsInstruc = XLSX.utils.aoa_to_sheet(instrucciones)
     XLSX.utils.book_append_sheet(wb, wsInstruc, 'Instrucciones')
@@ -434,6 +445,7 @@ export default function ImportarMateriasPage() {
                     <TableHead>Clave</TableHead>
                     <TableHead>Nombre</TableHead>
                     <TableHead>Plan de Estudios</TableHead>
+                    <TableHead>Campus</TableHead>
                     <TableHead>Cuatri</TableHead>
                     <TableHead>Créditos</TableHead>
                     <TableHead>HT</TableHead>
@@ -449,6 +461,7 @@ export default function ImportarMateriasPage() {
                       <TableCell className="max-w-[200px] truncate" title={mat.planEstudios}>
                         {mat.planEstudios}
                       </TableCell>
+                      <TableCell className="font-mono">{mat.claveCampus}</TableCell>
                       <TableCell>{mat.cuatrimestre}</TableCell>
                       <TableCell>{mat.creditos ?? 0}</TableCell>
                       <TableCell>{mat.horasTeoria ?? 0}</TableCell>

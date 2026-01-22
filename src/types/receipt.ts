@@ -324,7 +324,7 @@ export interface ReciboEstudianteResumen {
   recibosGenerados: number;
   montoTotal: number;
   descuentoBecas: number;
-  montoFinal: number;
+  saldoFinal: number;
 }
 
 export interface GenerarRecibosMasivosResult {

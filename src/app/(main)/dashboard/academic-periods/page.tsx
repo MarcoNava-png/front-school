@@ -2,12 +2,29 @@
 
 import { useEffect, useState } from "react";
 
-import { Calendar, CalendarCheck, CalendarClock, CalendarX, Search, Star } from "lucide-react";
+import { Calendar, CalendarCheck, CalendarClock, CalendarX, Search, Star, Pencil, Trash2, MoreHorizontal, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -17,10 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAcademicPeriodsList } from "@/services/academic-period-service";
+import { getAcademicPeriodsList, deleteAcademicPeriod, updateAcademicPeriod } from "@/services/academic-period-service";
 import { AcademicPeriod } from "@/types/academic-period";
 
 import { CreateAcademicPeriodDialog } from "./_components/create-academic-period-dialog";
+import { EditAcademicPeriodDialog } from "./_components/edit-academic-period-dialog";
 import { SetCurrentPeriod } from "./_components/set-current-period";
 
 export default function AcademicPeriodsPage() {
@@ -29,6 +47,13 @@ export default function AcademicPeriodsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
+
+  // Estados para edición y eliminación
+  const [editOpen, setEditOpen] = useState(false);
+  const [periodToEdit, setPeriodToEdit] = useState<AcademicPeriod | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [periodToDelete, setPeriodToDelete] = useState<AcademicPeriod | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadAcademicPeriods = async () => {
     setLoading(true);
@@ -67,6 +92,37 @@ export default function AcademicPeriodsPage() {
       month: "short",
       year: "numeric"
     });
+  };
+
+  // Manejadores de acciones
+  const handleEdit = (period: AcademicPeriod) => {
+    setPeriodToEdit(period);
+    setEditOpen(true);
+  };
+
+  const handleDeleteClick = (period: AcademicPeriod) => {
+    setPeriodToDelete(period);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!periodToDelete) return;
+
+    setDeleting(true);
+    try {
+      await deleteAcademicPeriod(periodToDelete.idPeriodoAcademico);
+      toast.success("Periodo académico eliminado exitosamente");
+      loadAcademicPeriods();
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error
+        ? err.message
+        : (err as { response?: { data?: { Error?: string } } })?.response?.data?.Error ?? "Error al eliminar el periodo académico";
+      toast.error(errorMessage);
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+      setPeriodToDelete(null);
+    }
   };
 
   if (loading) {
@@ -113,7 +169,7 @@ export default function AcademicPeriodsPage() {
             Gestiona los periodos académicos de la institución
           </p>
         </div>
-        <CreateAcademicPeriodDialog open={open} setOpen={setOpen} />
+        <CreateAcademicPeriodDialog open={open} setOpen={setOpen} onSuccess={loadAcademicPeriods} />
       </div>
 
       {/* Stats Cards */}
@@ -196,12 +252,13 @@ export default function AcademicPeriodsPage() {
                 <TableHead className="font-semibold text-white">Fecha Inicio</TableHead>
                 <TableHead className="font-semibold text-white">Fecha Fin</TableHead>
                 <TableHead className="font-semibold text-white text-center">Estado</TableHead>
+                <TableHead className="font-semibold text-white text-center w-[80px]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredPeriods.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
+                  <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <Calendar className="h-8 w-8" />
                       <span>No se encontraron periodos académicos</span>
@@ -268,6 +325,30 @@ export default function AcademicPeriodsPage() {
                         Activo
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(period)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(period)}
+                            className="text-red-600 focus:text-red-600"
+                            disabled={period.esPeriodoActual}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -275,6 +356,49 @@ export default function AcademicPeriodsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Diálogo de edición */}
+      {periodToEdit && (
+        <EditAcademicPeriodDialog
+          open={editOpen}
+          setOpen={setEditOpen}
+          period={periodToEdit}
+          onSuccess={() => {
+            loadAcademicPeriods();
+            setPeriodToEdit(null);
+          }}
+        />
+      )}
+
+      {/* Diálogo de confirmación de eliminación */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar periodo académico?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará el periodo académico &quot;{periodToDelete?.nombre}&quot;.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                "Eliminar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

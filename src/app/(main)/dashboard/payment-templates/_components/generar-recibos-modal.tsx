@@ -180,7 +180,7 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[600px] lg:max-w-[800px] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-[600px] lg:max-w-[800px] p-0">
         <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
           <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Receipt className="h-5 w-5 text-blue-600 flex-shrink-0" />
@@ -191,7 +191,7 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 px-4 sm:px-6">
+        <div className="px-4 sm:px-6 overflow-y-auto max-h-[60vh]">
           {/* Información de la plantilla */}
           <div className="bg-blue-50 p-3 sm:p-4 rounded-lg space-y-2 border border-blue-100 mb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -362,7 +362,7 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                                       : "-"}
                                   </TableCell>
                                   <TableCell className="text-right text-xs font-semibold">
-                                    {formatCurrency(estudiante.montoFinal)}
+                                    {formatCurrency(estudiante.saldoFinal)}
                                   </TableCell>
                                 </TableRow>
                               ))}
@@ -402,7 +402,7 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                               </div>
                               <div>
                                 <span className="text-muted-foreground">Total</span>
-                                <p className="font-bold text-green-700">{formatCurrency(estudiante.montoFinal)}</p>
+                                <p className="font-bold text-green-700">{formatCurrency(estudiante.saldoFinal)}</p>
                               </div>
                             </div>
                           </div>
@@ -517,60 +517,62 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
               )}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
-        <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t bg-gray-50 flex-col sm:flex-row gap-2">
-          {step === "config" && (
-            <>
+        <div className="px-4 sm:px-6 py-4 border-t bg-gray-50">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            {step === "config" && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  className="w-full sm:w-auto"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handlePreview}
+                  disabled={loading || !idPeriodoAcademico}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Vista Previa
+                </Button>
+              </>
+            )}
+
+            {step === "preview" && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep("config")}
+                  className="w-full sm:w-auto"
+                >
+                  Volver
+                </Button>
+                <Button
+                  onClick={handleGenerar}
+                  disabled={loading || !previewResult?.totalEstudiantes}
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Generar {previewResult?.totalRecibosGenerados ?? 0} Recibos
+                </Button>
+              </>
+            )}
+
+            {step === "result" && (
               <Button
-                type="button"
-                variant="outline"
                 onClick={handleClose}
-                className="w-full sm:w-auto order-2 sm:order-1"
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
               >
-                Cancelar
+                Cerrar
               </Button>
-              <Button
-                onClick={handlePreview}
-                disabled={loading || !idPeriodoAcademico}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white order-1 sm:order-2"
-              >
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Vista Previa
-              </Button>
-            </>
-          )}
-
-          {step === "preview" && (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setStep("config")}
-                className="w-full sm:w-auto order-2 sm:order-1"
-              >
-                Volver
-              </Button>
-              <Button
-                onClick={handleGenerar}
-                disabled={loading || !previewResult?.totalEstudiantes}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white order-1 sm:order-2"
-              >
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Generar {previewResult?.totalRecibosGenerados ?? 0} Recibos
-              </Button>
-            </>
-          )}
-
-          {step === "result" && (
-            <Button
-              onClick={handleClose}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Cerrar
-            </Button>
-          )}
-        </DialogFooter>
+            )}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

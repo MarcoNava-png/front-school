@@ -122,7 +122,7 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, onSuccess
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5" style={{ color: '#14356F' }} />
             Crear Nuevo Grupo
           </DialogTitle>
           <DialogDescription>
@@ -219,7 +219,7 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, onSuccess
           </div>
 
           {/* Cargar materias automáticamente */}
-          <div className="flex items-center space-x-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center space-x-2 p-4 rounded-lg" style={{ backgroundColor: 'rgba(20, 53, 111, 0.05)', border: '1px solid rgba(20, 53, 111, 0.2)' }}>
             <Checkbox id="cargarMaterias" checked={cargarMaterias} onCheckedChange={(checked) => setCargarMaterias(!!checked)} />
             <div className="grid gap-1.5 leading-none">
               <label
@@ -251,7 +251,12 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, onSuccess
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="text-white"
+              style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+            >
               {loading ? "Creando..." : "Crear Grupo"}
             </Button>
           </div>

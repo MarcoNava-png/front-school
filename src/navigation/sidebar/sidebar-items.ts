@@ -13,6 +13,7 @@ import {
   Receipt,
   Shield,
   UserCircle,
+  UserPlus,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -130,6 +131,13 @@ export const sidebarItems: NavGroup[] = [
         title: "Importar Estudiantes",
         url: "/dashboard/importar-estudiantes",
         icon: FileSpreadsheet,
+        requiredModule: "Estudiantes",
+        isNew: true,
+      },
+      {
+        title: "Inscribir a Grupos",
+        url: "/dashboard/inscribir-estudiantes-grupo",
+        icon: UserPlus,
         requiredModule: "Estudiantes",
         isNew: true,
       },

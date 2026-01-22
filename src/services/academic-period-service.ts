@@ -39,3 +39,19 @@ export async function setCurrentAcademicPeriod(idPeriodoAcademico: number): Prom
   );
   return data;
 }
+
+/**
+ * Obtiene un periodo académico por ID
+ */
+export async function getAcademicPeriodById(id: number): Promise<AcademicPeriod> {
+  const { data } = await apiClient.get<AcademicPeriod>(`/PeriodoAcademico/${id}`);
+  return data;
+}
+
+/**
+ * Elimina un periodo académico (soft delete)
+ */
+export async function deleteAcademicPeriod(id: number): Promise<{ mensaje: string }> {
+  const { data } = await apiClient.delete<{ mensaje: string }>(`/PeriodoAcademico/${id}`);
+  return data;
+}

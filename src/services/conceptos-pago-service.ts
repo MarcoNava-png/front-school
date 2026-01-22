@@ -39,125 +39,22 @@ export interface ConceptoPagoFilters {
 export async function listarConceptosPago(
   filters?: ConceptoPagoFilters
 ): Promise<ConceptoPago[]> {
-  try {
-    const params = new URLSearchParams();
+  const params = new URLSearchParams();
 
-    if (filters?.soloActivos !== undefined) {
-      params.append("soloActivos", filters.soloActivos.toString());
-    }
-    if (filters?.tipo) {
-      params.append("tipo", filters.tipo);
-    }
-    if (filters?.busqueda) {
-      params.append("busqueda", filters.busqueda);
-    }
-
-    const { data } = await apiClient.get<ConceptoPago[]>(
-      `/Conceptos?${params.toString()}`
-    );
-    return data;
-  } catch {
-    console.warn("⚠️ Endpoint /Conceptos no encontrado. Usando datos mock temporales.");
-
-    // Datos mock temporales para desarrollo
-    const mockConceptos: ConceptoPago[] = [
-      {
-        idConceptoPago: 1,
-        clave: "INSC-2024",
-        nombre: "Inscripción Cuatrimestral",
-        descripcion: "Pago de inscripción al inicio del cuatrimestre",
-        tipo: "INSCRIPCION",
-        permiteBeca: true,
-        status: 1,
-      },
-      {
-        idConceptoPago: 2,
-        clave: "COLE-2024",
-        nombre: "Colegiatura Mensual",
-        descripcion: "Pago mensual de colegiatura",
-        tipo: "COLEGIATURA",
-        permiteBeca: true,
-        status: 1,
-      },
-      {
-        idConceptoPago: 3,
-        clave: "MAT-DID",
-        nombre: "Material Didáctico",
-        descripcion: "Pago por material didáctico del cuatrimestre",
-        tipo: "OTRO",
-        permiteBeca: true,
-        status: 1,
-      },
-      {
-        idConceptoPago: 4,
-        clave: "SEG-ESC",
-        nombre: "Seguro Escolar",
-        descripcion: "Seguro de accidentes escolares",
-        tipo: "SEGURO",
-        permiteBeca: false,
-        status: 1,
-      },
-      {
-        idConceptoPago: 5,
-        clave: "EXAM-EXT",
-        nombre: "Examen Extraordinario",
-        descripcion: "Pago por examen extraordinario",
-        tipo: "EXAMEN",
-        permiteBeca: false,
-        status: 1,
-      },
-      {
-        idConceptoPago: 6,
-        clave: "CONST-EST",
-        nombre: "Constancia de Estudios",
-        descripcion: "Emisión de constancia de estudios",
-        tipo: "CONSTANCIA",
-        permiteBeca: false,
-        status: 1,
-      },
-      {
-        idConceptoPago: 7,
-        clave: "CRED-2024",
-        nombre: "Credencial Escolar",
-        descripcion: "Emisión de credencial escolar",
-        tipo: "CREDENCIAL",
-        permiteBeca: false,
-        status: 1,
-      },
-      {
-        idConceptoPago: 8,
-        clave: "REINSC-2024",
-        nombre: "Reinscripción",
-        descripcion: "Pago de reinscripción para cuatrimestres posteriores",
-        tipo: "INSCRIPCION",
-        permiteBeca: true,
-        status: 1,
-      },
-    ];
-
-    // Aplicar filtros a los datos mock
-    let filteredData = mockConceptos;
-
-    if (filters?.soloActivos) {
-      filteredData = filteredData.filter((c) => c.status === 1);
-    }
-
-    if (filters?.tipo && filters.tipo !== "TODOS") {
-      filteredData = filteredData.filter((c) => c.tipo === filters.tipo);
-    }
-
-    if (filters?.busqueda) {
-      const busqueda = filters.busqueda.toLowerCase();
-      filteredData = filteredData.filter(
-        (c) =>
-          c.nombre.toLowerCase().includes(busqueda) ||
-          c.clave.toLowerCase().includes(busqueda) ||
-          (c.descripcion && c.descripcion.toLowerCase().includes(busqueda))
-      );
-    }
-
-    return filteredData;
+  if (filters?.soloActivos !== undefined) {
+    params.append("soloActivos", filters.soloActivos.toString());
   }
+  if (filters?.tipo) {
+    params.append("tipo", filters.tipo);
+  }
+  if (filters?.busqueda) {
+    params.append("busqueda", filters.busqueda);
+  }
+
+  const { data } = await apiClient.get<ConceptoPago[]>(
+    `/Conceptos?${params.toString()}`
+  );
+  return data;
 }
 
 /**

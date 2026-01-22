@@ -193,6 +193,59 @@ export async function generarRecibosMasivo(
 }
 
 // ============================================================================
+// PREVIEW DE RECIBOS
+// ============================================================================
+
+export interface PreviewConcepto {
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  aplicaEnRecibo: number | null; // null = todos, 1 = primero, -1 = último
+}
+
+export interface PreviewRecibosRequest {
+  numeroRecibos: number;
+  diaVencimiento: number;
+  fechaInicioPeriodo?: string;
+  conceptos: PreviewConcepto[];
+}
+
+export interface ReciboPreview {
+  numeroRecibo: number;
+  fechaVencimiento: string;
+  mesCorrespondiente: string;
+  conceptos: {
+    concepto: string;
+    cantidad: number;
+    precioUnitario: number;
+    importe: number;
+  }[];
+  subtotal: number;
+}
+
+export interface PreviewRecibosResponse {
+  recibos: ReciboPreview[];
+  totalPrimerRecibo: number;
+  totalRecibosRegulares: number;
+  totalGeneral: number;
+}
+
+/**
+ * Genera una vista previa de cómo se distribuirán los recibos
+ * @param request Datos para generar la preview
+ * @returns Vista previa de los recibos
+ */
+export async function generarPreviewRecibos(
+  request: PreviewRecibosRequest
+): Promise<PreviewRecibosResponse> {
+  const { data } = await apiClient.post<PreviewRecibosResponse>(
+    "/plantillas-cobro/preview-recibos",
+    request
+  );
+  return data;
+}
+
+// ============================================================================
 // SERVICIOS DE CONCEPTOS DE PAGO
 // ============================================================================
 

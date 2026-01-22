@@ -16,35 +16,47 @@ export function VistaPreviaModal({ plantilla, open, onClose }: Props) {
   // Calcular vista previa de recibos
   const generarVistaPreviaRecibos = () => {
     const recibos = [];
-    const hoy = new Date();
+
+    // Obtener fecha base del periodo o usar fecha actual
+    let fechaBase: Date;
+    if (plantilla.fechaVigenciaInicio) {
+      // Parsear fecha evitando problemas de timezone
+      const fechaParte = plantilla.fechaVigenciaInicio.split("T")[0];
+      const [year, month, day] = fechaParte.split("-").map(Number);
+      fechaBase = new Date(year, month - 1, day);
+    } else {
+      fechaBase = new Date();
+    }
 
     for (let i = 0; i < plantilla.numeroRecibos; i++) {
-      const mes = new Date(hoy.getFullYear(), hoy.getMonth() + i, plantilla.diaVencimiento);
+      // Calcular fecha de vencimiento para este recibo
+      const mes = new Date(fechaBase.getFullYear(), fechaBase.getMonth() + i, plantilla.diaVencimiento);
 
+      // Filtrar conceptos que aplican a este recibo
+      // aplicaEnRecibo: null = todos, 1 = primero, -1 = último, N = recibo específico
+      const numeroRecibo = i + 1;
       const conceptos = plantilla.detalles
-        ?.filter((detalle: any) => {
-          switch (detalle.distribucion) {
-            case "TODOS_LOS_RECIBOS":
-              return true;
-            case "PRIMER_RECIBO":
-              return i === 0;
-            case "ULTIMO_RECIBO":
-              return i === plantilla.numeroRecibos - 1;
-            case "RECIBO_ESPECIFICO":
-              return detalle.numeroRecibo === i + 1;
-            default:
-              return false;
-          }
+        ?.filter((detalle) => {
+          const aplicaEn = detalle.aplicaEnRecibo;
+          // null o undefined = aplica a todos los recibos
+          if (aplicaEn === null || aplicaEn === undefined) return true;
+          // 1 = primer recibo
+          if (aplicaEn === 1 && numeroRecibo === 1) return true;
+          // -1 = último recibo
+          if (aplicaEn === -1 && numeroRecibo === plantilla.numeroRecibos) return true;
+          // Número específico
+          if (aplicaEn === numeroRecibo) return true;
+          return false;
         })
-        .map((detalle: any) => ({
-          nombre: detalle.nombreConcepto,
-          monto: detalle.monto,
+        .map((detalle) => ({
+          nombre: detalle.descripcion || detalle.nombreConcepto || "Concepto",
+          monto: detalle.importe ?? (detalle.cantidad * detalle.precioUnitario),
         })) || [];
 
-      const total = conceptos.reduce((sum, c) => sum + c.monto, 0);
+      const total = conceptos.reduce((sum, c) => sum + (c.monto || 0), 0);
 
       recibos.push({
-        numero: i + 1,
+        numero: numeroRecibo,
         fecha: mes,
         conceptos,
         total,

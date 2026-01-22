@@ -75,7 +75,7 @@ export default function AcademicManagementPage() {
     return (
       <div className="container mx-auto py-6">
         <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" style={{ borderColor: '#14356F' }}></div>
           <p className="text-gray-600 text-lg">Cargando datos...</p>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function AcademicManagementPage() {
             <SelectTrigger className="w-full border-2 border-gray-400 bg-white !text-gray-900 [&_span]:!text-gray-900">
               <SelectValue placeholder="Selecciona un plan" className="!text-gray-900" />
             </SelectTrigger>
-            <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px] border-2 border-blue-500">
+            <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px] border-2" style={{ borderColor: '#14356F' }}>
               {studyPlans.length === 0 ? (
                 <div className="p-4 text-center text-gray-900 bg-gray-100">
                   No hay planes disponibles
@@ -131,7 +131,7 @@ export default function AcademicManagementPage() {
                   <SelectItem
                     key={plan.idPlanEstudios}
                     value={plan.idPlanEstudios.toString()}
-                    className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer min-h-[40px] [&_span]:!text-gray-900"
+                    className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer min-h-[40px] [&_span]:!text-gray-900"
                   >
                     {plan.nombrePlanEstudios}
                   </SelectItem>
@@ -152,7 +152,7 @@ export default function AcademicManagementPage() {
             <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px]">
               <SelectItem
                 value="all"
-                className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
+                className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
               >
                 Todos los periodos
               </SelectItem>
@@ -160,7 +160,7 @@ export default function AcademicManagementPage() {
                 <SelectItem
                   key={period.idPeriodoAcademico}
                   value={period.idPeriodoAcademico.toString()}
-                  className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
+                  className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
                 >
                   {period.nombre}
                 </SelectItem>
@@ -173,7 +173,7 @@ export default function AcademicManagementPage() {
       {/* Academic Data */}
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[300px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" style={{ borderColor: '#14356F' }}></div>
           <p className="text-gray-600">Cargando grupos...</p>
         </div>
       ) : academicData ? (

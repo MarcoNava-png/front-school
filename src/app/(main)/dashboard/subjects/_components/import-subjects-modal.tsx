@@ -26,15 +26,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -44,37 +35,47 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import importacionService, {
+  type ImportarMateriaDto,
   type ImportarMateriasResponse,
-  type MateriaImportItem,
 } from '@/services/importacion-service'
 
 // Mapeo de columnas del Excel a propiedades del DTO
-const COLUMN_MAPPING: Record<string, keyof MateriaImportItem> = {
+const COLUMN_MAPPING: Record<string, keyof ImportarMateriaDto> = {
   clave: 'clave',
   codigo: 'clave',
+  código: 'clave',
   'clave materia': 'clave',
   nombre: 'nombre',
   materia: 'nombre',
   'nombre materia': 'nombre',
+  planestudios: 'planEstudios',
+  'plan estudios': 'planEstudios',
+  'plan de estudios': 'planEstudios',
+  plan: 'planEstudios',
+  curso: 'planEstudios',
+  carrera: 'planEstudios',
+  clavecampus: 'claveCampus',
+  'clave campus': 'claveCampus',
+  campus: 'claveCampus',
+  sede: 'claveCampus',
+  cuatrimestre: 'cuatrimestre',
+  grado: 'cuatrimestre',
+  semestre: 'cuatrimestre',
+  periodo: 'cuatrimestre',
   creditos: 'creditos',
   créditos: 'creditos',
   'horas teoria': 'horasTeoria',
   horasteoria: 'horasTeoria',
   'horas teóricas': 'horasTeoria',
+  ht: 'horasTeoria',
   'horas practica': 'horasPractica',
   horaspractica: 'horasPractica',
   'horas prácticas': 'horasPractica',
-  grado: 'grado',
-  periodo: 'grado',
-  cuatrimestre: 'grado',
-  semestre: 'grado',
+  hp: 'horasPractica',
   optativa: 'esOptativa',
   'es optativa': 'esOptativa',
-  campus: 'campus',
-  escuela: 'campus',
-  curso: 'curso',
-  carrera: 'curso',
-  plan: 'curso',
+  esoptativa: 'esOptativa',
+  tipo: 'tipo',
 }
 
 type Step = 'upload' | 'preview' | 'importing' | 'results'
@@ -95,15 +96,12 @@ interface ImportSubjectsModalProps {
 export function ImportSubjectsModal({
   open,
   onOpenChange,
-  planes,
   onSuccess,
 }: ImportSubjectsModalProps) {
   const [step, setStep] = useState<Step>('upload')
-  const [materias, setMaterias] = useState<MateriaImportItem[]>([])
+  const [materias, setMaterias] = useState<ImportarMateriaDto[]>([])
   const [resultado, setResultado] = useState<ImportarMateriasResponse | null>(null)
   const [loading, setLoading] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<string>('')
-  const [clavePlan, setClavePlan] = useState<string>('')
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -136,44 +134,34 @@ export function ImportSubjectsModal({
       }
 
       // Primera fila son los headers
-      const headers = (jsonData[0]).map((h) => String(h).toLowerCase().trim())
-      const rows = jsonData.slice(1)
+      const headers = (jsonData[0] as string[]).map((h) => String(h).toLowerCase().trim())
+      const rows = jsonData.slice(1) as unknown[][]
 
       // Mapear datos
-      const mapped: MateriaImportItem[] = []
+      const mapped: ImportarMateriaDto[] = []
 
       for (const row of rows) {
         // Saltar filas vacías
         if (!row || row.every((cell) => !cell)) continue
 
-        const materia: Partial<MateriaImportItem> = {
-          creditos: 0,
-          horasTeoria: 0,
-          horasPractica: 0,
-          grado: '1',
-          esOptativa: false,
-        }
+        const materia: Partial<ImportarMateriaDto> = {}
 
         headers.forEach((header, index) => {
           const mappedKey = COLUMN_MAPPING[header]
           if (mappedKey && row[index] !== undefined && row[index] !== null) {
-            const value = row[index]
+            const value = String(row[index]).trim()
 
             if (mappedKey === 'creditos' || mappedKey === 'horasTeoria' || mappedKey === 'horasPractica') {
-              ;(materia as Record<string, unknown>)[mappedKey] = Number(value) || 0
-            } else if (mappedKey === 'esOptativa') {
-              const strValue = String(value).toLowerCase()
-              ;(materia as Record<string, unknown>)[mappedKey] =
-                strValue === 'si' || strValue === 'sí' || strValue === 'true' || strValue === '1'
+              ;(materia as Record<string, number>)[mappedKey] = parseInt(value) || 0
             } else {
-              ;(materia as Record<string, unknown>)[mappedKey] = String(value).trim()
+              ;(materia as Record<string, string>)[mappedKey] = value
             }
           }
         })
 
         // Solo agregar si tiene clave y nombre
         if (materia.clave && materia.nombre) {
-          mapped.push(materia as MateriaImportItem)
+          mapped.push(materia as ImportarMateriaDto)
         }
       }
 
@@ -189,8 +177,17 @@ export function ImportSubjectsModal({
   }
 
   const handleImportar = async () => {
-    if (!selectedPlan && !clavePlan) {
-      toast.error('Debes seleccionar o ingresar un plan de estudios')
+    // Validar que las materias tengan plan y campus
+    const sinPlan = materias.filter(m => !m.planEstudios)
+    const sinCampus = materias.filter(m => !m.claveCampus)
+
+    if (sinPlan.length > 0) {
+      toast.error(`${sinPlan.length} materias no tienen Plan de Estudios. Agrega la columna "PlanEstudios" a tu archivo.`)
+      return
+    }
+
+    if (sinCampus.length > 0) {
+      toast.error(`${sinCampus.length} materias no tienen Campus. Agrega la columna "ClaveCampus" o "Campus" a tu archivo.`)
       return
     }
 
@@ -199,19 +196,21 @@ export function ImportSubjectsModal({
 
     try {
       const result = await importacionService.importarMaterias({
-        idPlanEstudios: selectedPlan ? Number(selectedPlan) : undefined,
-        clavePlanEstudios: clavePlan || undefined,
         materias,
+        actualizarExistentes: true,
+        crearRelacionSiExiste: true,
       })
 
       setResultado(result)
       setStep('results')
 
-      if (result.exito) {
-        toast.success(result.mensaje)
+      if (result.fallidos === 0) {
+        toast.success(`Se importaron ${result.materiasCreadas} materias exitosamente`)
         onSuccess?.()
       } else {
-        toast.error(result.mensaje)
+        toast.warning(
+          `Importación completada: ${result.materiasCreadas} creadas, ${result.fallidos} fallidas`
+        )
       }
     } catch (error) {
       console.error('Error al importar:', error)
@@ -226,8 +225,6 @@ export function ImportSubjectsModal({
     setStep('upload')
     setMaterias([])
     setResultado(null)
-    setSelectedPlan('')
-    setClavePlan('')
   }
 
   const handleClose = () => {
@@ -237,18 +234,47 @@ export function ImportSubjectsModal({
 
   const downloadTemplate = () => {
     const template = [
-      ['Clave', 'Nombre', 'Creditos', 'Grado', 'Horas Teoria', 'Horas Practica', 'Optativa'],
-      ['MAT101', 'Matemáticas I', 6, '1ero.', 4, 2, 'No'],
-      ['FIS101', 'Física I', 6, '1ero.', 4, 2, 'No'],
-      ['QUI101', 'Química', 4, '1ero.', 3, 1, 'No'],
-      ['MAT201', 'Matemáticas II', 6, '2do.', 4, 2, 'No'],
+      ['Clave', 'Nombre', 'PlanEstudios', 'ClaveCampus', 'Cuatrimestre', 'Creditos', 'HorasTeoria', 'HorasPractica', 'EsOptativa'],
+      ['MAT101', 'Matemáticas I', 'Ingeniería en Software', 'NORTE', '1', '6', '4', '2', 'No'],
+      ['MAT101', 'Matemáticas I', 'Ingeniería en Software', 'SUR', '1', '6', '4', '2', 'No'],
+      ['FIS101', 'Física I', 'Ingeniería en Software', 'NORTE', '1', '6', '4', '2', 'No'],
+      ['MAT201', 'Matemáticas II', 'Ingeniería en Software', 'NORTE', '2', '6', '4', '2', 'No'],
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(template)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Materias')
+
+    // Hoja de instrucciones
+    const instrucciones = [
+      ['INSTRUCCIONES PARA IMPORTACIÓN DE MATERIAS'],
+      [''],
+      ['Columnas REQUERIDAS:'],
+      ['• Clave: Clave única de la materia (ej: MAT101)'],
+      ['• Nombre: Nombre completo de la materia'],
+      ['• PlanEstudios: Nombre o clave del plan de estudios'],
+      ['• ClaveCampus: Clave del campus (ej: NORTE, SUR)'],
+      ['• Cuatrimestre: Número (1, 2, 3) o texto (1ero., 2do.)'],
+      [''],
+      ['Columnas opcionales:'],
+      ['• Creditos: Número de créditos'],
+      ['• HorasTeoria: Horas de teoría'],
+      ['• HorasPractica: Horas de práctica'],
+      ['• EsOptativa: Si/No'],
+      [''],
+      ['NOTA: Para asignar la misma materia a varios campus,'],
+      ['duplica la fila cambiando solo ClaveCampus.'],
+    ]
+    const wsInstruc = XLSX.utils.aoa_to_sheet(instrucciones)
+    XLSX.utils.book_append_sheet(wb, wsInstruc, 'Instrucciones')
+
     XLSX.writeFile(wb, 'plantilla_importacion_materias.xlsx')
+    toast.success('Plantilla descargada')
   }
+
+  // Contar planes y campus únicos
+  const planesUnicos = [...new Set(materias.map(m => m.planEstudios).filter(Boolean))]
+  const campusUnicos = [...new Set(materias.map(m => m.claveCampus).filter(Boolean))]
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -259,7 +285,7 @@ export function ImportSubjectsModal({
             Importar Materias
           </DialogTitle>
           <DialogDescription>
-            Importa materias masivamente desde un archivo Excel y asígnalas a un plan de estudios
+            Importa materias masivamente desde un archivo Excel. El plan de estudios y campus se leen de cada fila.
           </DialogDescription>
         </DialogHeader>
 
@@ -301,9 +327,9 @@ export function ImportSubjectsModal({
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Columnas requeridas</AlertTitle>
               <AlertDescription>
-                El archivo debe contener al menos las columnas: <strong>Clave</strong> y{' '}
-                <strong>Nombre</strong>. Opcionalmente: Creditos, Grado, Horas Teoria, Horas
-                Practica, Optativa.
+                <strong>Clave</strong>, <strong>Nombre</strong>, <strong>PlanEstudios</strong>, <strong>ClaveCampus</strong>, <strong>Cuatrimestre</strong>.
+                <br />
+                Opcionales: Creditos, HorasTeoria, HorasPractica, EsOptativa.
               </AlertDescription>
             </Alert>
           </div>
@@ -312,36 +338,23 @@ export function ImportSubjectsModal({
         {/* Step: Preview */}
         {step === 'preview' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Badge variant="secondary">{materias.length} materias cargadas</Badge>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <Badge variant="secondary" className="text-base px-3 py-1">
+                {materias.length} materias cargadas
+              </Badge>
+              <div className="flex gap-2">
+                <Badge variant="outline">{planesUnicos.length} planes</Badge>
+                <Badge variant="outline">{campusUnicos.length} campus</Badge>
+              </div>
             </div>
 
-            {/* Selección de Plan de Estudios */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Plan de Estudios (seleccionar)</Label>
-                <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un plan..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {planes.map((plan) => (
-                      <SelectItem key={plan.idPlanEstudios} value={String(plan.idPlanEstudios)}>
-                        {plan.clavePlanEstudios} - {plan.nombrePlanEstudios}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Mostrar planes y campus detectados */}
+            {planesUnicos.length > 0 && (
+              <div className="text-sm text-muted-foreground">
+                <strong>Planes detectados:</strong> {planesUnicos.slice(0, 5).join(', ')}
+                {planesUnicos.length > 5 && ` y ${planesUnicos.length - 5} más...`}
               </div>
-              <div className="space-y-2">
-                <Label>O ingresa la clave del plan</Label>
-                <Input
-                  placeholder="Ej: 04LICENF"
-                  value={clavePlan}
-                  onChange={(e) => setClavePlan(e.target.value)}
-                />
-              </div>
-            </div>
+            )}
 
             {/* Vista previa */}
             <div className="max-h-[300px] overflow-auto rounded-lg border">
@@ -351,9 +364,10 @@ export function ImportSubjectsModal({
                     <TableHead className="w-12">#</TableHead>
                     <TableHead>Clave</TableHead>
                     <TableHead>Nombre</TableHead>
-                    <TableHead>Grado</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Campus</TableHead>
+                    <TableHead>Cuatri</TableHead>
                     <TableHead>Créditos</TableHead>
-                    <TableHead>Optativa</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -361,16 +375,15 @@ export function ImportSubjectsModal({
                     <TableRow key={i}>
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-mono">{mat.clave}</TableCell>
-                      <TableCell>{mat.nombre}</TableCell>
-                      <TableCell>{mat.grado}</TableCell>
-                      <TableCell>{mat.creditos}</TableCell>
-                      <TableCell>
-                        {mat.esOptativa ? (
-                          <Badge variant="secondary">Sí</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">No</span>
-                        )}
+                      <TableCell className="max-w-[150px] truncate">{mat.nombre}</TableCell>
+                      <TableCell className="max-w-[120px] truncate" title={mat.planEstudios}>
+                        {mat.planEstudios || <span className="text-red-500">Falta</span>}
                       </TableCell>
+                      <TableCell>
+                        {mat.claveCampus || <span className="text-red-500">Falta</span>}
+                      </TableCell>
+                      <TableCell>{mat.cuatrimestre}</TableCell>
+                      <TableCell>{mat.creditos ?? 0}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -389,7 +402,7 @@ export function ImportSubjectsModal({
               </Button>
               <Button
                 onClick={handleImportar}
-                disabled={loading || (!selectedPlan && !clavePlan)}
+                disabled={loading || materias.length === 0}
               >
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -407,7 +420,7 @@ export function ImportSubjectsModal({
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
             <p className="text-lg font-medium">Importando materias...</p>
-            <p className="text-sm text-muted-foreground">Por favor espera</p>
+            <p className="text-sm text-muted-foreground">Procesando {materias.length} registros, por favor espera</p>
           </div>
         )}
 
@@ -415,75 +428,77 @@ export function ImportSubjectsModal({
         {step === 'results' && resultado && (
           <div className="space-y-4">
             {/* Resumen */}
-            {resultado.exito ? (
+            {resultado.fallidos === 0 ? (
               <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
                 <AlertTitle className="text-green-600">Importación Exitosa</AlertTitle>
                 <AlertDescription>
-                  Plan: {resultado.clavePlanEstudios} - {resultado.nombrePlanEstudios}
+                  Todas las materias fueron importadas correctamente.
                 </AlertDescription>
               </Alert>
             ) : (
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
-                <AlertTitle>Error en la Importación</AlertTitle>
-                <AlertDescription>{resultado.mensaje}</AlertDescription>
+                <AlertTitle>Importación con Errores</AlertTitle>
+                <AlertDescription>
+                  Algunas materias no pudieron ser importadas. Revisa el detalle abajo.
+                </AlertDescription>
               </Alert>
             )}
 
             {/* Estadísticas */}
             <div className="grid gap-4 md:grid-cols-5">
               <div className="rounded-lg border p-3 text-center">
-                <p className="text-2xl font-bold">{resultado.totalProcesadas}</p>
+                <p className="text-2xl font-bold">{resultado.totalProcesados}</p>
                 <p className="text-xs text-muted-foreground">Total</p>
               </div>
               <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center dark:border-green-800 dark:bg-green-950">
                 <p className="text-2xl font-bold text-green-600">{resultado.materiasCreadas}</p>
-                <p className="text-xs text-muted-foreground">Materias Creadas</p>
+                <p className="text-xs text-muted-foreground">Creadas</p>
               </div>
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-center dark:border-blue-800 dark:bg-blue-950">
-                <p className="text-2xl font-bold text-blue-600">{resultado.materiasExistentes}</p>
-                <p className="text-xs text-muted-foreground">Materias Existentes</p>
+                <p className="text-2xl font-bold text-blue-600">{resultado.materiasActualizadas || 0}</p>
+                <p className="text-xs text-muted-foreground">Actualizadas</p>
               </div>
               <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 text-center dark:border-purple-800 dark:bg-purple-950">
                 <p className="text-2xl font-bold text-purple-600">
-                  {resultado.asignacionesCreadas}
+                  {resultado.relacionesCreadas || resultado.asignacionesCreadas || 0}
                 </p>
                 <p className="text-xs text-muted-foreground">Asignaciones</p>
               </div>
               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center dark:border-red-800 dark:bg-red-950">
-                <p className="text-2xl font-bold text-red-600">{resultado.errores}</p>
+                <p className="text-2xl font-bold text-red-600">{resultado.fallidos || resultado.errores || 0}</p>
                 <p className="text-xs text-muted-foreground">Errores</p>
               </div>
             </div>
 
             {/* Detalle */}
-            {resultado.detalle.length > 0 && (
+            {resultado.resultados && resultado.resultados.length > 0 && (
               <div className="max-h-[200px] overflow-auto rounded-lg border">
                 <Table>
                   <TableHeader className="sticky top-0 bg-background">
                     <TableRow>
+                      <TableHead>Fila</TableHead>
                       <TableHead>Clave</TableHead>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Cuatrimestre</TableHead>
+                      <TableHead>Plan</TableHead>
                       <TableHead>Estado</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {resultado.detalle.slice(0, 50).map((det, i) => (
+                    {resultado.resultados.slice(0, 50).map((res, i) => (
                       <TableRow key={i}>
-                        <TableCell className="font-mono">{det.clave}</TableCell>
-                        <TableCell>{det.nombre}</TableCell>
-                        <TableCell>{det.cuatrimestre}</TableCell>
+                        <TableCell>{res.fila}</TableCell>
+                        <TableCell className="font-mono">{res.clave}</TableCell>
+                        <TableCell className="max-w-[150px] truncate">{res.planEstudios}</TableCell>
                         <TableCell>
-                          {det.mensajeError ? (
-                            <Badge variant="destructive" className="text-xs">
-                              {det.mensajeError}
-                            </Badge>
-                          ) : (
+                          {res.exito ? (
                             <Badge className="bg-green-100 text-green-800 text-xs">
                               <Check className="mr-1 h-3 w-3" />
-                              {det.estado}
+                              OK
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="text-xs">
+                              {res.mensaje}
                             </Badge>
                           )}
                         </TableCell>

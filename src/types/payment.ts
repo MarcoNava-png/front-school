@@ -63,7 +63,9 @@ export interface PaymentFilters {
 
 export interface MedioPago {
   idMedioPago: number;
-  nombre: string;
+  clave: string;
+  descripcion?: string;
+  nombre: string; // Alias de descripcion para compatibilidad
   requiereReferencia: boolean;
   activo: boolean;
 }

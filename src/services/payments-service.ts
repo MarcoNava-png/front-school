@@ -251,35 +251,8 @@ export async function descargarCorteCajaPDF(id: number): Promise<Blob> {
  * @returns Lista de medios de pago
  */
 export async function obtenerMediosPago(): Promise<MedioPago[]> {
-  // TODO: Implementar endpoint /medios-pago en el backend
-  // Mientras tanto, retorna datos mock
-  try {
-    const { data } = await apiClient.get<MedioPago[]>("/medios-pago");
-    return data;
-  } catch {
-    // Si el endpoint no existe, retorna datos mock
-    console.warn("⚠️ Endpoint /medios-pago no encontrado. Usando datos mock temporales.");
-    return [
-      {
-        idMedioPago: 1,
-        nombre: "Efectivo",
-        requiereReferencia: false,
-        activo: true,
-      },
-      {
-        idMedioPago: 2,
-        nombre: "Transferencia",
-        requiereReferencia: true,
-        activo: true,
-      },
-      {
-        idMedioPago: 3,
-        nombre: "Tarjeta",
-        requiereReferencia: true,
-        activo: true,
-      },
-    ];
-  }
+  const { data } = await apiClient.get<MedioPago[]>("/catalogos/medios-pago");
+  return data;
 }
 
 /**
@@ -292,6 +265,57 @@ export async function descargarComprobantePago(idPago: number): Promise<Blob> {
     responseType: "blob",
   });
   return response.data;
+}
+
+/**
+ * Descarga el PDF del recibo
+ * @param idRecibo ID del recibo
+ * @returns Blob del PDF
+ */
+export async function descargarReciboPdf(idRecibo: number): Promise<Blob> {
+  const response = await apiClient.get(`/recibos/${idRecibo}/pdf`, {
+    responseType: "blob",
+  });
+  return response.data;
+}
+
+/**
+ * Abre el PDF del recibo en una nueva pestaña
+ * @param idRecibo ID del recibo
+ * @param folio Folio del recibo para el nombre del archivo
+ */
+export async function imprimirReciboPdf(idRecibo: number, folio?: string): Promise<void> {
+  const blob = await descargarReciboPdf(idRecibo);
+  const url = window.URL.createObjectURL(blob);
+  const nombreArchivo = `Recibo_${folio || idRecibo}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+  // Crear un enlace temporal para descargar
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nombreArchivo;
+
+  // Abrir en nueva pestaña para impresión
+  const newWindow = window.open(url, '_blank');
+  if (newWindow) {
+    newWindow.focus();
+  }
+
+  // Limpiar el URL después de un tiempo
+  setTimeout(() => {
+    window.URL.revokeObjectURL(url);
+  }, 1000);
+}
+
+/**
+ * Quita/condona el recargo de un recibo
+ * Solo disponible para roles autorizados (ADMIN, DIRECTOR, FINANZAS)
+ * @param idRecibo ID del recibo
+ * @param motivo Motivo de la condonación
+ * @returns Resultado de la operación
+ */
+export async function quitarRecargoRecibo(idRecibo: number, motivo: string): Promise<{ message: string; recargoCondonado: number }> {
+  const { data } = await apiClient.post(`/caja/recibos/${idRecibo}/quitar-recargo`, { motivo });
+  return data;
 }
 
 // ============================================================================

@@ -113,12 +113,12 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-blue-50 rounded-lg p-3">
+          <div className="rounded-lg p-3" style={{ backgroundColor: 'rgba(20, 53, 111, 0.1)' }}>
             <div className="flex items-center gap-2 mb-1">
-              <Users className="w-4 h-4 text-blue-600" />
-              <span className="text-xs text-blue-700 font-medium">Estudiantes</span>
+              <Users className="w-4 h-4" style={{ color: '#14356F' }} />
+              <span className="text-xs font-medium" style={{ color: '#1e4a8f' }}>Estudiantes</span>
             </div>
-            <p className="text-xl font-bold text-blue-900">
+            <p className="text-xl font-bold" style={{ color: '#14356F' }}>
               {grupo.totalEstudiantes}/{grupo.capacidadMaxima}
             </p>
           </div>
@@ -154,11 +154,23 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
 
         {/* Actions */}
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowSubjectsModal(true)} className="w-full">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSubjectsModal(true)}
+            className="w-full"
+            style={{ borderColor: '#14356F', color: '#14356F' }}
+          >
             <BookOpen className="w-4 h-4 mr-2" />
             Materias
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowStudentsModal(true)} className="w-full">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowStudentsModal(true)}
+            className="w-full"
+            style={{ borderColor: '#14356F', color: '#14356F' }}
+          >
             <Users className="w-4 h-4 mr-2" />
             Estudiantes
           </Button>

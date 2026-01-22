@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Calendar, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
-import { crearPlantilla, actualizarPlantilla, obtenerConceptosPago, obtenerCuatrimestresPorPlan } from "@/services/plantillas-service";
+import { crearPlantilla, actualizarPlantilla, obtenerConceptosPago, obtenerCuatrimestresPorPlan, generarPreviewRecibos, ReciboPreview } from "@/services/plantillas-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
 import { AcademicPeriod } from "@/types/academic-period";
 import { PlantillaCobro, CreatePlantillaCobroDto, CreatePlantillaCobroDetalleDto, ConceptoPago } from "@/types/receipt";
@@ -85,6 +85,11 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
   // Detalles (conceptos)
   const [detalles, setDetalles] = useState<DetalleLocal[]>([]);
+
+  // Preview de recibos
+  const [previewRecibos, setPreviewRecibos] = useState<ReciboPreview[]>([]);
+  const [mostrarPreview, setMostrarPreview] = useState(false);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -182,6 +187,135 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
     setFechaVigenciaInicio(new Date().toISOString().split("T")[0]);
     setDetalles([]);
     setCuatrimestresDisponibles([]);
+    setPreviewRecibos([]);
+    setMostrarPreview(false);
+  }
+
+  // Genera la vista previa de recibos con fechas de vencimiento
+  async function generarPreview() {
+    if (detalles.length === 0) {
+      setPreviewRecibos([]);
+      return;
+    }
+
+    setLoadingPreview(true);
+    try {
+      // Obtener fecha de inicio del periodo seleccionado
+      let fechaInicio = fechaVigenciaInicio;
+      if (idPeriodoAcademico) {
+        const periodo = periodosAcademicos.find(p => p.idPeriodoAcademico.toString() === idPeriodoAcademico);
+        if (periodo?.fechaInicio) {
+          fechaInicio = periodo.fechaInicio;
+        }
+      }
+
+      const response = await generarPreviewRecibos({
+        numeroRecibos: parseInt(numeroRecibos) || 4,
+        diaVencimiento: parseInt(diaVencimiento) || 10,
+        fechaInicioPeriodo: fechaInicio,
+        conceptos: detalles.map(d => ({
+          descripcion: d.descripcion || d.nombreConcepto || "Concepto",
+          cantidad: d.cantidad,
+          precioUnitario: d.precioUnitario,
+          aplicaEnRecibo: d.aplicaEnRecibo,
+        })),
+      });
+
+      setPreviewRecibos(response.recibos);
+      setMostrarPreview(true);
+    } catch (error) {
+      console.error("Error al generar preview:", error);
+      // Generar preview local si falla el backend
+      generarPreviewLocal();
+    } finally {
+      setLoadingPreview(false);
+    }
+  }
+
+  // Parsea una fecha string (YYYY-MM-DD o ISO) evitando problemas de timezone
+  function parsearFechaLocal(fechaStr: string): { año: number; mes: number; dia: number } {
+    // Si viene en formato ISO con T, extraer solo la parte de la fecha
+    const fechaParte = fechaStr.split("T")[0];
+    const partes = fechaParte.split("-");
+    return {
+      año: parseInt(partes[0]),
+      mes: parseInt(partes[1]) - 1, // Convertir a 0-indexed
+      dia: parseInt(partes[2]),
+    };
+  }
+
+  // Genera preview local sin llamar al backend
+  function generarPreviewLocal() {
+    const numRec = parseInt(numeroRecibos) || 4;
+    const dia = parseInt(diaVencimiento) || 10;
+
+    // Obtener fecha de inicio del periodo
+    let añoBase: number;
+    let mesBase: number; // 0-indexed (0 = Enero, 8 = Septiembre)
+
+    if (idPeriodoAcademico) {
+      const periodo = periodosAcademicos.find(p => p.idPeriodoAcademico.toString() === idPeriodoAcademico);
+      if (periodo?.fechaInicio) {
+        // Parsear la fecha evitando conversión de timezone
+        const { año, mes } = parsearFechaLocal(periodo.fechaInicio);
+        añoBase = año;
+        mesBase = mes;
+      } else {
+        const hoy = new Date();
+        añoBase = hoy.getFullYear();
+        mesBase = hoy.getMonth();
+      }
+    } else {
+      // Parsear la fecha de vigencia evitando conversión de timezone
+      const { año, mes } = parsearFechaLocal(fechaVigenciaInicio);
+      añoBase = año;
+      mesBase = mes;
+    }
+
+    const nombresMeses = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    const recibos: ReciboPreview[] = [];
+    for (let i = 0; i < numRec; i++) {
+      // Calcular mes y año para este recibo
+      let mes = mesBase + i;
+      let año = añoBase;
+
+      // Ajustar si el mes pasa de diciembre
+      while (mes > 11) {
+        mes -= 12;
+        año += 1;
+      }
+
+      // Calcular día de vencimiento (ajustar si el mes tiene menos días)
+      const diasEnMes = new Date(año, mes + 1, 0).getDate();
+      const diaFinal = Math.min(dia, diasEnMes);
+
+      // Crear fecha de vencimiento
+      const fechaVenc = new Date(año, mes, diaFinal);
+
+      const conceptosRecibo = detalles
+        .filter(d => d.aplicaEnRecibo === null || d.aplicaEnRecibo === (i + 1) || (d.aplicaEnRecibo === -1 && (i + 1) === numRec))
+        .map(d => ({
+          concepto: d.descripcion || d.nombreConcepto || "Concepto",
+          cantidad: d.cantidad,
+          precioUnitario: d.precioUnitario,
+          importe: d.cantidad * d.precioUnitario,
+        }));
+
+      recibos.push({
+        numeroRecibo: i + 1,
+        fechaVencimiento: `${diaFinal.toString().padStart(2, '0')}/${(mes + 1).toString().padStart(2, '0')}/${año}`,
+        mesCorrespondiente: `${nombresMeses[mes]} ${año}`,
+        conceptos: conceptosRecibo,
+        subtotal: conceptosRecibo.reduce((sum, c) => sum + c.importe, 0),
+      });
+    }
+
+    setPreviewRecibos(recibos);
+    setMostrarPreview(true);
   }
 
   function agregarDetalle() {
@@ -259,7 +393,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
   }
 
   function setAplicaEnReciboFromSelect(index: number, value: string) {
-    const numRecibos = parseInt(numeroRecibos) ?? 4;
+    const numRecibos = parseInt(numeroRecibos) || 4;
     let aplicaEnRecibo: number | null = null;
 
     switch (value) {
@@ -362,7 +496,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
   }
 
   // Calcular totales
-  const numRecibos = parseInt(numeroRecibos) ?? 1;
+  const numRecibos = parseInt(numeroRecibos) || 1;
 
   const totalPrimerRecibo = detalles
     .filter((d) => d.aplicaEnRecibo === null || d.aplicaEnRecibo === 1)
@@ -385,7 +519,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
   if (loadingData) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-[95vw] sm:max-w-[600px] lg:max-w-[900px]">
+        <DialogContent className="max-w-[95vw] sm:max-w-[600px] lg:max-w-[900px] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl">
               {plantillaToEdit ? "Editar Plantilla de Cobro" : "Nueva Plantilla de Cobro"}
@@ -402,8 +536,8 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[600px] lg:max-w-[900px] xl:max-w-[1100px] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0">
-        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
+      <DialogContent className="max-w-[95vw] sm:max-w-[600px] lg:max-w-[900px] xl:max-w-[1100px] h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex-shrink-0">
           <DialogTitle className="text-lg sm:text-xl">
             {plantillaToEdit ? "Editar Plantilla de Cobro" : "Nueva Plantilla de Cobro"}
           </DialogTitle>
@@ -412,7 +546,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 px-4 sm:px-6">
+        <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6">
           <form id="plantilla-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 pb-4">
             {/* Información General */}
             <div className="space-y-3 sm:space-y-4">
@@ -652,8 +786,8 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                               type="number"
                               step="0.01"
                               min="0"
-                              value={detalle.precioUnitario}
-                              onChange={(e) => actualizarDetalle(index, "precioUnitario", parseFloat(e.target.value) ?? 0)}
+                              value={detalle.precioUnitario || ""}
+                              onChange={(e) => actualizarDetalle(index, "precioUnitario", parseFloat(e.target.value) || 0)}
                               className="pl-7 text-sm font-semibold border-blue-200 focus:border-blue-500"
                               placeholder="0.00"
                             />
@@ -665,8 +799,8 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                           <Input
                             type="number"
                             min="1"
-                            value={detalle.cantidad}
-                            onChange={(e) => actualizarDetalle(index, "cantidad", parseInt(e.target.value) ?? 1)}
+                            value={detalle.cantidad || ""}
+                            onChange={(e) => actualizarDetalle(index, "cantidad", parseInt(e.target.value) || 1)}
                             className="text-center text-sm"
                           />
                         </div>
@@ -704,9 +838,9 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                           <Input
                             type="number"
                             min="1"
-                            max={parseInt(numeroRecibos)}
-                            value={detalle.aplicaEnRecibo ?? 1}
-                            onChange={(e) => actualizarDetalle(index, "aplicaEnRecibo", parseInt(e.target.value) ?? 1)}
+                            max={parseInt(numeroRecibos) || 4}
+                            value={detalle.aplicaEnRecibo ?? ""}
+                            onChange={(e) => actualizarDetalle(index, "aplicaEnRecibo", parseInt(e.target.value) || 1)}
                             className="w-16 h-8 text-sm"
                           />
                         </div>
@@ -737,13 +871,100 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                       ${totalGeneral.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
+
+                  {/* Botón para ver preview de fechas */}
+                  <div className="pt-2 border-t border-blue-200">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generarPreviewLocal}
+                      disabled={loadingPreview}
+                      className="w-full text-xs bg-white border-blue-300 text-blue-700 hover:bg-blue-100"
+                    >
+                      {loadingPreview ? (
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      ) : (
+                        <Eye className="w-3 h-3 mr-1" />
+                      )}
+                      Ver fechas de vencimiento
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Vista Previa de Recibos con Fechas */}
+              {mostrarPreview && previewRecibos.length > 0 && (
+                <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm text-green-800 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Vista Previa de Recibos
+                    </h4>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setMostrarPreview(false)}
+                      className="h-6 text-xs text-green-700 hover:text-green-900"
+                    >
+                      Ocultar
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {previewRecibos.map((recibo) => (
+                      <div
+                        key={recibo.numeroRecibo}
+                        className={`p-2 sm:p-3 rounded-md border ${
+                          recibo.numeroRecibo === 1
+                            ? "bg-amber-50 border-amber-200"
+                            : "bg-white border-green-100"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-xs sm:text-sm">
+                            Recibo #{recibo.numeroRecibo}
+                            {recibo.numeroRecibo === 1 && (
+                              <Badge variant="outline" className="ml-2 text-[10px] bg-amber-100 text-amber-700 border-amber-300">
+                                Incluye inscripción
+                              </Badge>
+                            )}
+                          </span>
+                          <span className="font-bold text-sm text-green-700">
+                            ${recibo.subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="w-3 h-3" />
+                          <span className="font-medium text-green-700">{recibo.mesCorrespondiente}</span>
+                          <span>•</span>
+                          <span>Vence: <strong>{recibo.fechaVencimiento}</strong></span>
+                        </div>
+                        {recibo.conceptos.length > 0 && (
+                          <div className="mt-1 text-[10px] sm:text-xs text-muted-foreground">
+                            {recibo.conceptos.map((c, i) => (
+                              <span key={i}>
+                                {c.concepto}
+                                {i < recibo.conceptos.length - 1 ? ", " : ""}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="text-xs text-green-700 bg-green-100 p-2 rounded">
+                    <strong>Nota:</strong> Las fechas se calculan a partir de la fecha de inicio del periodo académico seleccionado.
+                  </div>
                 </div>
               )}
             </div>
           </form>
         </ScrollArea>
 
-        <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t bg-gray-50 flex-col sm:flex-row gap-2">
+        <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 border-t bg-gray-50 flex-col sm:flex-row gap-2 flex-shrink-0">
           <Button
             type="button"
             variant="outline"

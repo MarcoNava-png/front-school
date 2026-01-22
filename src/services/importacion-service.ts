@@ -129,8 +129,9 @@ export const importacionService = {
   async importarMaterias(
     request: ImportarMateriasRequest
   ): Promise<ImportarMateriasResponse> {
+    // Usar endpoint de importacion que toma plan y campus de cada fila del archivo
     const response = await axiosInstance.post<{ data: ImportarMateriasResponse }>(
-      '/materiaplan/importar',
+      '/importacion/materias',
       request
     )
     return response.data.data
@@ -143,10 +144,10 @@ export const importacionService = {
     return response.data.data
   },
 
-  // Validar materias antes de importar
+  // Validar materias antes de importar (usa endpoint que lee plan y campus de cada fila)
   async validarMaterias(materias: ImportarMateriaDto[]): Promise<ValidarMateriasResponse> {
     const response = await axiosInstance.post<{ data: ValidarMateriasResponse }>(
-      '/materiaplan/validar',
+      '/importacion/materias/validar',
       { materias }
     )
     return response.data.data
@@ -249,6 +250,7 @@ export interface ImportarMateriaDto {
   clave: string
   nombre: string
   planEstudios: string
+  claveCampus: string
   cuatrimestre: string
   creditos?: number
   horasTeoria?: number

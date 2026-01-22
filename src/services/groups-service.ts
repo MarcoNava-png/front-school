@@ -203,3 +203,166 @@ export async function assignTeacherToSubject(
   );
   return data;
 }
+
+// ============================================================================
+// INSCRIPCIÓN DIRECTA A GRUPOS (SIN MATERIAS)
+// Para gestión administrativa/financiera
+// ============================================================================
+
+export interface EstudianteGrupoResult {
+  idEstudianteGrupo: number;
+  idEstudiante: number;
+  matricula: string;
+  nombreCompleto: string;
+  idGrupo: number;
+  nombreGrupo: string;
+  fechaInscripcion: string;
+  estado: string;
+  exitoso: boolean;
+  mensajeError?: string;
+}
+
+export interface InscribirEstudiantesGrupoResponse {
+  idGrupo: number;
+  nombreGrupo: string;
+  totalProcesados: number;
+  exitosos: number;
+  fallidos: number;
+  resultados: EstudianteGrupoResult[];
+}
+
+export interface EstudianteEnGrupo {
+  idEstudianteGrupo: number;
+  idEstudiante: number;
+  matricula: string;
+  nombreCompleto: string;
+  email?: string;
+  telefono?: string;
+  fechaInscripcion: string;
+  estado: string;
+  planEstudios?: string;
+}
+
+export interface EstudiantesDelGrupoResponse {
+  idGrupo: number;
+  nombreGrupo: string;
+  codigoGrupo?: string;
+  planEstudios: string;
+  periodoAcademico: string;
+  numeroCuatrimestre: number;
+  totalEstudiantes: number;
+  capacidadMaxima: number;
+  cupoDisponible: number;
+  estudiantes: EstudianteEnGrupo[];
+}
+
+/**
+ * Inscribe un estudiante directamente a un grupo (sin necesidad de materias)
+ * Útil para gestión administrativa y financiera
+ */
+export async function inscribirEstudianteDirecto(
+  idGrupo: number,
+  idEstudiante: number,
+  observaciones?: string
+): Promise<EstudianteGrupoResult> {
+  const { data } = await apiClient.post<EstudianteGrupoResult>(
+    `/grupos/${idGrupo}/inscribir-directo`,
+    { idEstudiante, observaciones }
+  );
+  return data;
+}
+
+/**
+ * Inscribe múltiples estudiantes a un grupo de forma masiva (sin necesidad de materias)
+ */
+export async function inscribirEstudiantesMasivo(
+  idGrupo: number,
+  idsEstudiantes: number[],
+  observaciones?: string
+): Promise<InscribirEstudiantesGrupoResponse> {
+  const { data } = await apiClient.post<InscribirEstudiantesGrupoResponse>(
+    `/grupos/${idGrupo}/inscribir-masivo`,
+    { idsEstudiantes, observaciones }
+  );
+  return data;
+}
+
+/**
+ * Obtiene los estudiantes inscritos directamente en un grupo (tabla EstudianteGrupo)
+ */
+export async function getEstudiantesDelGrupoDirecto(
+  idGrupo: number
+): Promise<EstudiantesDelGrupoResponse> {
+  const { data } = await apiClient.get<EstudiantesDelGrupoResponse>(
+    `/grupos/${idGrupo}/estudiantes-directo`
+  );
+  return data;
+}
+
+/**
+ * Elimina la inscripción de un estudiante del grupo
+ */
+export async function eliminarEstudianteDeGrupo(
+  idEstudianteGrupo: number
+): Promise<void> {
+  await apiClient.delete(`/grupos/estudiante-grupo/${idEstudianteGrupo}`);
+}
+
+// ============================================================================
+// IMPORTACIÓN COMPLETA DE ESTUDIANTES (Persona + Estudiante + Inscripción)
+// ============================================================================
+
+export interface EstudianteImportar {
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno?: string;
+  curp?: string;
+  correo?: string;
+  telefono?: string;
+  celular?: string;
+  fechaNacimiento?: string;
+  idGenero?: number;
+  matricula?: string;
+}
+
+export interface EstudianteImportadoResult {
+  fila: number;
+  nombreCompleto: string;
+  curp?: string;
+  correo?: string;
+  exitoso: boolean;
+  mensajeError?: string;
+  idPersona?: number;
+  idEstudiante?: number;
+  matriculaGenerada?: string;
+  idEstudianteGrupo?: number;
+}
+
+export interface ImportarEstudiantesGrupoResponse {
+  idGrupo: number;
+  nombreGrupo: string;
+  planEstudios: string;
+  totalProcesados: number;
+  exitosos: number;
+  fallidos: number;
+  personasCreadas: number;
+  estudiantesCreados: number;
+  inscripcionesCreadas: number;
+  resultados: EstudianteImportadoResult[];
+}
+
+/**
+ * Importa estudiantes desde Excel creando Persona, Estudiante e inscribiéndolos al grupo.
+ * Flujo completo: Persona → Estudiante (con matrícula autogenerada) → EstudianteGrupo
+ */
+export async function importarEstudiantesCompleto(
+  idGrupo: number,
+  estudiantes: EstudianteImportar[],
+  observaciones?: string
+): Promise<ImportarEstudiantesGrupoResponse> {
+  const { data } = await apiClient.post<ImportarEstudiantesGrupoResponse>(
+    `/grupos/${idGrupo}/importar-estudiantes`,
+    { idGrupo, estudiantes, observaciones }
+  );
+  return data;
+}

@@ -4,10 +4,11 @@ export interface AcademicPeriod {
   idPeriodoAcademico: number;
   clave: string;
   nombre: string;
+  idPeriodicidad: number;
   periodicidad: string;
   fechaInicio: string;
   fechaFin: string;
-  esPeriodoActual: boolean; // NUEVO: Indica si es el periodo activo
+  esPeriodoActual: boolean;
 }
 
 export interface PayloadCreateAcademicPeriod {

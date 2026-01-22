@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
-import { Check, DollarSign, Search, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, DollarSign, FileText, Printer, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -29,8 +29,9 @@ import {
   formatReceiptStatus,
   getReceiptStatusVariant,
 } from "@/lib/payment-utils";
-import { buscarRecibosParaCobro, descargarComprobantePago, obtenerMediosPago, registrarPagoCaja } from "@/services/payments-service";
+import { buscarRecibosParaCobro, descargarComprobantePago, imprimirReciboPdf, obtenerMediosPago, quitarRecargoRecibo, registrarPagoCaja } from "@/services/payments-service";
 import type { MedioPago, RecibosParaCobro } from "@/types/payment";
+import type { Receipt } from "@/types/receipt";
 
 export default function CashierPage() {
   // Estado de búsqueda
@@ -52,6 +53,9 @@ export default function CashierPage() {
 
   // Estado de procesamiento
   const [procesando, setProcesando] = useState(false);
+
+  // Estado para recibos expandidos (mostrar desglose)
+  const [recibosExpandidos, setRecibosExpandidos] = useState<Set<number>>(new Set());
 
   // Cargar medios de pago al montar
   useEffect(() => {
@@ -113,6 +117,49 @@ export default function CashierPage() {
     } else {
       const todosIds = new Set(resultado?.recibos.map((r) => r.idRecibo));
       setRecibosSeleccionados(todosIds);
+    }
+  }
+
+  function toggleExpandido(idRecibo: number) {
+    const newSet = new Set(recibosExpandidos);
+    if (newSet.has(idRecibo)) {
+      newSet.delete(idRecibo);
+    } else {
+      newSet.add(idRecibo);
+    }
+    setRecibosExpandidos(newSet);
+  }
+
+  function expandirTodos() {
+    if (recibosExpandidos.size === resultado?.recibos.length) {
+      setRecibosExpandidos(new Set());
+    } else {
+      const todosIds = new Set(resultado?.recibos.map((r) => r.idRecibo));
+      setRecibosExpandidos(todosIds);
+    }
+  }
+
+  async function handleQuitarRecargo(idRecibo: number, folio: string) {
+    const motivo = prompt(`¿Cuál es el motivo para condonar el recargo del recibo ${folio}?`);
+    if (!motivo) {
+      toast.error("Debe proporcionar un motivo para condonar el recargo");
+      return;
+    }
+
+    try {
+      const resultado = await quitarRecargoRecibo(idRecibo, motivo);
+      toast.success(resultado.message);
+      // Recargar los recibos para reflejar el cambio
+      if (criterio) {
+        await buscar();
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } } };
+      if (err.response?.status === 403) {
+        toast.error("No tiene permisos para condonar recargos. Solo ADMIN, DIRECTOR o FINANZAS pueden realizar esta acción.");
+      } else {
+        toast.error(err.response?.data?.message || "Error al quitar el recargo");
+      }
     }
   }
 
@@ -285,8 +332,20 @@ export default function CashierPage() {
           {/* Recibos Pendientes */}
           <Card className="border-2 overflow-hidden" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
             <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
-              <CardTitle style={{ color: '#14356F' }}>Recibos Pendientes ({resultado.recibos.length})</CardTitle>
-              <CardDescription>Selecciona los recibos a pagar</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle style={{ color: '#14356F' }}>Recibos Pendientes ({resultado.recibos.length})</CardTitle>
+                  <CardDescription>Selecciona los recibos a pagar - Haz clic en el folio para ver el desglose</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={expandirTodos}
+                  style={{ borderColor: '#14356F', color: '#14356F' }}
+                >
+                  {recibosExpandidos.size === resultado.recibos.length ? "Colapsar Todos" : "Expandir Todos"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
@@ -298,6 +357,7 @@ export default function CashierPage() {
                         onCheckedChange={toggleTodos}
                       />
                     </TableHead>
+                    <TableHead className="w-12"></TableHead>
                     <TableHead className="text-white font-semibold">Folio</TableHead>
                     <TableHead className="text-white font-semibold">Periodo</TableHead>
                     <TableHead className="text-white font-semibold">Vencimiento</TableHead>
@@ -305,6 +365,7 @@ export default function CashierPage() {
                     <TableHead className="text-right text-white font-semibold">Recargo</TableHead>
                     <TableHead className="text-right text-white font-semibold">Total a Pagar</TableHead>
                     <TableHead className="text-white font-semibold">Estado</TableHead>
+                    <TableHead className="text-white font-semibold w-12">PDF</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -312,42 +373,159 @@ export default function CashierPage() {
                     const recargo = calcularRecargo(recibo.fechaVencimiento, recibo.saldo);
                     const total = recibo.saldo + recargo;
                     const diasVencido = calcularDiasVencido(recibo.fechaVencimiento);
+                    const isExpandido = recibosExpandidos.has(recibo.idRecibo);
 
                     return (
-                      <TableRow key={recibo.idRecibo}>
-                        <TableCell>
-                          <Checkbox
-                            checked={recibosSeleccionados.has(recibo.idRecibo)}
-                            onCheckedChange={() => toggleRecibo(recibo.idRecibo)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-mono">{recibo.folio}</TableCell>
-                        <TableCell>{recibo.nombrePeriodo}</TableCell>
-                        <TableCell>
-                          <div>
-                            {new Date(recibo.fechaVencimiento).toLocaleDateString("es-MX")}
-                            {diasVencido > 0 && (
-                              <Badge variant="destructive" className="ml-2">
-                                {diasVencido} día(s) vencido
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(recibo.saldo)}
-                        </TableCell>
-                        <TableCell className="text-right text-red-600">
-                          {recargo > 0 ? formatCurrency(recargo) : "-"}
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatCurrency(total)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getReceiptStatusVariant(recibo.estatus)}>
-                            {formatReceiptStatus(recibo.estatus)}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
+                      <Fragment key={recibo.idRecibo}>
+                        <TableRow
+                          className={isExpandido ? "border-b-0" : ""}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              checked={recibosSeleccionados.has(recibo.idRecibo)}
+                              onCheckedChange={() => toggleRecibo(recibo.idRecibo)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="p-0 h-6 w-6"
+                              onClick={() => toggleExpandido(recibo.idRecibo)}
+                            >
+                              {isExpandido ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableCell>
+                          <TableCell
+                            className="font-mono cursor-pointer hover:text-blue-600"
+                            onClick={() => toggleExpandido(recibo.idRecibo)}
+                          >
+                            {recibo.folio}
+                          </TableCell>
+                          <TableCell>{recibo.nombrePeriodo}</TableCell>
+                          <TableCell>
+                            <div>
+                              {new Date(recibo.fechaVencimiento).toLocaleDateString("es-MX")}
+                              {diasVencido > 0 && (
+                                <Badge variant="destructive" className="ml-2">
+                                  {diasVencido} día(s) vencido
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatCurrency(recibo.saldo)}
+                          </TableCell>
+                          <TableCell className="text-right text-red-600">
+                            {recargo > 0 ? formatCurrency(recargo) : "-"}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {formatCurrency(total)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={getReceiptStatusVariant(recibo.estatus)}>
+                              {formatReceiptStatus(recibo.estatus)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="p-0 h-6 w-6"
+                              onClick={async () => {
+                                try {
+                                  await imprimirReciboPdf(recibo.idRecibo, recibo.folio ?? undefined);
+                                } catch (error) {
+                                  toast.error("Error al generar el PDF del recibo");
+                                  console.error(error);
+                                }
+                              }}
+                              title="Imprimir Recibo"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        {/* Fila de desglose expandible */}
+                        {isExpandido && (
+                          <TableRow className="bg-slate-50 hover:bg-slate-50">
+                            <TableCell colSpan={10} className="py-0">
+                              <div className="py-4 px-6">
+                                <div className="text-sm font-semibold mb-2" style={{ color: '#14356F' }}>
+                                  Desglose del Recibo {recibo.folio}
+                                </div>
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="bg-slate-100">
+                                      <TableHead className="text-xs font-semibold">No.</TableHead>
+                                      <TableHead className="text-xs font-semibold">Descripción</TableHead>
+                                      <TableHead className="text-xs font-semibold text-right">Cantidad</TableHead>
+                                      <TableHead className="text-xs font-semibold text-right">P. Unitario</TableHead>
+                                      <TableHead className="text-xs font-semibold text-right">Importe</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {recibo.detalles && recibo.detalles.length > 0 ? (
+                                      recibo.detalles.map((detalle, idx) => (
+                                        <TableRow key={detalle.idReciboDetalle || idx} className="border-b border-slate-200">
+                                          <TableCell className="text-xs py-2">{idx + 1}</TableCell>
+                                          <TableCell className="text-xs py-2">{detalle.descripcion}</TableCell>
+                                          <TableCell className="text-xs py-2 text-right">{detalle.cantidad}</TableCell>
+                                          <TableCell className="text-xs py-2 text-right">{formatCurrency(detalle.precioUnitario)}</TableCell>
+                                          <TableCell className="text-xs py-2 text-right font-medium">{formatCurrency(detalle.importe)}</TableCell>
+                                        </TableRow>
+                                      ))
+                                    ) : (
+                                      <TableRow>
+                                        <TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-4">
+                                          Sin detalles disponibles
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
+                                    {/* Fila de totales */}
+                                    <TableRow className="bg-slate-100 font-semibold">
+                                      <TableCell colSpan={4} className="text-right text-xs">Subtotal:</TableCell>
+                                      <TableCell className="text-right text-xs">{formatCurrency(recibo.subtotal)}</TableCell>
+                                    </TableRow>
+                                    {recibo.descuento > 0 && (
+                                      <TableRow className="text-green-600">
+                                        <TableCell colSpan={4} className="text-right text-xs">Descuento:</TableCell>
+                                        <TableCell className="text-right text-xs">-{formatCurrency(recibo.descuento)}</TableCell>
+                                      </TableRow>
+                                    )}
+                                    {recargo > 0 && (
+                                      <TableRow className="text-red-600">
+                                        <TableCell colSpan={3} className="text-right text-xs">Recargo por mora:</TableCell>
+                                        <TableCell className="text-right text-xs">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-5 px-2 text-red-600 hover:text-red-800 hover:bg-red-50"
+                                            onClick={() => handleQuitarRecargo(recibo.idRecibo, recibo.folio || "")}
+                                            title="Condonar recargo (requiere permisos)"
+                                          >
+                                            <Trash2 className="h-3 w-3 mr-1" />
+                                            Quitar
+                                          </Button>
+                                        </TableCell>
+                                        <TableCell className="text-right text-xs">+{formatCurrency(recargo)}</TableCell>
+                                      </TableRow>
+                                    )}
+                                    <TableRow className="bg-blue-50 font-bold">
+                                      <TableCell colSpan={4} className="text-right text-sm" style={{ color: '#14356F' }}>Total a Pagar Hoy:</TableCell>
+                                      <TableCell className="text-right text-sm" style={{ color: '#14356F' }}>{formatCurrency(total)}</TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </Fragment>
                     );
                   })}
                 </TableBody>

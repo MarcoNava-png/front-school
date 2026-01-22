@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,10 +23,19 @@ import { Periodicity } from "@/types/catalog";
 interface CreateAcademicPeriodDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function CreateAcademicPeriodDialog({ open, setOpen }: CreateAcademicPeriodDialogProps) {
-  const form = useForm();
+export function CreateAcademicPeriodDialog({ open, setOpen, onSuccess }: CreateAcademicPeriodDialogProps) {
+  const form = useForm({
+    defaultValues: {
+      clave: "",
+      nombre: "",
+      idPeriodicidad: "",
+      fechaInicio: "",
+      fechaFin: "",
+    },
+  });
   const [periodicity, setPeriodicity] = useState<Periodicity[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,8 +54,10 @@ export function CreateAcademicPeriodDialog({ open, setOpen }: CreateAcademicPeri
       });
       setOpen(false);
       form.reset();
+      onSuccess?.();
+      toast.success("Periodo académico creado exitosamente");
     } catch {
-      // Manejar error
+      toast.error("Error al crear el periodo académico");
     } finally {
       setLoading(false);
     }
@@ -65,16 +77,16 @@ export function CreateAcademicPeriodDialog({ open, setOpen }: CreateAcademicPeri
             <div className="grid gap-4 py-2">
               <FormField
                 name="clave"
-                render={({ field }) => <Input {...field} placeholder="Clave" required className="w-full" />}
+                render={({ field }) => <Input {...field} value={field.value ?? ""} placeholder="Clave" required className="w-full" />}
               />
               <FormField
                 name="nombre"
-                render={({ field }) => <Input {...field} placeholder="Nombre" required className="w-full" />}
+                render={({ field }) => <Input {...field} value={field.value ?? ""} placeholder="Nombre" required className="w-full" />}
               />
               <FormField
                 name="idPeriodicidad"
                 render={({ field }) => (
-                  <Select {...field} onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Periodicidad" />
                     </SelectTrigger>
@@ -91,13 +103,13 @@ export function CreateAcademicPeriodDialog({ open, setOpen }: CreateAcademicPeri
               <FormField
                 name="fechaInicio"
                 render={({ field }) => (
-                  <Input {...field} type="date" placeholder="Fecha de inicio" required className="w-full" />
+                  <Input {...field} value={field.value ?? ""} type="date" placeholder="Fecha de inicio" required className="w-full" />
                 )}
               />
               <FormField
                 name="fechaFin"
                 render={({ field }) => (
-                  <Input {...field} type="date" placeholder="Fecha de fin" required className="w-full" />
+                  <Input {...field} value={field.value ?? ""} type="date" placeholder="Fecha de fin" required className="w-full" />
                 )}
               />
             </div>
