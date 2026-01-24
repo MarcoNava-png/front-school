@@ -20,7 +20,7 @@ export interface PayloadCreateTeacher {
   curp: string;
   calle: string;
   numeroExterior: string;
-  numeroInterior: string;
+  numeroInterior?: string;
   codigoPostalId: number;
   idEstadoCivil: number;
   noEmpleado: string;

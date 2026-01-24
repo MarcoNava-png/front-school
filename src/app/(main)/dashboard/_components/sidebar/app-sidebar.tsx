@@ -10,7 +10,6 @@ import { Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -21,7 +20,6 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { sidebarItems, filterSidebarByModules } from "@/navigation/sidebar/sidebar-items";
 
 import { NavMain } from "./nav-main";
-import { NavUser } from "./nav-user";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { accessibleModules, isLoading, isAdmin } = usePermissions();
@@ -84,9 +82,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent className="px-2 py-4">
         <NavMain items={filteredItems} />
       </SidebarContent>
-      <SidebarFooter className="border-t border-white/10 p-2">
-        <NavUser />
-      </SidebarFooter>
     </Sidebar>
   );
 }

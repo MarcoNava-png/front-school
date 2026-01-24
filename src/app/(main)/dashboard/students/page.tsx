@@ -77,7 +77,14 @@ export default function Page() {
     }
   }, [selectedPeriodId]);
 
-  useEffect(() => {
+  // Efecto para aplicar filtros
+  const applyFilters = useCallback(() => {
+    // No hacer nada si no hay estudiantes cargados
+    if (allStudents.length === 0) {
+      return;
+    }
+
+    // Prioridad de filtros: grupo-materia > grupo > plan > todos
     if (selectedGrupoMateriaId && selectedGrupoMateriaId !== "all") {
       setFilterType("grupomateria");
       filterStudentsByGrupoMateria();
@@ -87,11 +94,16 @@ export default function Page() {
     } else if (selectedStudyPlanId && selectedStudyPlanId !== "all") {
       setFilterType("plan");
       filterStudentsByPlan();
-    } else if (allStudents.length > 0) {
+    } else {
       setFilterType("none");
-      setStudents({ ...students!, items: allStudents });
+      setStudents((prev) => prev ? { ...prev, items: allStudents } : null);
     }
-  }, [selectedGrupoMateriaId, selectedGrupoId, selectedStudyPlanId]);
+
+  }, [selectedGrupoMateriaId, selectedGrupoId, selectedStudyPlanId, allStudents.length]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const loadInitialData = async () => {
     try {
@@ -318,9 +330,11 @@ export default function Page() {
                   value={selectedStudyPlanId}
                   onValueChange={(value) => {
                     setSelectedStudyPlanId(value);
-                    setSelectedPeriodId("all");
-                    setSelectedGrupoId("all");
-                    setSelectedGrupoMateriaId("all");
+                    // Solo limpiar grupo y grupo-materia si se selecciona un plan
+                    if (value !== "all") {
+                      setSelectedGrupoId("all");
+                      setSelectedGrupoMateriaId("all");
+                    }
                   }}
                 >
                   <SelectTrigger className="text-sm w-full [&>span]:truncate [&>span]:block [&>span]:text-left">
@@ -346,7 +360,9 @@ export default function Page() {
                   value={selectedPeriodId}
                   onValueChange={(value) => {
                     setSelectedPeriodId(value);
-                    setSelectedStudyPlanId("all");
+                    // Solo limpiar grupo y grupo-materia al cambiar periodo (no el plan)
+                    setSelectedGrupoId("all");
+                    setSelectedGrupoMateriaId("all");
                   }}
                 >
                   <SelectTrigger className="text-sm w-full [&>span]:truncate [&>span]:block [&>span]:text-left">
@@ -372,8 +388,10 @@ export default function Page() {
                   value={selectedGrupoId}
                   onValueChange={(value) => {
                     setSelectedGrupoId(value);
-                    setSelectedGrupoMateriaId("all");
-                    setSelectedStudyPlanId("all");
+                    // Grupo y Grupo-Materia son mutuamente excluyentes
+                    if (value !== "all") {
+                      setSelectedGrupoMateriaId("all");
+                    }
                   }}
                   disabled={selectedPeriodId === "all" || filterLoading}
                 >
@@ -400,8 +418,10 @@ export default function Page() {
                   value={selectedGrupoMateriaId}
                   onValueChange={(value) => {
                     setSelectedGrupoMateriaId(value);
-                    setSelectedGrupoId("all");
-                    setSelectedStudyPlanId("all");
+                    // Grupo y Grupo-Materia son mutuamente excluyentes
+                    if (value !== "all") {
+                      setSelectedGrupoId("all");
+                    }
                   }}
                   disabled={selectedPeriodId === "all" || filterLoading}
                 >

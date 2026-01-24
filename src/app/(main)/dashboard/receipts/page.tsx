@@ -113,10 +113,12 @@ export default function ReceiptsAdminPage() {
       }
 
       const data = await listarRecibos(params);
-      setRecibos(data);
+      // Asegurar que siempre sea un array
+      setRecibos(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error("Error al buscar recibos");
       console.error(error);
+      setRecibos([]); // Limpiar en caso de error
     } finally {
       setLoading(false);
     }

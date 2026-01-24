@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Calendar, CalendarCheck, CalendarClock, CalendarX, Search, Star, Pencil, Trash2, MoreHorizontal, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { TablePagination } from "@/components/shared/table-pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +47,8 @@ export default function AcademicPeriodsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [open, setOpen] = useState(false);
 
   // Estados para edición y eliminación
@@ -80,6 +83,23 @@ export default function AcademicPeriodsPage() {
     p.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.clave?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Paginación
+  const totalPages = Math.ceil(filteredPeriods.length / pageSize);
+  const paginatedPeriods = filteredPeriods.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   // Calcular estadísticas
   const periodosActivos = periods.length; // Todos los periodos se consideran activos
@@ -234,7 +254,7 @@ export default function AcademicPeriodsPage() {
               <Input
                 placeholder="Buscar por nombre, clave..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -256,7 +276,7 @@ export default function AcademicPeriodsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPeriods.length === 0 ? (
+              {paginatedPeriods.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
@@ -266,7 +286,7 @@ export default function AcademicPeriodsPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredPeriods.map((period, index) => (
+                paginatedPeriods.map((period, index) => (
                   <TableRow
                     key={period.idPeriodoAcademico}
                     className={`${index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"} ${period.esPeriodoActual ? "ring-2 ring-yellow-400 ring-inset" : ""}`}
@@ -354,6 +374,14 @@ export default function AcademicPeriodsPage() {
               )}
             </TableBody>
           </Table>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredPeriods.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
         </CardContent>
       </Card>
 

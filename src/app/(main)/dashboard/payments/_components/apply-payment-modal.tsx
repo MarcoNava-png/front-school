@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 
+import { Search, User } from "lucide-react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,9 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { aplicarPago } from "@/services/payments-service";
-import { listReceiptsByPeriod } from "@/services/receipts-service";
-import { Receipt, ReceiptStatus } from "@/types/receipt";
+import { aplicarPago, buscarRecibosParaCobro } from "@/services/payments-service";
+import type { RecibosParaCobro } from "@/types/payment";
+import type { Receipt } from "@/types/receipt";
 
 interface ApplyPaymentModalProps {
   open: boolean;
@@ -29,64 +32,124 @@ interface ApplyPaymentModalProps {
 
 export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, montoPago }: ApplyPaymentModalProps) {
   const [loading, setLoading] = useState(false);
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [idEstudiante, setIdEstudiante] = useState<string>("");
-  const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("1");
-  const [aplicaciones, setAplicaciones] = useState<{ idReciboDetalle: number; monto: number }[]>([]);
-
-  const loadReceipts = async () => {
-    if (!idEstudiante || !idPeriodoAcademico) return;
-
-    try {
-      const data = await listReceiptsByPeriod(parseInt(idPeriodoAcademico), parseInt(idEstudiante));
-      // Filtrar solo recibos con saldo pendiente
-      const pendientes = data.filter(
-        (r) => r.saldo > 0 && (r.estatus === ReceiptStatus.PENDIENTE || r.estatus === ReceiptStatus.PARCIAL),
-      );
-      setReceipts(pendientes);
-    } catch (error) {
-      console.error("Error loading receipts:", error);
-      toast.error("Error al cargar recibos del estudiante");
-    }
-  };
+  const [buscando, setBuscando] = useState(false);
+  const [criterio, setCriterio] = useState("");
+  const [resultado, setResultado] = useState<RecibosParaCobro | null>(null);
+  const [recibosSeleccionados, setRecibosSeleccionados] = useState<Set<number>>(new Set());
+  const [montosAplicar, setMontosAplicar] = useState<Record<number, number>>({});
 
   useEffect(() => {
     if (open) {
-      setAplicaciones([]);
-      setReceipts([]);
-      setIdEstudiante("");
+      setCriterio("");
+      setResultado(null);
+      setRecibosSeleccionados(new Set());
+      setMontosAplicar({});
     }
   }, [open]);
 
-  const handleAddAplicacion = (idReciboDetalle: number, maxMonto: number) => {
-    const montoAplicado = aplicaciones.reduce((sum, a) => sum + a.monto, 0);
-    const disponible = montoPago - montoAplicado;
-
-    if (disponible <= 0) {
-      toast.error("El pago ya está completamente aplicado");
+  const buscar = async () => {
+    if (!criterio.trim()) {
+      toast.error("Ingresa una matrícula o nombre del estudiante");
       return;
     }
 
-    const montoAAplicar = Math.min(disponible, maxMonto);
+    setBuscando(true);
+    try {
+      const data = await buscarRecibosParaCobro(criterio.trim());
 
-    setAplicaciones([...aplicaciones, { idReciboDetalle, monto: montoAAplicar }]);
+      if (data.multiple && data.estudiantes) {
+        toast.error("Se encontraron múltiples estudiantes. Sé más específico en la búsqueda.");
+        setResultado(null);
+      } else if (data.recibos.length === 0) {
+        toast.info("No se encontraron recibos pendientes para este estudiante");
+        setResultado(null);
+      } else {
+        setResultado(data);
+        // Inicializar montos con el saldo de cada recibo (limitado al monto disponible)
+        const montosIniciales: Record<number, number> = {};
+        let disponible = montoPago;
+        for (const recibo of data.recibos) {
+          const montoRecibo = recibo.saldo + (recibo.recargos ?? 0);
+          const montoAAplicar = Math.min(montoRecibo, disponible);
+          montosIniciales[recibo.idRecibo] = montoAAplicar;
+          disponible -= montoAAplicar;
+          if (disponible <= 0) break;
+        }
+        setMontosAplicar(montosIniciales);
+        toast.success(`Se encontraron ${data.recibos.length} recibo(s) pendiente(s)`);
+      }
+    } catch (error: unknown) {
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(message ?? "No se encontró el estudiante");
+      setResultado(null);
+    } finally {
+      setBuscando(false);
+    }
   };
 
-  const handleRemoveAplicacion = (index: number) => {
-    setAplicaciones(aplicaciones.filter((_, i) => i !== index));
+  const toggleRecibo = (idRecibo: number) => {
+    const newSet = new Set(recibosSeleccionados);
+    if (newSet.has(idRecibo)) {
+      newSet.delete(idRecibo);
+    } else {
+      newSet.add(idRecibo);
+    }
+    setRecibosSeleccionados(newSet);
+  };
+
+  const handleMontoChange = (idRecibo: number, valor: string) => {
+    const monto = parseFloat(valor) || 0;
+    setMontosAplicar(prev => ({ ...prev, [idRecibo]: monto }));
+  };
+
+  const calcularTotalAplicar = (): number => {
+    return Array.from(recibosSeleccionados).reduce((sum, idRecibo) => {
+      return sum + (montosAplicar[idRecibo] || 0);
+    }, 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (aplicaciones.length === 0) {
-      toast.error("Debes aplicar el pago a al menos un recibo");
+    if (recibosSeleccionados.size === 0) {
+      toast.error("Selecciona al menos un recibo");
       return;
     }
 
-    const totalAplicado = aplicaciones.reduce((sum, a) => sum + a.monto, 0);
-    if (totalAplicado > montoPago) {
-      toast.error("El monto aplicado excede el monto del pago");
+    const totalAplicar = calcularTotalAplicar();
+    if (totalAplicar <= 0) {
+      toast.error("El monto a aplicar debe ser mayor a 0");
+      return;
+    }
+
+    if (totalAplicar > montoPago + 0.01) {
+      toast.error("El monto total excede el monto del pago");
+      return;
+    }
+
+    // Construir aplicaciones (necesitamos los detalles de cada recibo)
+    const aplicaciones: { idReciboDetalle: number; monto: number }[] = [];
+
+    for (const idRecibo of recibosSeleccionados) {
+      const recibo = resultado?.recibos.find(r => r.idRecibo === idRecibo);
+      if (!recibo || !recibo.detalles || recibo.detalles.length === 0) continue;
+
+      let montoRestante = montosAplicar[idRecibo] || 0;
+
+      // Distribuir el monto entre los detalles del recibo
+      for (const detalle of recibo.detalles) {
+        if (montoRestante <= 0) break;
+        const montoDetalle = Math.min(detalle.precioUnitario * detalle.cantidad, montoRestante);
+        aplicaciones.push({
+          idReciboDetalle: detalle.idReciboDetalle,
+          monto: montoDetalle,
+        });
+        montoRestante -= montoDetalle;
+      }
+    }
+
+    if (aplicaciones.length === 0) {
+      toast.error("No se pudieron determinar los detalles de los recibos");
       return;
     }
 
@@ -94,131 +157,162 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
 
     try {
       await aplicarPago({ idPago, aplicaciones });
-      toast.success("Pago aplicado exitosamente");
+      toast.success("Pago aplicado exitosamente a los recibos seleccionados");
       onSuccess();
       onOpenChange(false);
-    } catch (error) {
-      console.error("Error applying payment:", error);
-      toast.error("Error al aplicar el pago");
+    } catch (error: unknown) {
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(message ?? "Error al aplicar el pago");
     } finally {
       setLoading(false);
     }
   };
 
-  const montoAplicado = aplicaciones.reduce((sum, a) => sum + a.monto, 0);
-  const disponible = montoPago - montoAplicado;
+  const totalAplicar = calcularTotalAplicar();
+  const disponible = montoPago - totalAplicar;
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(value);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Aplicar Pago a Recibos</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Aplicar Pago a Recibos
+            </DialogTitle>
             <DialogDescription>
-              Pago ID: {idPago} - Monto:{" "}
-              {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(montoPago)}
+              Pago #{idPago} - Monto: <span className="font-semibold text-foreground">{formatCurrency(montoPago)}</span>
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            {/* Buscar estudiante */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="idEstudiante">ID Estudiante</Label>
+            {/* Búsqueda de estudiante */}
+            <div className="space-y-2">
+              <Label>Buscar Estudiante</Label>
+              <div className="flex gap-2">
                 <Input
-                  id="idEstudiante"
-                  type="number"
-                  value={idEstudiante}
-                  onChange={(e) => setIdEstudiante(e.target.value)}
-                  placeholder="Ingresa ID del estudiante"
+                  placeholder="Matrícula o nombre del estudiante"
+                  value={criterio}
+                  onChange={(e) => setCriterio(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), buscar())}
+                  disabled={buscando}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="idPeriodo">ID Periodo</Label>
-                <Input
-                  id="idPeriodo"
-                  type="number"
-                  value={idPeriodoAcademico}
-                  onChange={(e) => setIdPeriodoAcademico(e.target.value)}
-                />
+                <Button type="button" onClick={buscar} disabled={buscando} variant="secondary">
+                  <Search className="w-4 h-4 mr-2" />
+                  {buscando ? "Buscando..." : "Buscar"}
+                </Button>
               </div>
             </div>
 
-            <Button type="button" onClick={loadReceipts} variant="outline" className="w-full">
-              Buscar Recibos del Estudiante
-            </Button>
-
-            {/* Resumen de aplicación */}
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">Monto del Pago:</span>
-                <span className="font-bold">
-                  {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(montoPago)}
-                </span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">Monto Aplicado:</span>
-                <span className="font-bold text-green-600">
-                  {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(montoAplicado)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Disponible:</span>
-                <span className="font-bold text-orange-600">
-                  {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(disponible)}
-                </span>
-              </div>
-            </div>
-
-            {/* Recibos disponibles */}
-            {receipts.length > 0 && (
-              <div className="space-y-2">
-                <Label>Recibos con Saldo Pendiente</Label>
-                <div className="max-h-[200px] overflow-y-auto border rounded-lg">
-                  {receipts.map((receipt) => (
-                    <div key={receipt.idRecibo} className="flex items-center justify-between p-3 border-b last:border-0">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">
-                          Folio: {receipt.folio ?? "N/A"} - Saldo:{" "}
-                          {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(receipt.saldo)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {receipt.detalles.map((d) => d.descripcion).join(", ")}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleAddAplicacion(receipt.detalles[0]?.idReciboDetalle, receipt.saldo)}
-                        disabled={!receipt.detalles[0] || disponible <= 0}
-                      >
-                        Aplicar
-                      </Button>
-                    </div>
-                  ))}
+            {/* Información del estudiante encontrado */}
+            {resultado?.estudiante && (
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-full">
+                    <User className="w-5 h-5 text-blue-700" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-blue-900">{resultado.estudiante.nombreCompleto}</p>
+                    <p className="text-sm text-blue-700">
+                      Matrícula: <span className="font-mono font-semibold">{resultado.estudiante.matricula}</span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-blue-700">Adeudo Total</p>
+                    <p className="text-lg font-bold text-red-600">{formatCurrency(resultado.totalAdeudo)}</p>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Aplicaciones actuales */}
-            {aplicaciones.length > 0 && (
-              <div className="space-y-2">
-                <Label>Aplicaciones</Label>
-                <div className="border rounded-lg">
-                  {aplicaciones.map((app, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border-b last:border-0">
-                      <div>
-                        <p className="text-sm font-medium">Recibo Detalle ID: {app.idReciboDetalle}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Monto: {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(app.monto)}
-                        </p>
-                      </div>
-                      <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveAplicacion(index)}>
-                        Quitar
-                      </Button>
-                    </div>
-                  ))}
+            {/* Resumen de aplicación */}
+            {resultado && (
+              <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 rounded-lg border">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Monto del Pago</p>
+                  <p className="text-lg font-bold">{formatCurrency(montoPago)}</p>
                 </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">A Aplicar</p>
+                  <p className="text-lg font-bold text-green-600">{formatCurrency(totalAplicar)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Restante</p>
+                  <p className={`text-lg font-bold ${disponible < 0 ? 'text-red-600' : 'text-orange-600'}`}>
+                    {formatCurrency(disponible)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Lista de recibos pendientes */}
+            {resultado && resultado.recibos.length > 0 && (
+              <div className="space-y-2">
+                <Label>Recibos Pendientes ({resultado.recibos.length})</Label>
+                <div className="max-h-[300px] overflow-y-auto border rounded-lg divide-y">
+                  {resultado.recibos.map((recibo: Receipt) => {
+                    const isSelected = recibosSeleccionados.has(recibo.idRecibo);
+                    const totalRecibo = recibo.saldo + (recibo.recargos ?? 0);
+
+                    return (
+                      <div
+                        key={recibo.idRecibo}
+                        className={`p-3 ${isSelected ? 'bg-blue-50' : 'bg-white'} hover:bg-slate-50 transition-colors`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => toggleRecibo(recibo.idRecibo)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-mono font-semibold text-sm">{recibo.folio}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {recibo.nombrePeriodo || `Periodo ${recibo.idPeriodoAcademico}`}
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Vence: {new Date(recibo.fechaVencimiento).toLocaleDateString("es-MX")}
+                              {recibo.detalles?.map(d => d.descripcion).join(", ")}
+                            </div>
+                            <div className="flex gap-4 mt-1 text-sm">
+                              <span>Saldo: <span className="font-semibold">{formatCurrency(recibo.saldo)}</span></span>
+                              {(recibo.recargos ?? 0) > 0 && (
+                                <span className="text-red-600">Recargo: {formatCurrency(recibo.recargos ?? 0)}</span>
+                              )}
+                              <span className="font-bold">Total: {formatCurrency(totalRecibo)}</span>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="w-32">
+                              <Label className="text-xs">Monto a aplicar</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max={totalRecibo}
+                                value={montosAplicar[recibo.idRecibo] || 0}
+                                onChange={(e) => handleMontoChange(recibo.idRecibo, e.target.value)}
+                                className="h-8 text-sm"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {disponible < -0.01 && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">
+                  El monto a aplicar excede el monto del pago por {formatCurrency(Math.abs(disponible))}
+                </p>
               </div>
             )}
           </div>
@@ -227,8 +321,11 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading || aplicaciones.length === 0}>
-              {loading ? "Aplicando..." : "Aplicar Pago"}
+            <Button
+              type="submit"
+              disabled={loading || recibosSeleccionados.size === 0 || disponible < -0.01}
+            >
+              {loading ? "Aplicando..." : `Aplicar ${formatCurrency(totalAplicar)}`}
             </Button>
           </DialogFooter>
         </form>

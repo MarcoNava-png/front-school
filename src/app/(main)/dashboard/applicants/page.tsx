@@ -36,6 +36,7 @@ import { State } from "@/types/location";
 import { StudyPlan } from "@/types/study-plan";
 
 import { ApplicantLogsModal } from "./_components/applicant-logs-modal";
+import { ConveniosAspiranteModal } from "./_components/convenios-aspirante-modal";
 import { CreateApplicantModal } from "./_components/create-applicant-modal";
 import { DocumentsManagementModal } from "./_components/documents-management-modal";
 import { EnrollStudentModal } from "./_components/enroll-student-modal";
@@ -99,6 +100,8 @@ function Page() {
   const [applicantForDocuments, setApplicantForDocuments] = useState<Applicant | null>(null);
   const [receiptsModalOpen, setReceiptsModalOpen] = useState(false);
   const [applicantForReceipts, setApplicantForReceipts] = useState<Applicant | null>(null);
+  const [conveniosModalOpen, setConveniosModalOpen] = useState(false);
+  const [applicantForConvenios, setApplicantForConvenios] = useState<Applicant | null>(null);
   const [genres, setGenres] = useState<Genres[]>([]);
   const [civilStatus, setCivilStatus] = useState<CivilStatus[]>([]);
   const [campus, setCampus] = useState<Campus[]>([]);
@@ -126,22 +129,6 @@ function Page() {
     setLoading(true);
     getApplicantsList({ page: pageIndex + 1, pageSize, filter: filterToSend })
       .then((res: ApplicantsResponse) => {
-        console.log("=== DATOS DE ASPIRANTES ===");
-        console.log("Total items:", res.items.length);
-
-        // Buscar aspirante 84
-        const aspirante84 = res.items.find(a => a.idAspirante === 84);
-        if (aspirante84) {
-          console.log("ASPIRANTE 84 ENCONTRADO:");
-          console.log("- ID:", aspirante84.idAspirante);
-          console.log("- Nombre:", aspirante84.nombreCompleto);
-          console.log("- Estatus Pago:", aspirante84.estatusPago);
-          console.log("- Estatus Documentos:", aspirante84.estatusDocumentos);
-          console.log("- Objeto completo:", aspirante84);
-        } else {
-          console.log("ASPIRANTE 84 NO ENCONTRADO en la página actual");
-        }
-
         setData(res.items);
       })
       .finally(() => setLoading(false));
@@ -293,6 +280,9 @@ function Page() {
         applicantStatus={applicantStatus}
         states={states}
         onOpenChange={setOpen}
+        onApplicantCreated={() => {
+          loadApplicants();
+        }}
       />
 
       <Card className="overflow-hidden">
@@ -395,6 +385,19 @@ function Page() {
 
                     <Button
                       size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setApplicantForConvenios(applicant);
+                        setConveniosModalOpen(true);
+                      }}
+                      title="Gestionar convenios/promociones"
+                      className="h-6 px-1.5 text-[10px]"
+                    >
+                      Conv
+                    </Button>
+
+                    <Button
+                      size="sm"
                       variant="default"
                       onClick={() => {
                         setApplicantToEnroll(applicant);
@@ -452,6 +455,18 @@ function Page() {
           setApplicantForReceipts(null);
         }}
         onPaymentRegistered={() => {
+          loadApplicants();
+        }}
+      />
+
+      <ConveniosAspiranteModal
+        open={conveniosModalOpen}
+        applicant={applicantForConvenios}
+        onClose={() => {
+          setConveniosModalOpen(false);
+          setApplicantForConvenios(null);
+        }}
+        onConvenioChanged={() => {
           loadApplicants();
         }}
       />

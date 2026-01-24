@@ -2,9 +2,19 @@
 
 import { Fragment, useEffect, useState } from "react";
 
-import { Check, ChevronDown, ChevronRight, DollarSign, FileText, Printer, Search, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, DollarSign, Edit2, FileText, Printer, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +39,7 @@ import {
   formatReceiptStatus,
   getReceiptStatusVariant,
 } from "@/lib/payment-utils";
-import { buscarRecibosParaCobro, descargarComprobantePago, imprimirReciboPdf, obtenerMediosPago, quitarRecargoRecibo, registrarPagoCaja } from "@/services/payments-service";
+import { buscarRecibosParaCobro, descargarComprobantePago, imprimirReciboPdf, modificarDetalleRecibo, modificarRecargoRecibo, obtenerMediosPago, quitarRecargoRecibo, registrarPagoCaja } from "@/services/payments-service";
 import type { MedioPago, RecibosParaCobro } from "@/types/payment";
 import type { Receipt } from "@/types/receipt";
 
@@ -56,6 +66,34 @@ export default function CashierPage() {
 
   // Estado para recibos expandidos (mostrar desglose)
   const [recibosExpandidos, setRecibosExpandidos] = useState<Set<number>>(new Set());
+
+  // Estado para edición de detalles
+  const [editingDetail, setEditingDetail] = useState<{
+    idRecibo: number;
+    idReciboDetalle: number;
+    descripcion: string;
+    montoActual: number;
+  } | null>(null);
+  const [nuevoMontoDetalle, setNuevoMontoDetalle] = useState<string>("");
+  const [motivoDetalle, setMotivoDetalle] = useState<string>("");
+  const [guardandoDetalle, setGuardandoDetalle] = useState(false);
+
+  // Estado para edición de recargo
+  const [editingRecargo, setEditingRecargo] = useState<{
+    idRecibo: number;
+    folio: string;
+    recargoActual: number;
+  } | null>(null);
+  const [nuevoRecargo, setNuevoRecargo] = useState<string>("");
+  const [motivoRecargo, setMotivoRecargo] = useState<string>("");
+  const [guardandoRecargo, setGuardandoRecargo] = useState(false);
+
+  // Estado para confirmación de quitar recargo
+  const [confirmQuitarRecargo, setConfirmQuitarRecargo] = useState<{
+    idRecibo: number;
+    folio: string;
+  } | null>(null);
+  const [motivoQuitarRecargo, setMotivoQuitarRecargo] = useState<string>("");
 
   // Cargar medios de pago al montar
   useEffect(() => {
@@ -139,16 +177,23 @@ export default function CashierPage() {
     }
   }
 
-  async function handleQuitarRecargo(idRecibo: number, folio: string) {
-    const motivo = prompt(`¿Cuál es el motivo para condonar el recargo del recibo ${folio}?`);
-    if (!motivo) {
+  function handleOpenQuitarRecargo(idRecibo: number, folio: string) {
+    setConfirmQuitarRecargo({ idRecibo, folio });
+    setMotivoQuitarRecargo("");
+  }
+
+  async function handleConfirmQuitarRecargo() {
+    if (!confirmQuitarRecargo) return;
+
+    if (!motivoQuitarRecargo.trim()) {
       toast.error("Debe proporcionar un motivo para condonar el recargo");
       return;
     }
 
     try {
-      const resultado = await quitarRecargoRecibo(idRecibo, motivo);
+      const resultado = await quitarRecargoRecibo(confirmQuitarRecargo.idRecibo, motivoQuitarRecargo);
       toast.success(resultado.message);
+      setConfirmQuitarRecargo(null);
       // Recargar los recibos para reflejar el cambio
       if (criterio) {
         await buscar();
@@ -163,13 +208,122 @@ export default function CashierPage() {
     }
   }
 
+  function handleOpenEditDetail(idRecibo: number, idReciboDetalle: number, descripcion: string, montoActual: number) {
+    setEditingDetail({ idRecibo, idReciboDetalle, descripcion, montoActual });
+    setNuevoMontoDetalle(montoActual.toString());
+    setMotivoDetalle("");
+  }
+
+  async function handleSaveDetailEdit() {
+    if (!editingDetail) return;
+
+    const monto = parseFloat(nuevoMontoDetalle);
+    if (isNaN(monto) || monto < 0) {
+      toast.error("Ingresa un monto válido");
+      return;
+    }
+
+    if (!motivoDetalle.trim()) {
+      toast.error("Debe proporcionar un motivo para la modificación");
+      return;
+    }
+
+    setGuardandoDetalle(true);
+    try {
+      const resultado = await modificarDetalleRecibo(
+        editingDetail.idRecibo,
+        editingDetail.idReciboDetalle,
+        monto,
+        motivoDetalle
+      );
+
+      if (resultado.exitoso) {
+        toast.success(resultado.mensaje);
+        setEditingDetail(null);
+        // Recargar los recibos
+        if (criterio) {
+          await buscar();
+        }
+      } else {
+        toast.error(resultado.mensaje);
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } } };
+      if (err.response?.status === 403) {
+        toast.error("No tiene permisos para modificar montos. Solo ADMIN, DIRECTOR o FINANZAS pueden realizar esta acción.");
+      } else {
+        toast.error(err.response?.data?.message || "Error al modificar el monto");
+      }
+    } finally {
+      setGuardandoDetalle(false);
+    }
+  }
+
+  function handleOpenEditRecargo(idRecibo: number, folio: string, recargoActual: number) {
+    setEditingRecargo({ idRecibo, folio, recargoActual });
+    setNuevoRecargo(recargoActual.toString());
+    setMotivoRecargo("");
+  }
+
+  async function handleSaveRecargoEdit() {
+    if (!editingRecargo) return;
+
+    const recargo = parseFloat(nuevoRecargo);
+    if (isNaN(recargo) || recargo < 0) {
+      toast.error("Ingresa un recargo válido");
+      return;
+    }
+
+    if (!motivoRecargo.trim()) {
+      toast.error("Debe proporcionar un motivo para la modificación");
+      return;
+    }
+
+    setGuardandoRecargo(true);
+    try {
+      const resultado = await modificarRecargoRecibo(
+        editingRecargo.idRecibo,
+        recargo,
+        motivoRecargo
+      );
+
+      if (resultado.exitoso) {
+        toast.success(resultado.mensaje);
+        setEditingRecargo(null);
+        // Recargar los recibos
+        if (criterio) {
+          await buscar();
+        }
+      } else {
+        toast.error(resultado.mensaje);
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } } };
+      if (err.response?.status === 403) {
+        toast.error("No tiene permisos para modificar recargos. Solo ADMIN, DIRECTOR o FINANZAS pueden realizar esta acción.");
+      } else {
+        toast.error(err.response?.data?.message || "Error al modificar el recargo");
+      }
+    } finally {
+      setGuardandoRecargo(false);
+    }
+  }
+
   function calcularTotalSeleccionado(): number {
     if (!resultado) return 0;
 
     return resultado.recibos
       .filter((r) => recibosSeleccionados.has(r.idRecibo))
       .reduce((sum, r) => {
-        const total = calcularTotalAPagarHoy(r.fechaVencimiento, r.saldo);
+        // Calcular recargo dinámicamente
+        const recargoCalculado = calcularRecargo(r.fechaVencimiento, r.saldo);
+
+        // Si fue modificado manualmente, usar valor de BD; sino calcular
+        const fueModificado = r.notas?.includes("RECARGO CONDONADO") ||
+                              r.notas?.includes("RECARGO MODIFICADO");
+        const recargo = fueModificado ? (r.recargos ?? 0) : recargoCalculado;
+
+        const total = r.saldo + recargo;
         return sum + total;
       }, 0);
   }
@@ -188,9 +342,10 @@ export default function CashierPage() {
       return { valido: false, montoIngresado, totalSeleccionado };
     }
 
-    if (Math.abs(montoIngresado - totalSeleccionado) > 0.01) {
+    // Permitir pagos parciales (monto menor o igual al total)
+    if (montoIngresado > totalSeleccionado + 0.01) {
       toast.error(
-        `El monto ingresado (${formatCurrency(montoIngresado)}) no coincide con el total seleccionado (${formatCurrency(totalSeleccionado)})`
+        `El monto ingresado (${formatCurrency(montoIngresado)}) excede el total seleccionado (${formatCurrency(totalSeleccionado)})`
       );
       return { valido: false, montoIngresado, totalSeleccionado };
     }
@@ -199,17 +354,43 @@ export default function CashierPage() {
   }
 
   async function procesarPago() {
-    const { valido, montoIngresado } = validarPago();
+    const { valido, montoIngresado, totalSeleccionado } = validarPago();
     if (!valido) return;
 
     setProcesando(true);
     try {
-      const recibosParaPago = resultado!.recibos
+      // Calcular totales por recibo
+      const recibosConTotales = resultado!.recibos
         .filter((r) => recibosSeleccionados.has(r.idRecibo))
-        .map((r) => ({
-          idRecibo: r.idRecibo,
-          montoAplicar: calcularTotalAPagarHoy(r.fechaVencimiento, r.saldo),
-        }));
+        .map((r) => {
+          const recargoCalculado = calcularRecargo(r.fechaVencimiento, r.saldo);
+          const fueModificado = r.notas?.includes("RECARGO CONDONADO") ||
+                                r.notas?.includes("RECARGO MODIFICADO");
+          const recargo = fueModificado ? (r.recargos ?? 0) : recargoCalculado;
+          const total = r.saldo + recargo;
+          return { idRecibo: r.idRecibo, total };
+        });
+
+      // Distribuir el monto entre los recibos (pago parcial o completo)
+      let montoRestante = montoIngresado;
+      const recibosParaPago = recibosConTotales
+        .map((r) => {
+          if (montoRestante <= 0) return null;
+          const montoAplicar = Math.min(r.total, montoRestante);
+          montoRestante -= montoAplicar;
+          return {
+            idRecibo: r.idRecibo,
+            montoAplicar: Math.round(montoAplicar * 100) / 100, // Redondear a 2 decimales
+          };
+        })
+        .filter((r): r is { idRecibo: number; montoAplicar: number } => r !== null && r.montoAplicar > 0);
+
+      // Mostrar info si es pago parcial
+      const esPagoParcial = montoIngresado < totalSeleccionado - 0.01;
+      if (esPagoParcial) {
+        const recibosAfectados = recibosParaPago.length;
+        toast.info(`Pago parcial: se aplicará a ${recibosAfectados} recibo(s)`);
+      }
 
       const pagoRegistrado = await registrarPagoCaja({
         fechaPago: new Date().toISOString(),
@@ -370,7 +551,17 @@ export default function CashierPage() {
                 </TableHeader>
                 <TableBody>
                   {resultado.recibos.map((recibo) => {
-                    const recargo = calcularRecargo(recibo.fechaVencimiento, recibo.saldo);
+                    // Calcular recargo dinámicamente
+                    const recargoCalculado = calcularRecargo(recibo.fechaVencimiento, recibo.saldo);
+
+                    // Determinar si el recargo fue modificado/condonado manualmente
+                    const fueModificadoManualmente = recibo.notas?.includes("RECARGO CONDONADO") ||
+                                                      recibo.notas?.includes("RECARGO MODIFICADO");
+
+                    // Si fue modificado manualmente, usar el valor de BD; sino calcular dinámicamente
+                    const recargo = fueModificadoManualmente
+                      ? (recibo.recargos ?? 0)
+                      : recargoCalculado;
                     const total = recibo.saldo + recargo;
                     const diasVencido = calcularDiasVencido(recibo.fechaVencimiento);
                     const isExpandido = recibosExpandidos.has(recibo.idRecibo);
@@ -473,7 +664,20 @@ export default function CashierPage() {
                                       recibo.detalles.map((detalle, idx) => (
                                         <TableRow key={detalle.idReciboDetalle || idx} className="border-b border-slate-200">
                                           <TableCell className="text-xs py-2">{idx + 1}</TableCell>
-                                          <TableCell className="text-xs py-2">{detalle.descripcion}</TableCell>
+                                          <TableCell className="text-xs py-2">
+                                            <div className="flex items-center gap-2">
+                                              {detalle.descripcion}
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                                onClick={() => handleOpenEditDetail(recibo.idRecibo, detalle.idReciboDetalle, detalle.descripcion, detalle.precioUnitario)}
+                                                title="Modificar monto"
+                                              >
+                                                <Edit2 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          </TableCell>
                                           <TableCell className="text-xs py-2 text-right">{detalle.cantidad}</TableCell>
                                           <TableCell className="text-xs py-2 text-right">{formatCurrency(detalle.precioUnitario)}</TableCell>
                                           <TableCell className="text-xs py-2 text-right font-medium">{formatCurrency(detalle.importe)}</TableCell>
@@ -497,24 +701,40 @@ export default function CashierPage() {
                                         <TableCell className="text-right text-xs">-{formatCurrency(recibo.descuento)}</TableCell>
                                       </TableRow>
                                     )}
-                                    {recargo > 0 && (
-                                      <TableRow className="text-red-600">
-                                        <TableCell colSpan={3} className="text-right text-xs">Recargo por mora:</TableCell>
-                                        <TableCell className="text-right text-xs">
+                                    {/* Siempre mostrar fila de recargos */}
+                                    <TableRow className={recargo > 0 ? "text-red-600" : "text-gray-500"}>
+                                      <TableCell colSpan={2} className="text-right text-xs">Recargo por mora:</TableCell>
+                                      <TableCell className="text-right text-xs">
+                                        <div className="flex items-center justify-end gap-1">
                                           <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-5 px-2 text-red-600 hover:text-red-800 hover:bg-red-50"
-                                            onClick={() => handleQuitarRecargo(recibo.idRecibo, recibo.folio || "")}
-                                            title="Condonar recargo (requiere permisos)"
+                                            className="h-5 px-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                            onClick={() => handleOpenEditRecargo(recibo.idRecibo, recibo.folio || "", recargo)}
+                                            title={recargo > 0 ? "Modificar recargo" : "Agregar recargo"}
                                           >
-                                            <Trash2 className="h-3 w-3 mr-1" />
-                                            Quitar
+                                            <Edit2 className="h-3 w-3 mr-1" />
+                                            {recargo > 0 ? "Modificar" : "Agregar"}
                                           </Button>
-                                        </TableCell>
-                                        <TableCell className="text-right text-xs">+{formatCurrency(recargo)}</TableCell>
-                                      </TableRow>
-                                    )}
+                                          {recargo > 0 && (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 px-2 text-red-600 hover:text-red-800 hover:bg-red-50"
+                                              onClick={() => handleOpenQuitarRecargo(recibo.idRecibo, recibo.folio || "")}
+                                              title="Condonar recargo (requiere permisos)"
+                                            >
+                                              <Trash2 className="h-3 w-3 mr-1" />
+                                              Quitar
+                                            </Button>
+                                          )}
+                                        </div>
+                                      </TableCell>
+                                      <TableCell className="text-right text-xs">
+                                        {recargo > 0 ? `+${formatCurrency(recargo)}` : "-"}
+                                      </TableCell>
+                                      <TableCell></TableCell>
+                                    </TableRow>
                                     <TableRow className="bg-blue-50 font-bold">
                                       <TableCell colSpan={4} className="text-right text-sm" style={{ color: '#14356F' }}>Total a Pagar Hoy:</TableCell>
                                       <TableCell className="text-right text-sm" style={{ color: '#14356F' }}>{formatCurrency(total)}</TableCell>
@@ -581,7 +801,7 @@ export default function CashierPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Monto Total</Label>
+                  <Label>Monto a Pagar</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -589,12 +809,22 @@ export default function CashierPage() {
                     value={monto}
                     onChange={(e) => setMonto(e.target.value)}
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Total de recibos seleccionados:{" "}
-                    <span className="font-semibold text-foreground">
-                      {formatCurrency(totalSeleccionado)}
-                    </span>
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">
+                      Total de recibos seleccionados:{" "}
+                      <span className="font-semibold text-foreground">
+                        {formatCurrency(totalSeleccionado)}
+                      </span>
+                    </p>
+                    {parseFloat(monto) > 0 && parseFloat(monto) < totalSeleccionado - 0.01 && (
+                      <p className="text-sm text-amber-600 font-medium">
+                        Pago parcial - Saldo restante: {formatCurrency(totalSeleccionado - parseFloat(monto))}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground italic">
+                      Se permiten pagos parciales. El monto se aplica de forma secuencial a los recibos seleccionados.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -639,6 +869,178 @@ export default function CashierPage() {
           )}
         </>
       )}
+
+      {/* Modal para modificar detalle (colegiatura, inscripción, etc.) */}
+      <AlertDialog open={editingDetail !== null} onOpenChange={(open) => !open && setEditingDetail(null)}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-blue-900">
+              <Edit2 className="h-5 w-5" />
+              Modificar Monto
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-2">
+                <p className="text-gray-700">
+                  Modificar el monto de: <strong>{editingDetail?.descripcion}</strong>
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-1">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-medium">Monto actual:</span> {formatCurrency(editingDetail?.montoActual || 0)}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nuevoMonto" className="text-gray-900">Nuevo monto *</Label>
+                  <Input
+                    id="nuevoMonto"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={nuevoMontoDetalle}
+                    onChange={(e) => setNuevoMontoDetalle(e.target.value)}
+                    className="text-lg"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="motivoDetalle" className="text-gray-900">Motivo de la modificación *</Label>
+                  <Input
+                    id="motivoDetalle"
+                    placeholder="Ej: Ajuste por cambio de precio"
+                    value={motivoDetalle}
+                    onChange={(e) => setMotivoDetalle(e.target.value)}
+                  />
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <p className="text-xs text-amber-800">
+                    Esta acción quedará registrada en la bitácora del recibo y se reflejará en el PDF.
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel disabled={guardandoDetalle}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSaveDetailEdit}
+              disabled={guardandoDetalle || !motivoDetalle.trim()}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {guardandoDetalle ? "Guardando..." : "Guardar Cambios"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal para agregar/modificar recargo */}
+      <AlertDialog open={editingRecargo !== null} onOpenChange={(open) => !open && setEditingRecargo(null)}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-blue-900">
+              <Edit2 className="h-5 w-5" />
+              {(editingRecargo?.recargoActual ?? 0) > 0 ? "Modificar Recargo" : "Agregar Recargo"}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-2">
+                <p className="text-gray-700">
+                  {(editingRecargo?.recargoActual ?? 0) > 0
+                    ? <>Modificar el recargo del recibo: <strong>{editingRecargo?.folio}</strong></>
+                    : <>Agregar recargo al recibo: <strong>{editingRecargo?.folio}</strong></>
+                  }
+                </p>
+                {(editingRecargo?.recargoActual ?? 0) > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-1">
+                    <p className="text-sm text-red-800">
+                      <span className="font-medium">Recargo actual:</span> {formatCurrency(editingRecargo?.recargoActual || 0)}
+                    </p>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="nuevoRecargo" className="text-gray-900">
+                    {(editingRecargo?.recargoActual ?? 0) > 0 ? "Nuevo recargo *" : "Monto del recargo *"}
+                  </Label>
+                  <Input
+                    id="nuevoRecargo"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={nuevoRecargo}
+                    onChange={(e) => setNuevoRecargo(e.target.value)}
+                    className="text-lg"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="motivoRecargo" className="text-gray-900">Motivo *</Label>
+                  <Input
+                    id="motivoRecargo"
+                    placeholder={(editingRecargo?.recargoActual ?? 0) > 0 ? "Ej: Acuerdo de pago" : "Ej: Recargo por mora"}
+                    value={motivoRecargo}
+                    onChange={(e) => setMotivoRecargo(e.target.value)}
+                  />
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <p className="text-xs text-amber-800">
+                    Esta acción quedará registrada en la bitácora del recibo y se reflejará en el PDF.
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel disabled={guardandoRecargo}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSaveRecargoEdit}
+              disabled={guardandoRecargo || !motivoRecargo.trim()}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {guardandoRecargo ? "Guardando..." : "Guardar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal para confirmar quitar recargo */}
+      <AlertDialog open={confirmQuitarRecargo !== null} onOpenChange={(open) => !open && setConfirmQuitarRecargo(null)}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-700">
+              <Trash2 className="h-5 w-5" />
+              Condonar Recargo
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-2">
+                <p className="text-gray-700">
+                  ¿Está seguro que desea condonar el recargo del recibo <strong>{confirmQuitarRecargo?.folio}</strong>?
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="motivoQuitar" className="text-gray-900">Motivo de la condonación *</Label>
+                  <Input
+                    id="motivoQuitar"
+                    placeholder="Ej: Acuerdo con el estudiante"
+                    value={motivoQuitarRecargo}
+                    onChange={(e) => setMotivoQuitarRecargo(e.target.value)}
+                  />
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-xs text-red-800">
+                    Esta acción eliminará el recargo por completo y quedará registrada en la bitácora.
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmQuitarRecargo}
+              disabled={!motivoQuitarRecargo.trim()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Condonar Recargo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

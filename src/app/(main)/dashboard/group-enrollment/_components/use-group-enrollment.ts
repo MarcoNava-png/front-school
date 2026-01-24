@@ -28,6 +28,8 @@ export function useGroupEnrollment() {
   const [enrollmentResult, setEnrollmentResult] = useState<GroupEnrollmentResult | null>(null);
   const [showForceEnrollDialog, setShowForceEnrollDialog] = useState(false);
   const [pendingEnrollment, setPendingEnrollment] = useState<{ idGrupo: number; codigoGrupo: string } | null>(null);
+  const [showAlreadyInGroupModal, setShowAlreadyInGroupModal] = useState(false);
+  const [alreadyInGroupInfo, setAlreadyInGroupInfo] = useState<{ studentName: string; groupCode: string } | null>(null);
 
   useEffect(() => {
     loadInitialData();
@@ -48,10 +50,6 @@ export function useGroupEnrollment() {
         getAcademicPeriods(),
       ]);
 
-      console.log("📚 Planes de estudio cargados:", plansData);
-      console.log("📅 Períodos académicos cargados:", periodsData);
-      console.log("👨‍🎓 Estudiantes cargados:", studentsData);
-
       setStudents(studentsData.items ?? []);
       setStudyPlans(plansData);
       setAcademicPeriods(periodsData);
@@ -61,10 +59,8 @@ export function useGroupEnrollment() {
         setSelectedPeriodId(activePeriod.idPeriodoAcademico.toString());
       }
 
-      // Mensaje de confirmación
       toast.success(`Cargados: ${plansData.length} planes, ${periodsData.length} períodos, ${studentsData.items?.length ?? 0} estudiantes`);
     } catch (error) {
-      console.error("❌ Error loading data:", error);
       toast.error("Error al cargar los datos");
     } finally {
       setInitialLoading(false);
@@ -80,7 +76,6 @@ export function useGroupEnrollment() {
       });
       setAvailableGroups(groups);
     } catch (error) {
-      console.error("Error loading groups:", error);
       toast.error("Error al cargar los grupos");
       setAvailableGroups([]);
     } finally {
@@ -93,7 +88,6 @@ export function useGroupEnrollment() {
     if (enrolledStudentId) {
       setStudents(prevStudents => prevStudents.filter(s => s.idEstudiante !== enrolledStudentId));
       setSelectedStudentId(null);
-      console.log(`✅ Estudiante ${enrolledStudentId} removido de la lista local`);
     } else {
       // Si no, recargar toda la lista desde el servidor
       const studentsData = await getStudentsList(1, 1000);
@@ -113,17 +107,11 @@ export function useGroupEnrollment() {
     setEnrolling(true);
     setEnrollingGroupId(idGrupo);
 
-    console.log(`🎯 Iniciando inscripción al grupo ${idGrupo} (${codigoGrupo})`);
-    console.log(`👤 Estudiante: ${student.nombreCompleto} (ID: ${selectedStudentId})`);
-    console.log(`⚡ Forzar inscripción: ${forceEnroll}`);
-
     try {
       const result = await enrollStudentInGroup(idGrupo, {
         idEstudiante: selectedStudentId,
         forzarInscripcion: forceEnroll,
       });
-
-      console.log("✅ Respuesta del servidor:", result);
 
       setEnrollmentResult(result);
       setShowResultModal(true);
@@ -139,9 +127,6 @@ export function useGroupEnrollment() {
         await refreshStudentsAfterEnrollment(selectedStudentId);
       }
     } catch (error: unknown) {
-      console.error("❌ Error al inscribir estudiante:", error);
-      console.error("📋 Detalles completos del error:", JSON.stringify(error, null, 2));
-
       // Mejorar el manejo de errores
       const err = error as {
         response?: {
@@ -162,11 +147,6 @@ export function useGroupEnrollment() {
       if (err?.response?.status === 400) {
         const errorData = err.response.data;
 
-        // Log completo para debugging
-        console.error("💥 Error 400 detallado:", errorData);
-        console.error("🔍 Tipo de errorData:", typeof errorData);
-        console.error("🔍 Keys de errorData:", Object.keys(errorData || {}));
-
         errorMessage =
           errorData?.Error ||
           errorData?.error ||
@@ -185,7 +165,6 @@ export function useGroupEnrollment() {
       } else if (err?.response?.status === 500) {
         errorMessage = "Error interno del servidor";
         errorDetails = err?.response?.data?.Error || err?.response?.data?.error || "Por favor, intenta nuevamente o contacta al administrador.";
-        console.error("💥 Error 500 detallado:", err.response.data);
       } else if (err?.response?.data?.Error) {
         errorMessage = err.response.data.Error;
       } else if (err?.response?.data?.error) {
@@ -196,6 +175,23 @@ export function useGroupEnrollment() {
         errorMessage = err.message;
       }
 
+      // Verificar si el estudiante ya está inscrito en el grupo (pero sin materias)
+      const isAlreadyInGroup =
+        errorMessage.toLowerCase().includes("ya está inscrito en el grupo") ||
+        errorMessage.toLowerCase().includes("ya inscrito en el grupo") ||
+        errorMessage.toLowerCase().includes("estudiante ya pertenece") ||
+        errorMessage.toLowerCase().includes("ya pertenece al grupo");
+
+      if (isAlreadyInGroup) {
+        // Mostrar modal indicando que solo falta inscribir a materias
+        setAlreadyInGroupInfo({
+          studentName: student?.nombreCompleto ?? "Estudiante",
+          groupCode: codigoGrupo,
+        });
+        setShowAlreadyInGroupModal(true);
+        return;
+      }
+
       // Verificar si es un error que puede solucionarse forzando la inscripción
       const canForceEnroll =
         errorMessage.toLowerCase().includes("cupo") ||
@@ -203,13 +199,16 @@ export function useGroupEnrollment() {
         errorMessage.toLowerCase().includes("ya está inscrito") ||
         errorMessage.toLowerCase().includes("ya inscrito") ||
         errorMessage.toLowerCase().includes("plan") ||
+        errorMessage.toLowerCase().includes("recibo") ||
+        errorMessage.toLowerCase().includes("pendiente") ||
+        errorMessage.toLowerCase().includes("pago") ||
         err?.response?.status === 400;
 
       if (canForceEnroll && !forceEnroll) {
         // Mostrar diálogo para preguntar si quiere forzar la inscripción
         setPendingEnrollment({ idGrupo, codigoGrupo });
         setShowForceEnrollDialog(true);
-        toast.warning("La inscripción no pudo completarse. ¿Deseas forzar la inscripción?", { duration: 5000 });
+        toast.warning(errorMessage, { duration: 6000 });
       } else {
         // Mostrar error con detalles si están disponibles
         const fullMessage = errorDetails ? `${errorMessage}\n\n${errorDetails}` : errorMessage;
@@ -224,7 +223,6 @@ export function useGroupEnrollment() {
   const handleEnrollStudent = async (idGrupo: number, codigoGrupo: string) => {
     // Prevenir múltiples inscripciones simultáneas
     if (enrolling || enrollingGroupId !== null) {
-      console.warn("⚠️ Intento de inscripción múltiple bloqueado");
       toast.warning("Ya hay una inscripción en proceso. Por favor espera.");
       return;
     }
@@ -326,5 +324,8 @@ export function useGroupEnrollment() {
     handleForceEnrollConfirm,
     handleForceEnrollCancel,
     pendingEnrollment,
+    showAlreadyInGroupModal,
+    setShowAlreadyInGroupModal,
+    alreadyInGroupInfo,
   };
 }

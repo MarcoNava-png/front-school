@@ -125,64 +125,68 @@ export default function SchedulesPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="plan" className="text-sm font-medium text-gray-900">
-              Plan de Estudios
-            </Label>
-            <Select
-              value={selectedPlan?.toString()}
-              onValueChange={(v) => setSelectedPlan(parseInt(v))}
-            >
-              <SelectTrigger
-                id="plan"
-                className="!text-gray-900 !bg-white border-gray-300"
+      <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+        <div className="flex flex-col gap-4">
+          {/* Primera fila: Plan y Periodo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="plan" className="text-sm font-medium text-gray-900">
+                Plan de Estudios
+              </Label>
+              <Select
+                value={selectedPlan?.toString()}
+                onValueChange={(v) => setSelectedPlan(parseInt(v))}
               >
-                <SelectValue placeholder="Selecciona un plan" />
-              </SelectTrigger>
-              <SelectContent>
-                {studyPlans.map((plan) => (
-                  <SelectItem
-                    key={plan.idPlanEstudios}
-                    value={plan.idPlanEstudios.toString()}
-                    className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
-                  >
-                    {plan.nombrePlanEstudios}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  id="plan"
+                  className="w-full !text-gray-900 !bg-white border-gray-300"
+                >
+                  <SelectValue placeholder="Selecciona un plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {studyPlans.map((plan) => (
+                    <SelectItem
+                      key={plan.idPlanEstudios}
+                      value={plan.idPlanEstudios.toString()}
+                      className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
+                    >
+                      {plan.nombrePlanEstudios}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="period" className="text-sm font-medium text-gray-900">
+                Periodo Académico
+              </Label>
+              <Select
+                value={selectedPeriod?.toString()}
+                onValueChange={(v) => setSelectedPeriod(parseInt(v))}
+              >
+                <SelectTrigger
+                  id="period"
+                  className="w-full !text-gray-900 !bg-white border-gray-300"
+                >
+                  <SelectValue placeholder="Selecciona un periodo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {periods.map((period) => (
+                    <SelectItem
+                      key={period.idPeriodoAcademico}
+                      value={period.idPeriodoAcademico.toString()}
+                      className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
+                    >
+                      {period.nombre} {period.esPeriodoActual && "(Actual)"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="period" className="text-sm font-medium text-gray-900">
-              Periodo Académico
-            </Label>
-            <Select
-              value={selectedPeriod?.toString()}
-              onValueChange={(v) => setSelectedPeriod(parseInt(v))}
-            >
-              <SelectTrigger
-                id="period"
-                className="!text-gray-900 !bg-white border-gray-300"
-              >
-                <SelectValue placeholder="Selecciona un periodo" />
-              </SelectTrigger>
-              <SelectContent>
-                {periods.map((period) => (
-                  <SelectItem
-                    key={period.idPeriodoAcademico}
-                    value={period.idPeriodoAcademico.toString()}
-                    className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
-                  >
-                    {period.nombre} {period.esPeriodoActual && "(Actual)"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+          {/* Segunda fila: Grupo (ancho completo) */}
           <div className="space-y-2">
             <Label htmlFor="group" className="text-sm font-medium text-gray-900">
               Grupo
@@ -194,22 +198,27 @@ export default function SchedulesPage() {
             >
               <SelectTrigger
                 id="group"
-                className="!text-gray-900 !bg-white border-gray-300"
+                className="w-full !text-gray-900 !bg-white border-gray-300"
               >
-                <SelectValue placeholder="Selecciona un grupo" />
+                <SelectValue placeholder={!selectedPlan ? "Primero selecciona un plan" : "Selecciona un grupo"} />
               </SelectTrigger>
               <SelectContent>
-                {academicData?.gruposPorCuatrimestre.map((cuatrimestre) =>
-                  cuatrimestre.grupos.map((grupo) => (
-                    <SelectItem
-                      key={grupo.idGrupo}
-                      value={grupo.idGrupo.toString()}
-                      className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
-                    >
-                      {grupo.nombreGrupo} ({grupo.codigoGrupo}) - {grupo.totalEstudiantes} estudiantes
-                    </SelectItem>
-                  ))
-                )}
+                {academicData?.gruposPorCuatrimestre.map((cuatrimestre) => (
+                  <div key={cuatrimestre.numeroCuatrimestre}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100">
+                      Cuatrimestre {cuatrimestre.numeroCuatrimestre}
+                    </div>
+                    {cuatrimestre.grupos.map((grupo) => (
+                      <SelectItem
+                        key={grupo.idGrupo}
+                        value={grupo.idGrupo.toString()}
+                        className="!text-gray-900 !bg-white hover:!bg-blue-50 data-[highlighted]:!bg-blue-50 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
+                      >
+                        {grupo.nombreGrupo} ({grupo.codigoGrupo}) - {grupo.totalEstudiantes} estudiantes
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))}
               </SelectContent>
             </Select>
           </div>

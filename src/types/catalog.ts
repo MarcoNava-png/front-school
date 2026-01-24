@@ -101,12 +101,18 @@ export interface StudyPlan {
 export interface Grupo {
   idGrupo: number;
   codigoGrupo: string;
+  nombreGrupo: string;
   numeroCuatrimestre: number;
   idTurno: number;
+  turno: string;
   numeroGrupo: number;
   idPeriodoAcademico: number;
+  periodoAcademico?: string;
   idPlanEstudios: number;
+  planEstudios?: string;
   cupo: number;
+  capacidadMaxima?: number;
+  estudiantesInscritos?: number;
 }
 
 // Alias for Schedule (Turno)

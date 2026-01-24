@@ -47,6 +47,12 @@ export interface PagoDto {
   referencia?: string | null;
   notas?: string | null;
   estatus: number;
+  // Información del estudiante/aspirante asociado
+  idEstudiante?: number | null;
+  matricula?: string | null;
+  nombreEstudiante?: string | null;
+  concepto?: string | null;
+  folioRecibo?: string | null;
 }
 
 export interface PagoConEstudiante extends PagoDto {
@@ -315,6 +321,71 @@ export async function imprimirReciboPdf(idRecibo: number, folio?: string): Promi
  */
 export async function quitarRecargoRecibo(idRecibo: number, motivo: string): Promise<{ message: string; recargoCondonado: number }> {
   const { data } = await apiClient.post(`/caja/recibos/${idRecibo}/quitar-recargo`, { motivo });
+  return data;
+}
+
+/**
+ * Resultado de modificar un detalle de recibo
+ */
+export interface ModificarDetalleResultado {
+  exitoso: boolean;
+  mensaje: string;
+  montoAnterior: number;
+  montoNuevo: number;
+  nuevoTotal: number;
+  nuevoSaldo: number;
+}
+
+/**
+ * Resultado de modificar un recargo
+ */
+export interface ModificarRecargoResultado {
+  exitoso: boolean;
+  mensaje: string;
+  recargoAnterior: number;
+  recargoNuevo: number;
+  nuevoTotal: number;
+}
+
+/**
+ * Modifica el monto de un detalle de recibo (colegiatura, inscripción, etc.)
+ * Solo disponible para roles autorizados (ADMIN, DIRECTOR, FINANZAS)
+ * @param idRecibo ID del recibo
+ * @param idReciboDetalle ID del detalle a modificar
+ * @param nuevoMonto Nuevo monto
+ * @param motivo Motivo de la modificación
+ * @returns Resultado de la operación
+ */
+export async function modificarDetalleRecibo(
+  idRecibo: number,
+  idReciboDetalle: number,
+  nuevoMonto: number,
+  motivo: string
+): Promise<ModificarDetalleResultado> {
+  const { data } = await apiClient.put(`/caja/recibos/${idRecibo}/detalles/${idReciboDetalle}`, {
+    nuevoMonto,
+    motivo,
+  });
+  return data;
+}
+
+/**
+ * Modifica el recargo de un recibo
+ * Solo disponible para roles autorizados (ADMIN, DIRECTOR, FINANZAS)
+ * @param idRecibo ID del recibo
+ * @param nuevoRecargo Nuevo monto de recargo
+ * @param motivo Motivo de la modificación
+ * @returns Resultado de la operación
+ */
+export async function modificarRecargoRecibo(
+  idRecibo: number,
+  nuevoRecargo: number,
+  motivo: string
+): Promise<ModificarRecargoResultado> {
+  const { data } = await apiClient.put(`/caja/recibos/${idRecibo}/recargo`, {
+    nuevoRecargo,
+    motivo,
+  });
   return data;
 }
 

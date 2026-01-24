@@ -5,6 +5,16 @@ import { useEffect, useState } from "react";
 import { Receipt, DollarSign, Calendar, FileText, Plus, FileSpreadsheet, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -31,6 +41,9 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
   const [receiptConcept, setReceiptConcept] = useState<string>("Cuota de Inscripción");
   const [deletingReceipt, setDeletingReceipt] = useState<number | null>(null);
   const [repairing, setRepairing] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [receiptToDelete, setReceiptToDelete] = useState<number | null>(null);
+  const [confirmRepairOpen, setConfirmRepairOpen] = useState(false);
 
   useEffect(() => {
     if (open && applicant) {
@@ -81,18 +94,22 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
     }
   };
 
-  const handleDeleteReceipt = async (idRecibo: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este recibo? Esta acción no se puede deshacer.")) {
-      return;
-    }
+  const openDeleteConfirmation = (idRecibo: number) => {
+    setReceiptToDelete(idRecibo);
+    setConfirmDeleteOpen(true);
+  };
 
-    setDeletingReceipt(idRecibo);
+  const handleDeleteReceipt = async () => {
+    if (!receiptToDelete) return;
+
+    setConfirmDeleteOpen(false);
+    setDeletingReceipt(receiptToDelete);
     try {
-      await deleteApplicantReceipt(idRecibo);
+      await deleteApplicantReceipt(receiptToDelete);
       toast.success("Recibo eliminado exitosamente");
       loadReceipts();
       if (onPaymentRegistered) {
-        onPaymentRegistered(); // Actualizar la tabla de aspirantes
+        onPaymentRegistered();
       }
     } catch (error: unknown) {
       const err = error as {response?: {data?: {Error?: string}}, message?: string};
@@ -101,14 +118,12 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
       console.error(error);
     } finally {
       setDeletingReceipt(null);
+      setReceiptToDelete(null);
     }
   };
 
   const handleRepairReceipts = async () => {
-    if (!confirm("¿Deseas reparar todos los recibos sin detalles? Esto agregará líneas de detalle a los recibos que no las tienen.")) {
-      return;
-    }
-
+    setConfirmRepairOpen(false);
     setRepairing(true);
     try {
       const result = await repairReceiptsWithoutDetails();
@@ -116,7 +131,7 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
       console.log("Recibos reparados:", result);
       loadReceipts();
       if (onPaymentRegistered) {
-        onPaymentRegistered(); // Actualizar la tabla de aspirantes
+        onPaymentRegistered();
       }
     } catch (error: unknown) {
       const err = error as {response?: {data?: {Error?: string}}, message?: string};
@@ -393,7 +408,7 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteReceipt(recibo.idRecibo)}
+                            onClick={() => openDeleteConfirmation(recibo.idRecibo)}
                             disabled={deletingReceipt === recibo.idRecibo}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
@@ -422,11 +437,11 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
             </Button>
             <Button
               variant="outline"
-              onClick={handleRepairReceipts}
+              onClick={() => setConfirmRepairOpen(true)}
               disabled={repairing}
               className="flex items-center gap-2 text-blue-600 border-blue-300 hover:bg-blue-50"
             >
-              {repairing ? "Reparando..." : "🔧 Reparar Recibos"}
+              {repairing ? "Reparando..." : "Reparar Recibos"}
             </Button>
           </div>
           <Button variant="outline" onClick={onClose}>
@@ -447,6 +462,47 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
           }
         }}
       />
+
+      {/* Modal de confirmación para eliminar recibo */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Recibo</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar este recibo? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setReceiptToDelete(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteReceipt}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de confirmación para reparar recibos */}
+      <AlertDialog open={confirmRepairOpen} onOpenChange={setConfirmRepairOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reparar Recibos</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Deseas reparar todos los recibos sin detalles? Esto agregará líneas de detalle a los recibos que no las tienen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRepairReceipts}>
+              Reparar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

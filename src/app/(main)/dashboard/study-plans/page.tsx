@@ -6,6 +6,7 @@ import { Award, Calendar, Edit, GraduationCap, Layers, Search, Trash2, Upload } 
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,8 @@ export default function StudyPlansPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<StudyPlan | null>(null);
@@ -90,6 +93,23 @@ export default function StudyPlansPage() {
     p.nombrePlanEstudios?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.clavePlanEstudios?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Paginación
+  const totalPages = Math.ceil(filteredPlans.length / pageSize);
+  const paginatedPlans = filteredPlans.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   // Calcular estadísticas
   const activos = plans.length; // Todos los planes se consideran activos
@@ -202,7 +222,7 @@ export default function StudyPlansPage() {
               <Input
                 placeholder="Buscar por nombre, clave..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -224,7 +244,7 @@ export default function StudyPlansPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPlans.length === 0 ? (
+              {paginatedPlans.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
@@ -234,7 +254,7 @@ export default function StudyPlansPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredPlans.map((plan, index) => (
+                paginatedPlans.map((plan, index) => (
                   <TableRow
                     key={plan.idPlanEstudios}
                     className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
@@ -311,6 +331,14 @@ export default function StudyPlansPage() {
               )}
             </TableBody>
           </Table>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredPlans.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
         </CardContent>
       </Card>
 

@@ -5,6 +5,7 @@ import { Building2, Edit, MapPin, Plus, Search, Trash2, Upload } from "lucide-re
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,8 @@ export default function Page() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [campusToEdit, setCampusToEdit] = useState<Campus | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [campusToDelete, setCampusToDelete] = useState<Campus | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -118,6 +121,24 @@ export default function Page() {
     c.claveCampus.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.direccion?.toLowerCase().includes(searchTerm.toLowerCase())
   ) ?? [];
+
+  // Paginación
+  const totalPages = Math.ceil(filteredCampus.length / pageSize);
+  const paginatedCampus = filteredCampus.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Reset a página 1 cuando cambia el filtro
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   if (loading) {
     return (
@@ -221,7 +242,7 @@ export default function Page() {
               <Input
                 placeholder="Buscar por nombre, clave..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -242,7 +263,7 @@ export default function Page() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCampus.length === 0 ? (
+              {paginatedCampus.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
@@ -252,7 +273,7 @@ export default function Page() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredCampus.map((c, index) => (
+                paginatedCampus.map((c, index) => (
                   <TableRow
                     key={c.idCampus}
                     className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
@@ -319,6 +340,14 @@ export default function Page() {
               )}
             </TableBody>
           </Table>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredCampus.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
         </CardContent>
       </Card>
 

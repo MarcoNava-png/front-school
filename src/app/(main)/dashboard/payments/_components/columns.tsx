@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, User } from "lucide-react";
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +65,54 @@ export function getPaymentsColumns(
       },
     },
     {
+      id: "estudiante",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Estudiante" />,
+      cell: ({ row }) => {
+        const matricula = row.original.matricula;
+        const nombre = row.original.nombreEstudiante;
+
+        if (!matricula && !nombre) {
+          return <div className="text-muted-foreground text-sm">Sin asignar</div>;
+        }
+
+        return (
+          <div className="flex items-center gap-2">
+            <div className="p-1 bg-blue-100 rounded-full">
+              <User className="w-3 h-3 text-blue-700" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-medium text-sm truncate max-w-[180px]" title={nombre ?? ""}>
+                {nombre || "N/A"}
+              </div>
+              <div className="text-xs text-muted-foreground font-mono">
+                {matricula || "N/A"}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "concepto",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Concepto" />,
+      cell: ({ row }) => {
+        const concepto = row.original.concepto;
+        const folioRecibo = row.original.folioRecibo;
+        return (
+          <div className="min-w-0">
+            <div className="text-sm truncate max-w-[200px]" title={concepto ?? ""}>
+              {concepto || "-"}
+            </div>
+            {folioRecibo && (
+              <div className="text-xs text-muted-foreground font-mono">
+                {folioRecibo}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "monto",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Monto" />,
       cell: ({ row }) => {
@@ -79,7 +127,7 @@ export function getPaymentsColumns(
     },
     {
       accessorKey: "idMedioPago",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Medio de Pago" />,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Medio" />,
       cell: ({ row }) => {
         const medioPagoMap: Record<number, string> = {
           1: "Efectivo",
@@ -88,13 +136,8 @@ export function getPaymentsColumns(
           4: "Cheque",
         };
         const idMedioPago = row.getValue("idMedioPago");
-        return <div>{medioPagoMap[idMedioPago as number] ?? "N/A"}</div>;
+        return <div className="text-sm">{medioPagoMap[idMedioPago as number] ?? "N/A"}</div>;
       },
-    },
-    {
-      accessorKey: "referencia",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Referencia" />,
-      cell: ({ row }) => <div>{row.getValue("referencia") ?? "-"}</div>,
     },
     {
       accessorKey: "estatus",
@@ -106,23 +149,20 @@ export function getPaymentsColumns(
       },
     },
     {
-      accessorKey: "notas",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Notas" />,
-      cell: ({ row }) => {
-        const notas = row.getValue("notas");
-        return <div className="max-w-[200px] truncate text-sm text-muted-foreground">{(notas as string | null) ?? "-"}</div>;
-      },
-    },
-    {
       id: "actions",
       header: "Acciones",
       cell: ({ row }) => (
         <>
-          {onApplyPayment && row.original.estatus === 0 && (
+          {onApplyPayment && row.original.estatus === 0 && !row.original.matricula && (
             <Button variant="ghost" size="sm" onClick={() => onApplyPayment(row.original)}>
               <CheckCircle className="w-4 h-4 mr-2" />
               Aplicar a Recibo
             </Button>
+          )}
+          {row.original.matricula && (
+            <Badge variant="outline" className="text-xs">
+              Aplicado
+            </Badge>
           )}
         </>
       ),

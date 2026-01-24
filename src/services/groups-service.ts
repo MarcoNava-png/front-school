@@ -176,6 +176,102 @@ export async function promoteStudents(request: PromocionRequest): Promise<Promoc
   return data;
 }
 
+// ============================================================================
+// PROMOCIÓN / REINSCRIPCIÓN
+// ============================================================================
+
+export interface PreviewPromocionRequest {
+  idGrupoActual: number;
+  idPeriodoAcademicoDestino: number;
+}
+
+export interface EstudiantePreview {
+  idEstudiante: number;
+  matricula: string;
+  nombreCompleto: string;
+  email?: string;
+  telefono?: string;
+  esElegible: boolean;
+  motivoNoElegible: string;
+  tienePagosPendientes: boolean;
+  saldoPendiente: number;
+  recibosPendientes: number;
+  seleccionado: boolean;
+}
+
+export interface PreviewPromocionResult {
+  idGrupoOrigen: number;
+  grupoOrigen: string;
+  codigoGrupoOrigen: string;
+  cuatrimestreOrigen: number;
+  planEstudios: string;
+  turno: string;
+  idGrupoDestino?: number;
+  grupoDestino?: string;
+  codigoGrupoDestino?: string;
+  cuatrimestreDestino: number;
+  grupoDestinoExiste: boolean;
+  periodoDestino: string;
+  totalEstudiantes: number;
+  estudiantesElegibles: number;
+  estudiantesConPagosPendientes: number;
+  totalSaldoPendiente: number;
+  estudiantes: EstudiantePreview[];
+}
+
+/**
+ * Obtiene un preview de la promoción sin ejecutarla
+ * Muestra estudiantes elegibles, pagos pendientes, etc.
+ */
+export async function previewPromocion(request: PreviewPromocionRequest): Promise<PreviewPromocionResult> {
+  const { data } = await apiClient.post<PreviewPromocionResult>("/grupos/promocion/preview", request);
+  return data;
+}
+
+export interface ExecutePromocionRequest {
+  idGrupoActual: number;
+  idPeriodoAcademicoDestino: number;
+  crearGrupoSiguienteAutomaticamente?: boolean;
+  promedioMinimoPromocion?: number;
+  promoverTodos?: boolean;
+  validarPagos?: boolean;
+  estudiantesExcluidos?: number[];
+}
+
+export interface PromocionResultado {
+  idGrupoOrigen: number;
+  grupoOrigen: string;
+  cuatrimestreOrigen: number;
+  idGrupoDestino: number;
+  grupoDestino: string;
+  cuatrimestreDestino: number;
+  totalEstudiantesPromovidos: number;
+  totalEstudiantesNoPromovidos: number;
+  estudiantes: EstudiantePromocionResultado[];
+  mensaje: string;
+}
+
+export interface EstudiantePromocionResultado {
+  idEstudiante: number;
+  matricula: string;
+  nombreCompleto: string;
+  fuePromovido: boolean;
+  motivo: string;
+  promedioGeneral?: number;
+  materiasReprobadas: number;
+  tienePagosPendientes: boolean;
+  saldoPendiente: number;
+  recibosPendientes: number;
+}
+
+/**
+ * Ejecuta la promoción de estudiantes al siguiente cuatrimestre
+ */
+export async function executePromocion(request: ExecutePromocionRequest): Promise<PromocionResultado> {
+  const { data } = await apiClient.post<PromocionResultado>("/grupos/promocion", request);
+  return data;
+}
+
 /**
  * Elimina un grupo
  */

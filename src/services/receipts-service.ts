@@ -54,6 +54,22 @@ export async function buscarReciboPorFolio(folio: string): Promise<Receipt | nul
 }
 
 /**
+ * Respuesta del endpoint de administración de recibos
+ */
+interface RecibosAdminResponse {
+  recibos: Receipt[];
+  totalRegistros: number;
+  paginaActual: number;
+  totalPaginas: number;
+  tamanioPagina: number;
+  totalSaldoPendiente: number;
+  totalRecargos: number;
+  totalVencidos: number;
+  totalPagados: number;
+  totalPendientes: number;
+}
+
+/**
  * Lista recibos con filtros avanzados
  * @param filtros Filtros de búsqueda
  * @returns Lista de recibos
@@ -84,7 +100,53 @@ export async function listarRecibos(filtros: ReceiptFilters): Promise<Receipt[]>
     params.append("folio", filtros.folio);
   }
 
-  const { data } = await apiClient.get<Receipt[]>(`/recibos?${params.toString()}`);
+  // Usar el endpoint de administración si hay filtros avanzados (matrícula, folio, etc.)
+  const useAdminEndpoint = filtros.matricula || filtros.folio || filtros.soloVencidos;
+  const endpoint = useAdminEndpoint ? "/recibos/admin" : "/recibos";
+
+  const { data } = await apiClient.get(`${endpoint}?${params.toString()}`);
+
+  // Manejar ambas estructuras de respuesta (array directo o objeto con recibos)
+  if (Array.isArray(data)) {
+    return data;
+  } else if (data && data.recibos) {
+    return data.recibos;
+  }
+  return [];
+}
+
+/**
+ * Lista recibos con filtros avanzados (incluye estadísticas)
+ * @param filtros Filtros de búsqueda
+ * @returns Respuesta completa con recibos y estadísticas
+ */
+export async function listarRecibosAdmin(filtros: ReceiptFilters): Promise<RecibosAdminResponse> {
+  const params = new URLSearchParams();
+
+  if (filtros.idPeriodoAcademico) {
+    params.append("idPeriodoAcademico", filtros.idPeriodoAcademico.toString());
+  }
+  if (filtros.idEstudiante) {
+    params.append("idEstudiante", filtros.idEstudiante.toString());
+  }
+  if (filtros.estatus) {
+    if (Array.isArray(filtros.estatus)) {
+      filtros.estatus.forEach((e) => params.append("estatus", e.toString()));
+    } else {
+      params.append("estatus", filtros.estatus.toString());
+    }
+  }
+  if (filtros.soloVencidos) {
+    params.append("soloVencidos", "true");
+  }
+  if (filtros.matricula) {
+    params.append("matricula", filtros.matricula);
+  }
+  if (filtros.folio) {
+    params.append("folio", filtros.folio);
+  }
+
+  const { data } = await apiClient.get<RecibosAdminResponse>(`/recibos/admin?${params.toString()}`);
   return data;
 }
 
@@ -257,5 +319,164 @@ export async function exportarIngresosPeriodo(idPeriodoAcademico: number): Promi
     `/recibos/reportes/ingresos/${idPeriodoAcademico}/excel`,
     { responseType: "blob" }
   );
+  return response.data;
+}
+
+// ============================================================================
+// BÚSQUEDA AVANZADA Y ESTADÍSTICAS
+// ============================================================================
+
+/**
+ * Filtros para buscar recibos
+ */
+export interface ReciboBusquedaFiltros {
+  folio?: string;
+  matricula?: string;
+  idPeriodoAcademico?: number;
+  estatus?: string;
+  soloVencidos?: boolean;
+  soloPagados?: boolean;
+  soloPendientes?: boolean;
+  fechaEmisionDesde?: string;
+  fechaEmisionHasta?: string;
+  fechaVencimientoDesde?: string;
+  fechaVencimientoHasta?: string;
+  pagina?: number;
+  tamanioPagina?: number;
+}
+
+/**
+ * Recibo con información extendida del estudiante/aspirante
+ */
+export interface ReciboExtendido {
+  idRecibo: number;
+  folio?: string;
+  idAspirante?: number;
+  idEstudiante?: number;
+  idPeriodoAcademico?: number;
+  nombrePeriodo?: string;
+  fechaEmision: string;
+  fechaVencimiento: string;
+  estatus: string;
+  subtotal: number;
+  descuento: number;
+  recargos: number;
+  total: number;
+  saldo: number;
+  notas?: string;
+  diasVencido: number;
+  estaVencido: boolean;
+  // Datos del estudiante/aspirante
+  matricula?: string;
+  nombreCompleto?: string;
+  carrera?: string;
+  planEstudios?: string;
+  grupo?: string;
+  email?: string;
+  telefono?: string;
+  tipoPersona: string; // "Estudiante" o "Aspirante"
+  detalles: { descripcion: string; cantidad: number; precioUnitario: number; importe: number }[];
+}
+
+/**
+ * Resultado de búsqueda de recibos con paginación
+ */
+export interface ReciboBusquedaResultado {
+  recibos: ReciboExtendido[];
+  totalRegistros: number;
+  paginaActual: number;
+  totalPaginas: number;
+  tamanioPagina: number;
+  totalSaldoPendiente: number;
+  totalRecargos: number;
+  totalVencidos: number;
+  totalPagados: number;
+  totalPendientes: number;
+}
+
+/**
+ * Estadísticas de recibos
+ */
+export interface ReciboEstadisticas {
+  totalRecibos: number;
+  saldoPendiente: number;
+  recibosVencidos: number;
+  recargosAcumulados: number;
+  recibosPendientes: number;
+  recibosPagados: number;
+  recibosParciales: number;
+  totalCobrado: number;
+  porPeriodo: EstadisticasPorPeriodo[];
+}
+
+export interface EstadisticasPorPeriodo {
+  idPeriodoAcademico: number;
+  nombrePeriodo?: string;
+  totalRecibos: number;
+  saldoPendiente: number;
+  recibosVencidos: number;
+}
+
+/**
+ * Busca recibos con filtros avanzados
+ * @param filtros Filtros de búsqueda
+ * @returns Resultado paginado con estadísticas
+ */
+export async function buscarRecibosAvanzado(filtros: ReciboBusquedaFiltros): Promise<ReciboBusquedaResultado> {
+  const params = new URLSearchParams();
+
+  if (filtros.folio) params.append("folio", filtros.folio);
+  if (filtros.matricula) params.append("matricula", filtros.matricula);
+  if (filtros.idPeriodoAcademico) params.append("idPeriodoAcademico", filtros.idPeriodoAcademico.toString());
+  if (filtros.estatus) params.append("estatus", filtros.estatus);
+  if (filtros.soloVencidos) params.append("soloVencidos", "true");
+  if (filtros.soloPagados) params.append("soloPagados", "true");
+  if (filtros.soloPendientes) params.append("soloPendientes", "true");
+  if (filtros.fechaEmisionDesde) params.append("fechaEmisionDesde", filtros.fechaEmisionDesde);
+  if (filtros.fechaEmisionHasta) params.append("fechaEmisionHasta", filtros.fechaEmisionHasta);
+  if (filtros.fechaVencimientoDesde) params.append("fechaVencimientoDesde", filtros.fechaVencimientoDesde);
+  if (filtros.fechaVencimientoHasta) params.append("fechaVencimientoHasta", filtros.fechaVencimientoHasta);
+  if (filtros.pagina) params.append("pagina", filtros.pagina.toString());
+  if (filtros.tamanioPagina) params.append("tamanioPagina", filtros.tamanioPagina.toString());
+
+  const { data } = await apiClient.get<ReciboBusquedaResultado>(`/recibos/buscar?${params.toString()}`);
+  return data;
+}
+
+/**
+ * Obtiene estadísticas de recibos
+ * @param idPeriodoAcademico Opcional - filtrar por periodo
+ * @returns Estadísticas de recibos
+ */
+export async function obtenerEstadisticasRecibos(idPeriodoAcademico?: number): Promise<ReciboEstadisticas> {
+  const params = new URLSearchParams();
+  if (idPeriodoAcademico) {
+    params.append("idPeriodoAcademico", idPeriodoAcademico.toString());
+  }
+
+  const { data } = await apiClient.get<ReciboEstadisticas>(`/recibos/estadisticas?${params.toString()}`);
+  return data;
+}
+
+/**
+ * Exporta recibos a Excel con estadísticas y adeudos
+ * Genera un archivo Excel con 3 hojas: Resumen, Detalle de Recibos, Adeudos
+ * @param filtros Filtros aplicados
+ * @returns Blob del archivo Excel
+ */
+export async function exportarRecibosExcel(filtros: ReciboBusquedaFiltros): Promise<Blob> {
+  const params = new URLSearchParams();
+
+  if (filtros.folio) params.append("folio", filtros.folio);
+  if (filtros.matricula) params.append("matricula", filtros.matricula);
+  if (filtros.idPeriodoAcademico) params.append("idPeriodoAcademico", filtros.idPeriodoAcademico.toString());
+  if (filtros.estatus) params.append("estatus", filtros.estatus);
+  if (filtros.soloVencidos) params.append("soloVencidos", "true");
+  if (filtros.soloPagados) params.append("soloPagados", "true");
+  if (filtros.soloPendientes) params.append("soloPendientes", "true");
+
+  const response = await apiClient.get(`/recibos/exportar-excel?${params.toString()}`, {
+    responseType: "blob",
+  });
   return response.data;
 }

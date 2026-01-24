@@ -4,6 +4,7 @@ import { Users, UserPlus } from "lucide-react";
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { AlreadyInGroupModal } from "./_components/already-in-group-modal";
 import { AvailableGroupsSection } from "./_components/available-groups-section";
 import { EnrollmentResultModal } from "./_components/enrollment-result-modal";
 import { FiltersSection } from "./_components/filters-section";
@@ -42,6 +43,9 @@ export default function GroupEnrollmentPage() {
     handleForceEnrollConfirm,
     handleForceEnrollCancel,
     pendingEnrollment,
+    showAlreadyInGroupModal,
+    setShowAlreadyInGroupModal,
+    alreadyInGroupInfo,
   } = useGroupEnrollment();
 
   if (initialLoading) {
@@ -201,6 +205,14 @@ export default function GroupEnrollmentPage() {
         onCancel={handleForceEnrollCancel}
         studentName={selectedStudent?.nombreCompleto}
         groupCode={pendingEnrollment?.codigoGrupo}
+      />
+
+      {/* Already In Group Modal */}
+      <AlreadyInGroupModal
+        open={showAlreadyInGroupModal}
+        onOpenChange={setShowAlreadyInGroupModal}
+        studentName={alreadyInGroupInfo?.studentName}
+        groupCode={alreadyInGroupInfo?.groupCode}
       />
     </div>
   );

@@ -1,10 +1,12 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { createApplicant } from "@/services/applicants-service";
 import { PayloadCreateApplicant } from "@/types/applicant";
 import { Campus } from "@/types/campus";
@@ -26,6 +28,7 @@ interface CreateApplicantModalProps {
   applicantStatus: ApplicantStatus[];
   states: State[];
   onOpenChange: (open: boolean) => void;
+  onApplicantCreated?: () => void;
 }
 
 export function CreateApplicantModal({
@@ -39,8 +42,12 @@ export function CreateApplicantModal({
   schedules,
   applicantStatus,
   states,
+  onApplicantCreated,
 }: CreateApplicantModalProps) {
-  const form = useForm({
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const form = useForm<PayloadCreateApplicant>({
     resolver: zodResolver(createApplicantSchema),
     defaultValues: {
       nombre: "",
@@ -63,40 +70,78 @@ export function CreateApplicantModal({
       notas: "",
       atendidoPorUsuarioId: "",
       horarioId: 0,
+      stateId: "",
+      municipalityId: "",
     },
   });
 
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Función para cerrar el modal de forma segura (evita conflictos con portales)
+  const safeClose = useCallback(() => {
+    // Pequeño delay para permitir que los portales de Radix se cierren primero
+    closeTimeoutRef.current = setTimeout(() => {
+      form.reset();
+      onOpenChange(false);
+    }, 50);
+  }, [form, onOpenChange]);
+
   const onSubmit = async (data: PayloadCreateApplicant) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await createApplicant(data);
       toast.success("Aspirante creado correctamente");
-      form.reset();
-      onOpenChange(false);
+      safeClose();
+      // Notificar que se creó un aspirante para actualizar la lista
+      onApplicantCreated?.();
     } catch (error: any) {
-      toast.error("Error al crear aspirante", { description: error.response.data ?? "Intenta nuevamente." });
+      const errorMessage = error?.response?.data?.message || error?.response?.data || "Intenta nuevamente.";
+      toast.error("Error al crear aspirante", { description: errorMessage });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      form.reset();
+    if (!newOpen && !isSubmitting) {
+      safeClose();
+    } else if (newOpen) {
+      onOpenChange(true);
     }
-    onOpenChange(newOpen);
+  };
+
+  const handleCancel = () => {
+    if (!isSubmitting) {
+      safeClose();
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="max-h-[90vh] w-full !max-w-7xl overflow-y-auto"
-        aria-describedby="create-applicant-description"
+        className="max-h-[90vh] w-full !max-w-5xl overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => {
+          if (isSubmitting) e.preventDefault();
+        }}
       >
         <DialogHeader>
-          <DialogTitle>Crear aspirante</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-blue-900">
+            Crear Nuevo Aspirante
+          </DialogTitle>
+          <DialogDescription>
+            Complete el formulario con la información del aspirante. Los campos marcados con * son obligatorios.
+          </DialogDescription>
         </DialogHeader>
-        <div id="create-applicant-description" className="sr-only">
-          Complete el formulario para crear un nuevo aspirante.
-        </div>
         <ApplicantCreateForm
           form={form}
           open={open}
@@ -109,7 +154,7 @@ export function CreateApplicantModal({
           applicantStatus={applicantStatus}
           states={states}
           onSubmit={onSubmit}
-          onCancel={() => handleOpenChange(false)}
+          onCancel={handleCancel}
         />
       </DialogContent>
     </Dialog>

@@ -287,6 +287,25 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                 </AlertDescription>
               </Alert>
 
+              {/* Alerta si hay estudiantes omitidos */}
+              {previewResult.estudiantesOmitidos > 0 && (
+                <Alert className="border-amber-200 bg-amber-50">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertTitle className="text-amber-900 text-sm font-bold">
+                    Ya existen recibos generados
+                  </AlertTitle>
+                  <AlertDescription className="text-amber-700 text-xs sm:text-sm">
+                    <strong>{previewResult.estudiantesOmitidos}</strong> estudiantes ya tienen recibos
+                    para este periodo y serán omitidos automáticamente.
+                    {previewResult.totalEstudiantes === 0 && (
+                      <span className="block mt-2 text-red-600 font-semibold">
+                        Todos los estudiantes ya tienen recibos. No se generarán nuevos recibos.
+                      </span>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {previewResult.totalEstudiantes > 0 && (
                 <>
                   {/* Resumen - Grid responsivo */}

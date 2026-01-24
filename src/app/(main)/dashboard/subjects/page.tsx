@@ -2,14 +2,22 @@
 
 import { useEffect, useState } from "react";
 
-import { BookOpen, Edit, GraduationCap, Hash, Search, Trash2, Upload } from "lucide-react";
+import { BookOpen, Edit, Filter, GraduationCap, Hash, Search, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -32,6 +40,10 @@ export default function SubjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPlanId, setSelectedPlanId] = useState<string>("all");
+  const [selectedCuatrimestre, setSelectedCuatrimestre] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState<MatterPlan | null>(null);
@@ -103,11 +115,64 @@ export default function SubjectsPage() {
     setEditDialogOpen(true);
   };
 
-  const filteredSubjects = subjects.filter((s) =>
-    s.nombreMateria?.toLowerCase().includes(searchTerm.toLowerCase()) ??
-    s.materia?.toLowerCase().includes(searchTerm.toLowerCase()) ??
-    s.claveMateria?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Obtener cuatrimestres únicos para el filtro
+  const cuatrimestresUnicos = Array.from(
+    new Set(subjects.map((s) => s.cuatrimestre).filter(Boolean))
+  ).sort((a, b) => (a ?? 0) - (b ?? 0));
+
+  const filteredSubjects = subjects.filter((s) => {
+    // Filtro por texto
+    const matchesSearch =
+      s.nombreMateria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.materia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.claveMateria?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Filtro por plan de estudios
+    const matchesPlan =
+      selectedPlanId === "all" || s.idPlanEstudios?.toString() === selectedPlanId;
+
+    // Filtro por cuatrimestre
+    const matchesCuatrimestre =
+      selectedCuatrimestre === "all" || s.cuatrimestre?.toString() === selectedCuatrimestre;
+
+    return matchesSearch && matchesPlan && matchesCuatrimestre;
+  });
+
+  // Paginación
+  const totalPages = Math.ceil(filteredSubjects.length / pageSize);
+  const paginatedSubjects = filteredSubjects.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handlePlanChange = (value: string) => {
+    setSelectedPlanId(value);
+    setCurrentPage(1);
+  };
+
+  const handleCuatrimestreChange = (value: string) => {
+    setSelectedCuatrimestre(value);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedPlanId("all");
+    setSelectedCuatrimestre("all");
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = searchTerm || selectedPlanId !== "all" || selectedCuatrimestre !== "all";
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   // Calcular estadísticas
   const totalCreditos = subjects.reduce((sum, s) => sum + (s.creditos ?? 0), 0);
@@ -212,21 +277,73 @@ export default function SubjectsPage() {
       {/* Table Card */}
       <Card>
         <CardHeader className="border-b bg-muted/40">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle>Listado de Materias</CardTitle>
-              <CardDescription>
-                {filteredSubjects.length} materias encontradas
-              </CardDescription>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" style={{ color: '#14356F' }} />
+                  Listado de Materias
+                </CardTitle>
+                <CardDescription>
+                  {filteredSubjects.length} materias encontradas
+                  {hasActiveFilters && " (filtradas)"}
+                </CardDescription>
+              </div>
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Limpiar filtros
+                </Button>
+              )}
             </div>
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre, clave..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
+
+            {/* Filtros */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Búsqueda */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, clave..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Plan de Estudios */}
+              <Select value={selectedPlanId} onValueChange={handlePlanChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por plan de estudios" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los planes</SelectItem>
+                  {planes.map((plan) => (
+                    <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()}>
+                      {plan.nombrePlanEstudios}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Cuatrimestre */}
+              <Select value={selectedCuatrimestre} onValueChange={handleCuatrimestreChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por cuatrimestre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los cuatrimestres</SelectItem>
+                  {cuatrimestresUnicos.map((cuatri) => (
+                    <SelectItem key={cuatri} value={cuatri?.toString() ?? ""}>
+                      {cuatri}° Cuatrimestre
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
@@ -246,7 +363,7 @@ export default function SubjectsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSubjects.length === 0 ? (
+              {paginatedSubjects.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
@@ -256,7 +373,7 @@ export default function SubjectsPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredSubjects.map((s, index) => (
+                paginatedSubjects.map((s, index) => (
                   <TableRow
                     key={s.idMateriaPlan}
                     className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
@@ -323,6 +440,14 @@ export default function SubjectsPage() {
               )}
             </TableBody>
           </Table>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredSubjects.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
         </CardContent>
       </Card>
 
