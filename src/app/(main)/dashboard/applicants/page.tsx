@@ -149,7 +149,7 @@ function Page() {
           getGenresList(),
           getCivilStatus(),
           getCampusList(),
-          getStudyPlansList(),
+          getStudyPlansList(1, 1000), // Cargar todos los planes para el filtro por campus
           getContactMethods(),
           getSchedules(),
           getApplicantStatus(),
