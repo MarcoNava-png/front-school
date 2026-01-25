@@ -95,6 +95,7 @@ export function ApplicantCreateForm({
   const watchedStateId = form.watch("stateId");
   const watchedMunicipalityId = form.watch("municipalityId");
   const watchedCodigoPostalId = form.watch("codigoPostalId");
+  const watchedCampusId = form.watch("campusId");
 
   useEffect(() => {
     if (watchedStateId) {
@@ -123,6 +124,23 @@ export function ApplicantCreateForm({
   const filteredTownships = useMemo(() => {
     return townships.filter((t) => t.municipioId === watchedMunicipalityId);
   }, [townships, watchedMunicipalityId]);
+
+  // Filtrar planes de estudio basado en campus seleccionado
+  const filteredStudyPlans = useMemo(() => {
+    if (!watchedCampusId || watchedCampusId === 0) return studyPlans;
+    return studyPlans.filter((plan) => plan.idCampus === watchedCampusId);
+  }, [studyPlans, watchedCampusId]);
+
+  // Resetear plan de estudios cuando cambie el campus
+  useEffect(() => {
+    if (watchedCampusId) {
+      // Solo resetear si el plan actual no pertenece al campus seleccionado
+      const currentPlan = studyPlans.find((p) => p.idPlanEstudios === form.getValues("planEstudiosId"));
+      if (currentPlan && currentPlan.idCampus !== watchedCampusId) {
+        form.setValue("planEstudiosId", 0, { shouldValidate: false });
+      }
+    }
+  }, [watchedCampusId, studyPlans, form]);
 
   // Buscar colonias filtradas
   const searchedTownships = useMemo(() => {
@@ -570,14 +588,15 @@ export function ApplicantCreateForm({
                   <Select
                     onValueChange={(value) => field.onChange(Number(value))}
                     value={field.value ? String(field.value) : ""}
+                    disabled={!watchedCampusId || watchedCampusId === 0}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona plan de estudios" />
+                        <SelectValue placeholder={watchedCampusId ? "Selecciona plan de estudios" : "Primero selecciona un campus"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {studyPlans.map((plan) => (
+                      {filteredStudyPlans.map((plan) => (
                         <SelectItem key={plan.idPlanEstudios} value={String(plan.idPlanEstudios)}>
                           {plan.nombrePlanEstudios}
                         </SelectItem>
