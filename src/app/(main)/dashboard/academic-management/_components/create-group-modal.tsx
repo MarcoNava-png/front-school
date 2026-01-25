@@ -20,10 +20,11 @@ interface CreateGroupModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   idPlanEstudios?: number;
+  defaultPeriodId?: string;
   onSuccess: () => void;
 }
 
-export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, onSuccess }: CreateGroupModalProps) {
+export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPeriodId, onSuccess }: CreateGroupModalProps) {
   const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,9 +51,16 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, onSuccess
       setAcademicPeriods(periodsData);
       setTurnos(turnosData);
 
-      const activePeriod = periodsData.find((p) => p.status === 1);
-      if (activePeriod) {
-        setSelectedPeriodId(activePeriod.idPeriodoAcademico.toString());
+      // Usar el periodo pasado como prop, o buscar el periodo actual
+      if (defaultPeriodId && defaultPeriodId !== "all") {
+        setSelectedPeriodId(defaultPeriodId);
+      } else {
+        const activePeriod = periodsData.find((p) => p.esPeriodoActual);
+        if (activePeriod) {
+          setSelectedPeriodId(activePeriod.idPeriodoAcademico.toString());
+        } else if (periodsData.length > 0) {
+          setSelectedPeriodId(periodsData[0].idPeriodoAcademico.toString());
+        }
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -143,7 +151,14 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, onSuccess
               <SelectContent>
                 {academicPeriods.map((period) => (
                   <SelectItem key={period.idPeriodoAcademico} value={period.idPeriodoAcademico.toString()}>
-                    {period.nombre} ({period.clave})
+                    <span className="flex items-center gap-2">
+                      {period.nombre} ({period.clave})
+                      {period.esPeriodoActual && (
+                        <span className="text-xs px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: '#14356F' }}>
+                          Actual
+                        </span>
+                      )}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>

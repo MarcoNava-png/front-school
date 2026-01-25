@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
-import { BookOpen, GraduationCap, Plus } from "lucide-react";
+import { BookOpen, Building2, GraduationCap, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getCampusList } from "@/services/campus-service";
 import { getAcademicPeriods, getStudyPlans } from "@/services/catalogs-service";
 import { getAcademicManagement } from "@/services/groups-service";
+import { Campus } from "@/types/campus";
 import { AcademicPeriod, StudyPlan } from "@/types/catalog";
 import { GestionAcademicaResponse } from "@/types/group";
 
@@ -17,33 +19,66 @@ import { CreateGroupModal } from "./_components/create-group-modal";
 import { CuatrimestreSection } from "./_components/cuatrimestre-section";
 
 export default function AcademicManagementPage() {
+  const [campusList, setCampusList] = useState<Campus[]>([]);
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
   const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
+  const [selectedCampusId, setSelectedCampusId] = useState<string>("all");
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
-  const [selectedPeriodId, setSelectedPeriodId] = useState<string>("all");
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string>("");
   const [academicData, setAcademicData] = useState<GestionAcademicaResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  // Filtrar planes por campus seleccionado
+  const filteredPlans = useMemo(() => {
+    if (selectedCampusId === "all") return studyPlans;
+    return studyPlans.filter(plan => plan.idCampus?.toString() === selectedCampusId);
+  }, [studyPlans, selectedCampusId]);
+
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  // Cuando cambia el campus, seleccionar el primer plan disponible
+  useEffect(() => {
+    if (filteredPlans.length > 0) {
+      const currentPlanExists = filteredPlans.some(p => p.idPlanEstudios.toString() === selectedPlanId);
+      if (!currentPlanExists) {
+        setSelectedPlanId(filteredPlans[0].idPlanEstudios.toString());
+      }
+    } else {
+      setSelectedPlanId("");
+    }
+  }, [filteredPlans]);
 
   useEffect(() => {
     if (selectedPlanId) {
       loadAcademicData();
     }
-
   }, [selectedPlanId, selectedPeriodId]);
 
   const loadInitialData = async () => {
     setInitialLoading(true);
     try {
-      const [plansData, periodsData] = await Promise.all([getStudyPlans(), getAcademicPeriods()]);
+      const [campusData, plansData, periodsData] = await Promise.all([
+        getCampusList(),
+        getStudyPlans(),
+        getAcademicPeriods()
+      ]);
 
+      setCampusList(campusData.items || []);
       setStudyPlans(plansData);
       setAcademicPeriods(periodsData);
+
+      // Seleccionar el periodo actual por defecto
+      const periodoActual = periodsData.find(p => p.esPeriodoActual);
+      if (periodoActual) {
+        setSelectedPeriodId(periodoActual.idPeriodoAcademico.toString());
+      } else if (periodsData.length > 0) {
+        // Si no hay periodo actual, seleccionar el más reciente
+        setSelectedPeriodId(periodsData[0].idPeriodoAcademico.toString());
+      }
 
       if (plansData.length > 0) {
         setSelectedPlanId(plansData[0].idPlanEstudios.toString());
@@ -57,9 +92,13 @@ export default function AcademicManagementPage() {
   };
 
   const loadAcademicData = async () => {
+    if (!selectedPlanId) return;
+
     setLoading(true);
     try {
-      const periodId = selectedPeriodId === "all" ? undefined : parseInt(selectedPeriodId);
+      const periodId = selectedPeriodId && selectedPeriodId !== "all"
+        ? parseInt(selectedPeriodId)
+        : undefined;
       const data = await getAcademicManagement(parseInt(selectedPlanId), periodId);
       setAcademicData(data);
     } catch (error) {
@@ -112,7 +151,38 @@ export default function AcademicManagementPage() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white rounded-lg border shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border shadow-sm">
+        {/* Filtro de Campus */}
+        <div className="space-y-2">
+          <Label htmlFor="campus" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
+            <Building2 className="w-4 h-4" style={{ color: '#14356F' }} />
+            Campus
+          </Label>
+          <Select value={selectedCampusId} onValueChange={setSelectedCampusId}>
+            <SelectTrigger className="w-full bg-white border-gray-300 !text-gray-900 [&_span]:!text-gray-900">
+              <SelectValue placeholder="Todos los campus" className="!text-gray-900" />
+            </SelectTrigger>
+            <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px]">
+              <SelectItem
+                value="all"
+                className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
+              >
+                Todos los campus
+              </SelectItem>
+              {campusList.map((campus) => (
+                <SelectItem
+                  key={campus.idCampus}
+                  value={campus.idCampus.toString()}
+                  className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
+                >
+                  {campus.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Filtro de Licenciatura */}
         <div className="space-y-2">
           <Label htmlFor="plan" className="text-sm font-medium !text-gray-900">
             Licenciatura
@@ -122,18 +192,23 @@ export default function AcademicManagementPage() {
               <SelectValue placeholder="Selecciona un plan" className="!text-gray-900" />
             </SelectTrigger>
             <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px] border-2" style={{ borderColor: '#14356F' }}>
-              {studyPlans.length === 0 ? (
+              {filteredPlans.length === 0 ? (
                 <div className="p-4 text-center text-gray-900 bg-gray-100">
                   No hay planes disponibles
                 </div>
               ) : (
-                studyPlans.map((plan) => (
+                filteredPlans.map((plan) => (
                   <SelectItem
                     key={plan.idPlanEstudios}
                     value={plan.idPlanEstudios.toString()}
                     className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer min-h-[40px] [&_span]:!text-gray-900"
                   >
-                    {plan.nombrePlanEstudios}
+                    <span className="flex items-center gap-2">
+                      <span className="font-mono text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(20, 53, 111, 0.1)', color: '#14356F' }}>
+                        {plan.clavePlanEstudios}
+                      </span>
+                      {plan.nombrePlanEstudios}
+                    </span>
                   </SelectItem>
                 ))
               )}
@@ -141,13 +216,14 @@ export default function AcademicManagementPage() {
           </Select>
         </div>
 
+        {/* Filtro de Periodo Académico */}
         <div className="space-y-2">
           <Label htmlFor="period" className="text-sm font-medium !text-gray-900">
-            Periodo Académico (Filtro)
+            Periodo Académico
           </Label>
           <Select value={selectedPeriodId} onValueChange={setSelectedPeriodId}>
             <SelectTrigger className="w-full bg-white border-gray-300 !text-gray-900 [&_span]:!text-gray-900">
-              <SelectValue placeholder="Todos los periodos" className="!text-gray-900" />
+              <SelectValue placeholder="Selecciona un periodo" className="!text-gray-900" />
             </SelectTrigger>
             <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px]">
               <SelectItem
@@ -162,7 +238,14 @@ export default function AcademicManagementPage() {
                   value={period.idPeriodoAcademico.toString()}
                   className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
                 >
-                  {period.nombre}
+                  <span className="flex items-center gap-2">
+                    {period.nombre}
+                    {period.esPeriodoActual && (
+                      <span className="text-xs px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: '#14356F' }}>
+                        Actual
+                      </span>
+                    )}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -230,6 +313,7 @@ export default function AcademicManagementPage() {
         open={showCreateModal}
         onOpenChange={setShowCreateModal}
         idPlanEstudios={selectedPlanId ? parseInt(selectedPlanId) : undefined}
+        defaultPeriodId={selectedPeriodId}
         onSuccess={loadAcademicData}
       />
     </div>
