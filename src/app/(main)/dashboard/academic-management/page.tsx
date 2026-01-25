@@ -33,7 +33,9 @@ export default function AcademicManagementPage() {
   // Filtrar planes por campus seleccionado
   const filteredPlans = useMemo(() => {
     if (selectedCampusId === "all") return studyPlans;
-    return studyPlans.filter(plan => plan.idCampus?.toString() === selectedCampusId);
+    return studyPlans.filter(plan =>
+      plan.idCampus?.toString() === selectedCampusId
+    );
   }, [studyPlans, selectedCampusId]);
 
   useEffect(() => {
@@ -222,13 +224,13 @@ export default function AcademicManagementPage() {
             Periodo Académico
           </Label>
           <Select value={selectedPeriodId} onValueChange={setSelectedPeriodId}>
-            <SelectTrigger className="w-full bg-white border-gray-300 !text-gray-900 [&_span]:!text-gray-900">
+            <SelectTrigger className="w-full bg-white border-gray-300 !text-gray-900">
               <SelectValue placeholder="Selecciona un periodo" className="!text-gray-900" />
             </SelectTrigger>
             <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px]">
               <SelectItem
                 value="all"
-                className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
+                className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
               >
                 Todos los periodos
               </SelectItem>
@@ -236,12 +238,12 @@ export default function AcademicManagementPage() {
                 <SelectItem
                   key={period.idPeriodoAcademico}
                   value={period.idPeriodoAcademico.toString()}
-                  className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer [&_span]:!text-gray-900"
+                  className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 data-[highlighted]:!bg-[#14356F]/10 data-[highlighted]:!text-gray-900 data-[state=checked]:!text-gray-900 cursor-pointer"
                 >
                   <span className="flex items-center gap-2">
-                    {period.nombre}
+                    <span className="text-gray-900">{period.nombre}</span>
                     {period.esPeriodoActual && (
-                      <span className="text-xs px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: '#14356F' }}>
+                      <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: '#14356F', color: 'white' }}>
                         Actual
                       </span>
                     )}

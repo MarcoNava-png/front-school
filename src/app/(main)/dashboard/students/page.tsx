@@ -1,518 +1,523 @@
-
 "use client";
-import { useCallback, useEffect, useState } from "react";
 
-import { BookOpen, Filter, GraduationCap, Search, UserCheck, Users, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { BookOpen, Building2, GraduationCap, Mail, Phone, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 
-import { DataTable } from "@/components/data-table/data-table";
-import { DataTablePagination } from "@/components/data-table/data-table-pagination";
-import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDataTableInstance } from "@/hooks/use-data-table-instance";
+import { getCampusList } from "@/services/campus-service";
 import { getAcademicPeriods, getGrupos, getStudyPlans } from "@/services/catalogs-service";
-import {
-  getAvailableGruposMaterias,
-  getStudentsByGrupo,
-  getStudentsByGrupoMateria,
-  getStudentsList,
-} from "@/services/students-service";
+import { getEstudiantesDelGrupoDirecto, getStudentsInGroup } from "@/services/groups-service";
+import { Campus } from "@/types/campus";
 import { AcademicPeriod, Grupo, StudyPlan } from "@/types/catalog";
-import { GrupoMateria, Student, StudentsResponse } from "@/types/student";
 
-import { getStudentsColumns } from "./_components/columns";
-import { CreateStudentModal } from "./_components/create-student-modal";
+interface StudentDisplay {
+  idEstudiante: number;
+  matricula: string;
+  nombreCompleto: string;
+  email?: string;
+  telefono?: string;
+  planEstudios?: string;
+  estado?: string;
+  fechaInscripcion?: string;
+  materiasInscritas?: number;
+  fuente: 'directo' | 'materias';
+}
 
-export default function Page() {
-  const [open, setOpen] = useState(false);
-  const [students, setStudents] = useState<StudentsResponse | null>(null);
-  const [allStudents, setAllStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Filtros
-  const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
+export default function StudentsPage() {
+  const [campusList, setCampusList] = useState<Campus[]>([]);
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
+  const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
   const [grupos, setGrupos] = useState<Grupo[]>([]);
-  const [gruposMaterias, setGruposMaterias] = useState<GrupoMateria[]>([]);
-  const [selectedPeriodId, setSelectedPeriodId] = useState<string>("all");
-  const [selectedStudyPlanId, setSelectedStudyPlanId] = useState<string>("all");
-  const [selectedGrupoId, setSelectedGrupoId] = useState<string>("all");
-  const [selectedGrupoMateriaId, setSelectedGrupoMateriaId] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
-  const [filterLoading, setFilterLoading] = useState(false);
-  const [filterType, setFilterType] = useState<"plan" | "grupo" | "grupomateria" | "none">("none");
+  const [students, setStudents] = useState<StudentDisplay[]>([]);
 
-  const loadStudents = useCallback(() => {
-    setLoading(true);
-    getStudentsList()
-      .then((res) => {
-        setStudents(res);
-        setAllStudents(res.items ?? []);
-      })
-      .catch(() => setError("Error de red"))
-      .finally(() => setLoading(false));
+  const [selectedCampusId, setSelectedCampusId] = useState<string>("all");
+  const [selectedPlanId, setSelectedPlanId] = useState<string>("");
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string>("");
+  const [selectedGrupoId, setSelectedGrupoId] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // Filtrar planes por campus seleccionado
+  const filteredPlans = useMemo(() => {
+    if (selectedCampusId === "all") return studyPlans;
+    return studyPlans.filter((plan) => plan.idCampus?.toString() === selectedCampusId);
+  }, [studyPlans, selectedCampusId]);
+
+  // Filtrar grupos por plan seleccionado
+  const filteredGrupos = useMemo(() => {
+    if (!selectedPlanId) return grupos;
+    return grupos.filter((g) => g.idPlanEstudios?.toString() === selectedPlanId);
+  }, [grupos, selectedPlanId]);
+
+  // Filtrar estudiantes por búsqueda
+  const filteredStudents = useMemo(() => {
+    if (!searchTerm) return students;
+    const term = searchTerm.toLowerCase();
+    return students.filter(
+      (s) =>
+        s.nombreCompleto.toLowerCase().includes(term) ||
+        s.matricula.toLowerCase().includes(term) ||
+        (s.email && s.email.toLowerCase().includes(term))
+    );
+  }, [students, searchTerm]);
+
+  useEffect(() => {
+    loadInitialData();
   }, []);
 
+  // Cuando cambia el campus, seleccionar el primer plan disponible
   useEffect(() => {
-    loadStudents();
-    loadInitialData();
-  }, [loadStudents]);
-
-  useEffect(() => {
-    if (selectedPeriodId && selectedPeriodId !== "all") {
-      loadGrupos();
-      loadGruposMaterias();
+    if (filteredPlans.length > 0) {
+      const currentPlanExists = filteredPlans.some((p) => p.idPlanEstudios.toString() === selectedPlanId);
+      if (!currentPlanExists) {
+        setSelectedPlanId(filteredPlans[0].idPlanEstudios.toString());
+      }
     } else {
-      setGrupos([]);
-      setGruposMaterias([]);
-      setSelectedGrupoId("all");
-      setSelectedGrupoMateriaId("all");
+      setSelectedPlanId("");
     }
-  }, [selectedPeriodId]);
-
-  // Efecto para aplicar filtros
-  const applyFilters = useCallback(() => {
-    // No hacer nada si no hay estudiantes cargados
-    if (allStudents.length === 0) {
-      return;
-    }
-
-    // Prioridad de filtros: grupo-materia > grupo > plan > todos
-    if (selectedGrupoMateriaId && selectedGrupoMateriaId !== "all") {
-      setFilterType("grupomateria");
-      filterStudentsByGrupoMateria();
-    } else if (selectedGrupoId && selectedGrupoId !== "all") {
-      setFilterType("grupo");
-      filterStudentsByGrupo();
-    } else if (selectedStudyPlanId && selectedStudyPlanId !== "all") {
-      setFilterType("plan");
-      filterStudentsByPlan();
-    } else {
-      setFilterType("none");
-      setStudents((prev) => prev ? { ...prev, items: allStudents } : null);
-    }
-
-  }, [selectedGrupoMateriaId, selectedGrupoId, selectedStudyPlanId, allStudents.length]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+  }, [filteredPlans]);
 
   const loadInitialData = async () => {
+    setInitialLoading(true);
     try {
-      const [periods, plans] = await Promise.all([getAcademicPeriods(), getStudyPlans()]);
-      setAcademicPeriods(periods);
-      setStudyPlans(plans);
+      const [campusData, plansData, periodsData] = await Promise.all([
+        getCampusList(),
+        getStudyPlans(),
+        getAcademicPeriods(),
+      ]);
 
-      const currentPeriod = periods.find((p: AcademicPeriod) => p.esPeriodoActual);
-      if (currentPeriod) {
-        setSelectedPeriodId(currentPeriod.idPeriodoAcademico.toString());
+      setCampusList(campusData.items || []);
+      setStudyPlans(plansData);
+      setAcademicPeriods(periodsData);
+
+      // Seleccionar el periodo actual por defecto
+      const periodoActual = periodsData.find((p) => p.esPeriodoActual);
+      if (periodoActual) {
+        setSelectedPeriodId(periodoActual.idPeriodoAcademico.toString());
+      } else if (periodsData.length > 0) {
+        setSelectedPeriodId(periodsData[0].idPeriodoAcademico.toString());
+      }
+
+      if (plansData.length > 0) {
+        setSelectedPlanId(plansData[0].idPlanEstudios.toString());
       }
     } catch (error) {
-      console.error("Error al cargar datos iniciales:", error);
+      console.error("Error loading initial data:", error);
+      toast.error("Error al cargar los datos iniciales");
+    } finally {
+      setInitialLoading(false);
     }
   };
 
   const loadGrupos = async () => {
     try {
-      setFilterLoading(true);
       const gruposData = await getGrupos(parseInt(selectedPeriodId));
       setGrupos(gruposData);
     } catch (error) {
       console.error("Error al cargar grupos:", error);
       toast.error("Error al cargar grupos");
-    } finally {
-      setFilterLoading(false);
     }
   };
 
-  const loadGruposMaterias = async () => {
+  const loadStudents = useCallback(async () => {
+    if (!selectedGrupoId) return;
+    setLoading(true);
     try {
-      setFilterLoading(true);
-      const grupos = await getAvailableGruposMaterias(undefined, parseInt(selectedPeriodId));
-      setGruposMaterias(grupos);
+      const idGrupo = parseInt(selectedGrupoId);
+
+      // Cargar de ambas fuentes en paralelo (como hace el modal)
+      const [directos, porMaterias] = await Promise.allSettled([
+        getEstudiantesDelGrupoDirecto(idGrupo),
+        getStudentsInGroup(idGrupo),
+      ]);
+
+      const allStudents: StudentDisplay[] = [];
+      const seenIds = new Set<number>();
+
+      // Procesar estudiantes inscritos directamente al grupo
+      if (directos.status === 'fulfilled' && directos.value.estudiantes) {
+        for (const est of directos.value.estudiantes) {
+          if (!seenIds.has(est.idEstudiante)) {
+            seenIds.add(est.idEstudiante);
+            allStudents.push({
+              idEstudiante: est.idEstudiante,
+              matricula: est.matricula,
+              nombreCompleto: est.nombreCompleto,
+              email: est.email,
+              telefono: est.telefono,
+              planEstudios: est.planEstudios,
+              estado: est.estado,
+              fechaInscripcion: est.fechaInscripcion,
+              fuente: 'directo',
+            });
+          }
+        }
+      }
+
+      // Procesar estudiantes inscritos por materias
+      if (porMaterias.status === 'fulfilled' && porMaterias.value.estudiantes) {
+        for (const est of porMaterias.value.estudiantes) {
+          if (!seenIds.has(est.idEstudiante)) {
+            seenIds.add(est.idEstudiante);
+            allStudents.push({
+              idEstudiante: est.idEstudiante,
+              matricula: est.matricula,
+              nombreCompleto: est.nombreCompleto,
+              email: est.email,
+              telefono: est.telefono,
+              planEstudios: est.planEstudios,
+              estado: est.estado,
+              fechaInscripcion: est.fechaInscripcion,
+              materiasInscritas: est.materiasInscritas,
+              fuente: 'materias',
+            });
+          }
+        }
+      }
+
+      // Ordenar por nombre
+      allStudents.sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto));
+      setStudents(allStudents);
     } catch (error) {
-      console.error("Error al cargar grupos-materias:", error);
-      toast.error("Error al cargar grupos-materias");
+      console.error("Error al cargar estudiantes:", error);
+      toast.error("Error al cargar estudiantes");
+      setStudents([]);
     } finally {
-      setFilterLoading(false);
+      setLoading(false);
     }
-  };
+  }, [selectedGrupoId]);
 
-  const filterStudentsByPlan = () => {
-    const filtered = allStudents.filter((s) => s.idPlanActual?.toString() === selectedStudyPlanId);
-    setStudents({
-      items: filtered,
-      totalItems: filtered.length,
-      pageNumber: 1,
-      pageSize: filtered.length,
-      totalPages: 1,
-    });
-  };
-
-  const filterStudentsByGrupo = async () => {
-    try {
-      setFilterLoading(true);
-      const filteredStudents = await getStudentsByGrupo(parseInt(selectedGrupoId));
-      setStudents({
-        items: filteredStudents,
-        totalItems: filteredStudents.length,
-        pageNumber: 1,
-        pageSize: filteredStudents.length,
-        totalPages: 1,
-      });
-    } catch (error) {
-      console.error("Error al filtrar estudiantes:", error);
-      toast.error("Error al filtrar estudiantes");
-    } finally {
-      setFilterLoading(false);
+  // Cargar grupos cuando cambia el periodo
+  useEffect(() => {
+    if (selectedPeriodId) {
+      loadGrupos();
     }
-  };
+  }, [selectedPeriodId]);
 
-  const filterStudentsByGrupoMateria = async () => {
-    try {
-      setFilterLoading(true);
-      const filteredStudents = await getStudentsByGrupoMateria(parseInt(selectedGrupoMateriaId));
-      setStudents({
-        items: filteredStudents,
-        totalItems: filteredStudents.length,
-        pageNumber: 1,
-        pageSize: filteredStudents.length,
-        totalPages: 1,
-      });
-    } catch (error) {
-      console.error("Error al filtrar estudiantes:", error);
-      toast.error("Error al filtrar estudiantes");
-    } finally {
-      setFilterLoading(false);
+  // Cargar estudiantes cuando cambia el grupo
+  useEffect(() => {
+    if (selectedGrupoId) {
+      loadStudents();
+    } else {
+      setStudents([]);
     }
-  };
+  }, [selectedGrupoId, loadStudents]);
 
-  const clearFilters = () => {
-    setSelectedPeriodId("all");
-    setSelectedStudyPlanId("all");
-    setSelectedGrupoId("all");
-    setSelectedGrupoMateriaId("all");
-    setSearchTerm("");
-    setFilterType("none");
-    setStudents({ ...students!, items: allStudents });
-  };
+  // Resetear grupo cuando cambia el plan
+  useEffect(() => {
+    setSelectedGrupoId("");
+    setStudents([]);
+  }, [selectedPlanId]);
 
-  const currentPeriodId = selectedPeriodId !== "all" ? parseInt(selectedPeriodId) : undefined;
+  const selectedGrupo = grupos.find((g) => g.idGrupo.toString() === selectedGrupoId);
 
-  const table = useDataTableInstance({
-    data: students?.items ?? [],
-    columns: getStudentsColumns(loadStudents, currentPeriodId),
-    getRowId: (row) => row.idEstudiante.toString(),
-  });
-
-  // Estadísticas
-  const totalStudents = allStudents.length;
-  const activeStudents = allStudents.filter(s => s.activo !== false).length;
-  const uniquePlans = new Set(allStudents.map(s => s.idPlanActual).filter(Boolean)).size;
-
-  if (loading) {
+  if (initialLoading) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="text-muted-foreground">Cargando estudiantes...</span>
+      <div className="container mx-auto py-6">
+        <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <div
+            className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4"
+            style={{ borderColor: "#14356F" }}
+          ></div>
+          <p className="text-gray-600 text-lg">Cargando datos...</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center text-destructive">{error}</div>
-            <Button onClick={loadStudents} className="mt-4 w-full">
-              Reintentar
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             <div
               className="p-2 rounded-lg"
-              style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))' }}
+              style={{
+                background: "linear-gradient(to bottom right, rgba(20, 53, 111, 0.1), rgba(30, 74, 143, 0.1))",
+              }}
             >
-              <Users className="h-8 w-8" style={{ color: '#14356F' }} />
+              <Users className="w-8 h-8" style={{ color: "#14356F" }} />
             </div>
-            Estudiantes
+            Estudiantes por Grupo
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Gestión y seguimiento de estudiantes inscritos
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setShowFilters(!showFilters)} variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            {showFilters ? "Ocultar filtros" : "Mostrar filtros"}
-          </Button>
-          <DataTableViewOptions table={table} />
+          <p className="text-muted-foreground mt-1">Consulta los estudiantes inscritos en cada grupo</p>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card
-          className="border-2"
-          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
-        >
-          <CardHeader className="pb-2">
-            <CardDescription style={{ color: '#1e4a8f' }}>Total Estudiantes</CardDescription>
-            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
-              {totalStudents}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-green-600 dark:text-green-400">Activos</CardDescription>
-            <CardTitle className="text-4xl text-green-700 dark:text-green-300">
-              {activeStudents}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-purple-600 dark:text-purple-400">Planes de Estudio</CardDescription>
-            <CardTitle className="text-4xl text-purple-700 dark:text-purple-300">
-              {uniquePlans}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-orange-600 dark:text-orange-400">Mostrados</CardDescription>
-            <CardTitle className="text-4xl text-orange-700 dark:text-orange-300">
-              {students?.items?.length ?? 0}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Filters Section */}
-      {showFilters && (
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filtros de Búsqueda
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-2 min-w-0">
-                <Label htmlFor="studyPlan" className="text-sm font-semibold flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-primary shrink-0" />
-                  <span className="truncate">Plan de Estudios</span>
-                </Label>
-                <Select
-                  value={selectedStudyPlanId}
-                  onValueChange={(value) => {
-                    setSelectedStudyPlanId(value);
-                    // Solo limpiar grupo y grupo-materia si se selecciona un plan
-                    if (value !== "all") {
-                      setSelectedGrupoId("all");
-                      setSelectedGrupoMateriaId("all");
-                    }
-                  }}
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white rounded-lg border shadow-sm">
+        {/* Filtro de Campus */}
+        <div className="space-y-2">
+          <Label htmlFor="campus" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
+            <Building2 className="w-4 h-4" style={{ color: "#14356F" }} />
+            Campus
+          </Label>
+          <Select value={selectedCampusId} onValueChange={setSelectedCampusId}>
+            <SelectTrigger className="w-full bg-white border-gray-300 !text-gray-900">
+              <SelectValue placeholder="Todos los campus" />
+            </SelectTrigger>
+            <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px]">
+              <SelectItem
+                value="all"
+                className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 cursor-pointer"
+              >
+                Todos los campus
+              </SelectItem>
+              {campusList.map((campus) => (
+                <SelectItem
+                  key={campus.idCampus}
+                  value={campus.idCampus.toString()}
+                  className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 cursor-pointer"
                 >
-                  <SelectTrigger className="text-sm w-full [&>span]:truncate [&>span]:block [&>span]:text-left">
-                    <SelectValue placeholder="Selecciona un plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los planes</SelectItem>
-                    {studyPlans.map((plan) => (
-                      <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()}>
-                        {plan.nombrePlanEstudios}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {campus.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-              <div className="space-y-2 min-w-0">
-                <Label htmlFor="period" className="text-sm font-semibold flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                  <span className="truncate">Periodo Académico</span>
-                </Label>
-                <Select
-                  value={selectedPeriodId}
-                  onValueChange={(value) => {
-                    setSelectedPeriodId(value);
-                    // Solo limpiar grupo y grupo-materia al cambiar periodo (no el plan)
-                    setSelectedGrupoId("all");
-                    setSelectedGrupoMateriaId("all");
-                  }}
-                >
-                  <SelectTrigger className="text-sm w-full [&>span]:truncate [&>span]:block [&>span]:text-left">
-                    <SelectValue placeholder="Selecciona un periodo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los periodos</SelectItem>
-                    {academicPeriods.map((period) => (
-                      <SelectItem key={period.idPeriodoAcademico} value={period.idPeriodoAcademico.toString()}>
-                        {period.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2 min-w-0">
-                <Label htmlFor="grupo" className="text-sm font-semibold flex items-center gap-2">
-                  <Users className="h-4 w-4 text-primary shrink-0" />
-                  <span className="truncate">Código de Grupo</span>
-                </Label>
-                <Select
-                  value={selectedGrupoId}
-                  onValueChange={(value) => {
-                    setSelectedGrupoId(value);
-                    // Grupo y Grupo-Materia son mutuamente excluyentes
-                    if (value !== "all") {
-                      setSelectedGrupoMateriaId("all");
-                    }
-                  }}
-                  disabled={selectedPeriodId === "all" || filterLoading}
-                >
-                  <SelectTrigger className="text-sm w-full [&>span]:truncate [&>span]:block [&>span]:text-left">
-                    <SelectValue placeholder="Selecciona un grupo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los grupos</SelectItem>
-                    {grupos.map((grupo) => (
-                      <SelectItem key={grupo.idGrupo} value={grupo.idGrupo.toString()}>
-                        {grupo.codigoGrupo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2 min-w-0">
-                <Label htmlFor="grupoMateria" className="text-sm font-semibold flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                  <span className="truncate">Grupo-Materia</span>
-                </Label>
-                <Select
-                  value={selectedGrupoMateriaId}
-                  onValueChange={(value) => {
-                    setSelectedGrupoMateriaId(value);
-                    // Grupo y Grupo-Materia son mutuamente excluyentes
-                    if (value !== "all") {
-                      setSelectedGrupoId("all");
-                    }
-                  }}
-                  disabled={selectedPeriodId === "all" || filterLoading}
-                >
-                  <SelectTrigger className="text-sm w-full [&>span]:truncate [&>span]:block [&>span]:text-left">
-                    <SelectValue placeholder="Selecciona grupo-materia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {gruposMaterias.map((gm) => (
-                      <SelectItem key={gm.idGrupoMateria} value={gm.idGrupoMateria.toString()}>
-                        {gm.nombreMateria} - Grupo {gm.grupo} ({gm.inscritos}/{gm.cupoMaximo})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-4 pt-4 border-t">
-              <Button onClick={clearFilters} variant="outline" size="sm" className="shrink-0">
-                <X className="w-4 h-4 mr-2" />
-                Limpiar filtros
-              </Button>
-
-              {filterType !== "none" && students?.items && (
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-100 text-blue-700 px-3 py-2 max-w-full sm:max-w-[60%] flex items-center gap-2"
-                  title={
-                    filterType === "plan"
-                      ? studyPlans.find((p) => p.idPlanEstudios.toString() === selectedStudyPlanId)?.nombrePlanEstudios
-                      : filterType === "grupo"
-                      ? grupos.find((g) => g.idGrupo.toString() === selectedGrupoId)?.codigoGrupo
-                      : gruposMaterias.find((gm) => gm.idGrupoMateria.toString() === selectedGrupoMateriaId)?.nombreMateria
-                  }
-                >
-                  <UserCheck className="w-4 h-4 shrink-0" />
-                  <span className="truncate">
-                    {students.items.length} estudiante(s)
-                    {filterType === "plan" &&
-                      ` en ${studyPlans.find((p) => p.idPlanEstudios.toString() === selectedStudyPlanId)?.nombrePlanEstudios}`}
-                    {filterType === "grupo" &&
-                      ` en grupo ${grupos.find((g) => g.idGrupo.toString() === selectedGrupoId)?.codigoGrupo}`}
-                    {filterType === "grupomateria" &&
-                      ` en ${gruposMaterias.find((gm) => gm.idGrupoMateria.toString() === selectedGrupoMateriaId)?.nombreMateria}`}
-                  </span>
-                </Badge>
+        {/* Filtro de Licenciatura */}
+        <div className="space-y-2">
+          <Label htmlFor="plan" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
+            <GraduationCap className="w-4 h-4" style={{ color: "#14356F" }} />
+            Licenciatura
+          </Label>
+          <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
+            <SelectTrigger className="w-full border-2 border-gray-400 bg-white !text-gray-900">
+              <SelectValue placeholder="Selecciona un plan" />
+            </SelectTrigger>
+            <SelectContent
+              className="!bg-white !text-gray-900 z-[9999] max-h-[300px] border-2"
+              style={{ borderColor: "#14356F" }}
+            >
+              {filteredPlans.length === 0 ? (
+                <div className="p-4 text-center text-gray-900 bg-gray-100">No hay planes disponibles</div>
+              ) : (
+                filteredPlans.map((plan) => (
+                  <SelectItem
+                    key={plan.idPlanEstudios}
+                    value={plan.idPlanEstudios.toString()}
+                    className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 cursor-pointer min-h-[40px]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="font-mono text-xs px-1.5 py-0.5 rounded"
+                        style={{ backgroundColor: "rgba(20, 53, 111, 0.1)", color: "#14356F" }}
+                      >
+                        {plan.clavePlanEstudios}
+                      </span>
+                      {plan.nombrePlanEstudios}
+                    </span>
+                  </SelectItem>
+                ))
               )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Filtro de Periodo Académico */}
+        <div className="space-y-2">
+          <Label htmlFor="period" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
+            <BookOpen className="w-4 h-4" style={{ color: "#14356F" }} />
+            Periodo Académico
+          </Label>
+          <Select value={selectedPeriodId} onValueChange={setSelectedPeriodId}>
+            <SelectTrigger className="w-full bg-white border-gray-300 !text-gray-900">
+              <SelectValue placeholder="Selecciona un periodo" />
+            </SelectTrigger>
+            <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px]">
+              {academicPeriods.map((period) => (
+                <SelectItem
+                  key={period.idPeriodoAcademico}
+                  value={period.idPeriodoAcademico.toString()}
+                  className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-gray-900">{period.nombre}</span>
+                    {period.esPeriodoActual && (
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded font-medium"
+                        style={{ backgroundColor: "#14356F", color: "white" }}
+                      >
+                        Actual
+                      </span>
+                    )}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Filtro de Grupo */}
+        <div className="space-y-2">
+          <Label htmlFor="grupo" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
+            <Users className="w-4 h-4" style={{ color: "#14356F" }} />
+            Grupo
+          </Label>
+          <Select value={selectedGrupoId} onValueChange={setSelectedGrupoId}>
+            <SelectTrigger className="w-full bg-white border-gray-300 !text-gray-900">
+              <SelectValue placeholder="Selecciona un grupo" />
+            </SelectTrigger>
+            <SelectContent className="!bg-white !text-gray-900 z-[9999] max-h-[300px]">
+              {filteredGrupos.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">No hay grupos disponibles</div>
+              ) : (
+                filteredGrupos.map((grupo) => (
+                  <SelectItem
+                    key={grupo.idGrupo}
+                    value={grupo.idGrupo.toString()}
+                    className="!text-gray-900 !bg-white hover:!bg-[#14356F]/10 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="font-mono text-xs px-1.5 py-0.5 rounded font-bold"
+                        style={{ backgroundColor: "rgba(20, 53, 111, 0.1)", color: "#14356F" }}
+                      >
+                        {grupo.codigoGrupo}
+                      </span>
+                      {grupo.nombreGrupo}
+                    </span>
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Selected Group Info */}
+      {selectedGrupo && (
+        <div
+          className="rounded-lg p-4 border-2"
+          style={{
+            background: "linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))",
+            borderColor: "rgba(20, 53, 111, 0.2)",
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Users className="w-6 h-6" style={{ color: "#14356F" }} />
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: "#14356F" }}>
+                  Grupo {selectedGrupo.codigoGrupo} - {selectedGrupo.nombreGrupo}
+                </h2>
+                <p style={{ color: "#1e4a8f" }} className="text-sm">
+                  {filteredStudents.length} estudiante{filteredStudents.length !== 1 ? "s" : ""} inscrito
+                  {filteredStudents.length !== 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+            {/* Search */}
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar estudiante..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 bg-white"
+              />
+            </div>
+          </div>
+        </div>
       )}
 
-      <CreateStudentModal open={open} onOpenChange={setOpen} />
-
-      {/* Table */}
-      {filterLoading ? (
-        <div className="flex h-[30vh] items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="text-muted-foreground">Filtrando estudiantes...</span>
-          </div>
+      {/* Students List */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center min-h-[300px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" style={{ borderColor: "#14356F" }}></div>
+          <p className="text-gray-600">Cargando estudiantes...</p>
+        </div>
+      ) : !selectedGrupoId ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
+          <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-600 font-medium">Selecciona un grupo</p>
+          <p className="text-gray-500 text-sm mt-1">Elige un grupo para ver los estudiantes inscritos</p>
+        </div>
+      ) : filteredStudents.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
+          <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-600 font-medium">No hay estudiantes en este grupo</p>
+          <p className="text-gray-500 text-sm mt-1">
+            {searchTerm ? "No se encontraron resultados para tu búsqueda" : "Los estudiantes aparecerán aquí cuando se inscriban"}
+          </p>
         </div>
       ) : (
-        <Card>
-          <CardHeader className="border-b bg-muted/40">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <CardTitle>Listado de Estudiantes</CardTitle>
-                <CardDescription>
-                  {students?.items?.length ?? 0} estudiantes encontrados
-                </CardDescription>
-              </div>
-              <div className="relative w-full md:w-72">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar estudiante..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
+        <div className="space-y-3">
+          {filteredStudents.map((student) => (
+            <div
+              key={student.idEstudiante}
+              className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <h4 className="font-semibold text-gray-900">{student.nombreCompleto}</h4>
+                    <Badge
+                      variant="outline"
+                      className="font-mono"
+                      style={{
+                        background: "rgba(20, 53, 111, 0.05)",
+                        color: "#14356F",
+                        borderColor: "rgba(20, 53, 111, 0.2)",
+                      }}
+                    >
+                      {student.matricula}
+                    </Badge>
+                    {student.estado && (
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                        {student.estado}
+                      </Badge>
+                    )}
+                    {student.fuente === 'directo' && (
+                      <Badge variant="secondary" className="text-xs">
+                        Inscripción directa
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                    {student.email && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Mail className="w-4 h-4 flex-shrink-0" />
+                        <span>{student.email}</span>
+                      </div>
+                    )}
+
+                    {student.telefono && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Phone className="w-4 h-4 flex-shrink-0" />
+                        <span>{student.telefono}</span>
+                      </div>
+                    )}
+
+                    {student.planEstudios && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <GraduationCap className="w-4 h-4 flex-shrink-0" />
+                        <span>{student.planEstudios}</span>
+                      </div>
+                    )}
+
+                    {student.materiasInscritas !== undefined && student.materiasInscritas > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Materias:</span>
+                        <span className="font-medium" style={{ color: '#14356F' }}>{student.materiasInscritas}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataTable table={table} columns={getStudentsColumns(loadStudents, currentPeriodId)} />
-          </CardContent>
-          <div className="p-4 border-t">
-            <DataTablePagination table={table} />
-          </div>
-        </Card>
+          ))}
+        </div>
       )}
     </div>
   );

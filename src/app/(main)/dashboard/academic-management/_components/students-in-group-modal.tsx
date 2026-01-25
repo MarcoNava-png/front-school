@@ -112,7 +112,7 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" style={{ color: '#14356F' }} />
@@ -174,31 +174,31 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                         {student.email && (
                           <div className="flex items-center gap-2 text-gray-600">
-                            <Mail className="w-4 h-4" />
+                            <Mail className="w-4 h-4 flex-shrink-0" />
                             <span>{student.email}</span>
                           </div>
                         )}
 
                         {student.telefono && (
                           <div className="flex items-center gap-2 text-gray-600">
-                            <Phone className="w-4 h-4" />
+                            <Phone className="w-4 h-4 flex-shrink-0" />
                             <span>{student.telefono}</span>
                           </div>
                         )}
 
                         {student.planEstudios && (
                           <div className="flex items-center gap-2 text-gray-600">
-                            <User className="w-4 h-4" />
+                            <User className="w-4 h-4 flex-shrink-0" />
                             <span>{student.planEstudios}</span>
                           </div>
                         )}
 
                         {student.materiasInscritas !== undefined && student.materiasInscritas > 0 && (
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-600">Materias inscritas:</span>
+                            <span className="text-gray-600">Materias:</span>
                             <span className="font-medium" style={{ color: '#14356F' }}>{student.materiasInscritas}</span>
                           </div>
                         )}

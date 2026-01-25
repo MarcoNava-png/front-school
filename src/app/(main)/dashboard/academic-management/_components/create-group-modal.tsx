@@ -152,9 +152,9 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
                 {academicPeriods.map((period) => (
                   <SelectItem key={period.idPeriodoAcademico} value={period.idPeriodoAcademico.toString()}>
                     <span className="flex items-center gap-2">
-                      {period.nombre} ({period.clave})
+                      <span>{period.nombre} ({period.clave})</span>
                       {period.esPeriodoActual && (
-                        <span className="text-xs px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: '#14356F' }}>
+                        <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: '#14356F', color: 'white' }}>
                           Actual
                         </span>
                       )}

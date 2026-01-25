@@ -204,7 +204,7 @@ export function GroupSubjectsModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5" />
@@ -215,19 +215,19 @@ export function GroupSubjectsModal({
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue="list" className="w-full">
-            <div className="flex items-center justify-between mb-4">
-              <TabsList>
+          <Tabs defaultValue="list" className="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <TabsList className="flex-shrink-0">
                 <TabsTrigger value="list" className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4" />
-                  Lista de Materias
+                  Lista
                 </TabsTrigger>
                 <TabsTrigger value="schedule" className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Horario Semanal
+                  Horario
                 </TabsTrigger>
               </TabsList>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => setShowAutoLoadDialog(true)}
                   size="sm"
@@ -235,17 +235,17 @@ export function GroupSubjectsModal({
                   disabled={autoLoading || !idPlanEstudios}
                   className="border-blue-600 text-blue-600 hover:bg-blue-50"
                 >
-                  <Zap className="w-4 h-4 mr-2" />
-                  {autoLoading ? "Cargando..." : "Cargar Materias Auto"}
+                  <Zap className="w-4 h-4 mr-1" />
+                  {autoLoading ? "Cargando..." : "Auto Cargar"}
                 </Button>
                 <Button onClick={() => setShowAddModal(true)} size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agregar Materia
+                  <Plus className="w-4 h-4 mr-1" />
+                  Agregar
                 </Button>
               </div>
             </div>
 
-            <TabsContent value="list" className="space-y-4 mt-0">
+            <TabsContent value="list" className="space-y-4 mt-0 flex-1 overflow-y-auto">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-600">
                   {subjects.length} materia{subjects.length !== 1 ? "s" : ""} en el grupo
@@ -406,7 +406,7 @@ export function GroupSubjectsModal({
             )}
             </TabsContent>
 
-            <TabsContent value="schedule" className="mt-0">
+            <TabsContent value="schedule" className="mt-0 flex-1 overflow-y-auto">
               <ScheduleGridView materias={subjects} nombreGrupo={nombreGrupo} />
             </TabsContent>
           </Tabs>
