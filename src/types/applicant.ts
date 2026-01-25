@@ -22,6 +22,8 @@ export interface Applicant {
   // Campos adicionales para UI (si vienen del backend)
   estatusPago?: string; // SIN_RECIBO | PENDIENTE | PARCIAL | PAGADO
   estatusDocumentos?: string; // INCOMPLETO | COMPLETO | VALIDADO
+  // Cuatrimestre al que el aspirante desea ingresar (1-9)
+  cuatrimestreInteres?: number;
 }
 
 export interface PayloadCreateApplicant {
@@ -45,6 +47,7 @@ export interface PayloadCreateApplicant {
   notas: string;
   atendidoPorUsuarioId: string;
   horarioId: number;
+  cuatrimestreInteres?: number;
   stateId?: string;
   municipalityId?: string;
   townshipId?: number;

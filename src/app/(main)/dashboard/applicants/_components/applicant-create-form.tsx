@@ -619,6 +619,34 @@ export function ApplicantCreateForm({
 
             <FormField
               control={form.control}
+              name="cuatrimestreInteres"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cuatrimestre de Interés</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value ? Number(value) : undefined)}
+                    value={field.value ? String(field.value) : ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona cuatrimestre" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                        <SelectItem key={num} value={String(num)}>
+                          {num}° Cuatrimestre
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="aspiranteStatusId"
               render={({ field }) => (
                 <FormItem>
