@@ -175,7 +175,7 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
                 id="cuatrimestre"
                 type="number"
                 min="1"
-                max="9"
+                max="15"
                 value={numeroCuatrimestre}
                 onChange={(e) => setNumeroCuatrimestre(e.target.value)}
                 placeholder="Ej: 1"
