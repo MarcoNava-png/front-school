@@ -2,19 +2,34 @@
 
 import { useState } from "react";
 
-import { Plus, Award, Power } from "lucide-react";
+import Link from "next/link";
+
+import { Award, Plus, Power, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { listarBecasEstudiante, desactivarBeca } from "@/services/becas-service";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { desactivarBeca, listarBecasEstudiante } from "@/services/becas-service";
 import { BecaEstudiante } from "@/types/receipt";
 
-import { CreateBecaModal } from "./_components/create-beca-modal";
+import { AsignarBecaModal } from "./_components/asignar-beca-modal";
 
 export default function ScholarshipsPage() {
   const [becas, setBecas] = useState<BecaEstudiante[]>([]);
@@ -79,6 +94,12 @@ export default function ScholarshipsPage() {
             Administra becas y descuentos para estudiantes
           </p>
         </div>
+        <Link href="/dashboard/scholarships/catalog">
+          <Button variant="outline">
+            <Settings className="w-4 h-4 mr-2" />
+            Catálogo de Becas
+          </Button>
+        </Link>
       </div>
 
       {/* Búsqueda de Estudiante */}
@@ -210,7 +231,7 @@ export default function ScholarshipsPage() {
 
       {/* Modal */}
       {idEstudiante && (
-        <CreateBecaModal
+        <AsignarBecaModal
           open={createModalOpen}
           onClose={() => {
             setCreateModalOpen(false);

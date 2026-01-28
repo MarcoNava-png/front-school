@@ -218,12 +218,58 @@ export interface ConceptoPago {
 }
 
 // ============================================================================
-// BECAS
+// BECAS - CATÁLOGO
+// ============================================================================
+
+export interface BecaCatalogo {
+  idBeca: number;
+  clave: string;
+  nombre: string;
+  descripcion?: string | null;
+  tipo: 'PORCENTAJE' | 'MONTO';
+  valor: number;
+  topeMensual?: number | null;
+  idConceptoPago?: number | null;
+  activo: boolean;
+  createdAt?: string;
+  updatedAt?: string | null;
+
+  // Relaciones
+  conceptoPago?: {
+    idConceptoPago: number;
+    nombre: string;
+    clave: string;
+  } | null;
+}
+
+export interface CrearBecaCatalogoPayload {
+  clave: string;
+  nombre: string;
+  descripcion?: string | null;
+  tipo: 'PORCENTAJE' | 'MONTO';
+  valor: number;
+  topeMensual?: number | null;
+  idConceptoPago?: number | null;
+}
+
+export interface ActualizarBecaCatalogoPayload {
+  nombre: string;
+  descripcion?: string | null;
+  tipo: 'PORCENTAJE' | 'MONTO';
+  valor: number;
+  topeMensual?: number | null;
+  idConceptoPago?: number | null;
+  activo: boolean;
+}
+
+// ============================================================================
+// BECAS - ASIGNACIONES A ESTUDIANTES
 // ============================================================================
 
 export interface BecaEstudiante {
   idBecaAsignacion: number;
   idEstudiante: number;
+  idBeca?: number | null;
   idConceptoPago?: number | null;
   tipo: 'PORCENTAJE' | 'MONTO';
   valor: number;
@@ -233,7 +279,8 @@ export interface BecaEstudiante {
   activo: boolean;
   observaciones?: string | null;
 
-  // Campos calculados/relaciones
+  // Relaciones
+  beca?: BecaCatalogo | null;
   nombreConcepto?: string;
   matriculaEstudiante?: string;
   nombreEstudiante?: string;
@@ -247,6 +294,14 @@ export interface PayloadCreateBeca {
   vigenciaDesde: string;
   vigenciaHasta?: string | null;
   topeMensual?: number | null;
+  observaciones?: string | null;
+}
+
+export interface PayloadAsignarBecaCatalogo {
+  idEstudiante: number;
+  idBeca: number;
+  vigenciaDesde: string;
+  vigenciaHasta?: string | null;
   observaciones?: string | null;
 }
 

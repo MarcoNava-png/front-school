@@ -1,4 +1,8 @@
-import { BecaEstudiante, PayloadCreateBeca } from "@/types/receipt";
+import {
+  BecaEstudiante,
+  PayloadAsignarBecaCatalogo,
+  PayloadCreateBeca,
+} from "@/types/receipt";
 
 import apiClient from "./api-client";
 
@@ -76,6 +80,21 @@ export async function crearBeca(payload: PayloadCreateBeca): Promise<BecaEstudia
     Observaciones: payload.observaciones ?? null,
   };
   const { data } = await apiClient.post<BecaEstudiante>("/becas/asignar", backendPayload);
+  return data;
+}
+
+/**
+ * Asigna una beca del catálogo a un estudiante
+ * @param payload Datos de la asignación
+ * @returns Beca asignada
+ */
+export async function asignarBecaDesdeCatalogo(
+  payload: PayloadAsignarBecaCatalogo
+): Promise<BecaEstudiante> {
+  const { data } = await apiClient.post<BecaEstudiante>(
+    "/becas/asignar-catalogo",
+    payload
+  );
   return data;
 }
 
