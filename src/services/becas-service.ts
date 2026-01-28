@@ -144,43 +144,25 @@ export async function verificarBecasActivas(
  * Alias de obtenerBecasEstudiante para compatibilidad
  */
 export async function listarBecasEstudiante(idEstudiante: number): Promise<BecaEstudiante[]> {
-  try {
-    return await obtenerBecasEstudiante(idEstudiante);
-  } catch {
-    console.warn("⚠️ Endpoint de becas no encontrado. Usando datos mock temporales.");
+  return await obtenerBecasEstudiante(idEstudiante);
+}
 
-    // Datos mock temporales para desarrollo
-    const mockBecas: BecaEstudiante[] = [
-      {
-        idBecaAsignacion: 1,
-        idEstudiante: 1,
-        tipo: "PORCENTAJE",
-        valor: 50,
-        idConceptoPago: null,
-        vigenciaDesde: "2024-09-01",
-        vigenciaHasta: "2025-06-30",
-        activo: true,
-        observaciones: "Beca por excelencia académica",
-        nombreConcepto: "Todos los conceptos",
-        matriculaEstudiante: "2024001",
-        nombreEstudiante: "Juan Pérez García",
-      },
-      {
-        idBecaAsignacion: 2,
-        idEstudiante: 1,
-        tipo: "MONTO",
-        valor: 1000,
-        idConceptoPago: 2, // Colegiatura
-        vigenciaDesde: "2024-09-01",
-        vigenciaHasta: "2024-12-31",
-        activo: false,
-        observaciones: "Beca de apoyo económico (vencida)",
-        nombreConcepto: "Colegiatura Mensual",
-        matriculaEstudiante: "2024001",
-        nombreEstudiante: "Juan Pérez García",
-      },
-    ];
-
-    return mockBecas.filter((b) => b.idEstudiante === idEstudiante);
-  }
+/**
+ * Recalcula los descuentos de recibos pendientes aplicando las becas activas
+ * @param idEstudiante ID del estudiante
+ * @param idPeriodoAcademico ID del periodo académico (opcional)
+ * @returns Cantidad de recibos actualizados
+ */
+export async function recalcularDescuentosBecas(
+  idEstudiante: number,
+  idPeriodoAcademico?: number
+): Promise<{ mensaje: string; recibosActualizados: number }> {
+  const { data } = await apiClient.post<{ mensaje: string; recibosActualizados: number }>(
+    "/becas/recalcular-descuentos",
+    {
+      idEstudiante,
+      idPeriodoAcademico: idPeriodoAcademico ?? null,
+    }
+  );
+  return data;
 }

@@ -32,6 +32,11 @@ export async function getStudent(studentId: number): Promise<Student> {
   return data;
 }
 
+export async function getStudentByMatricula(matricula: string): Promise<Student> {
+  const { data } = await apiClient.get<Student>(`/estudiantes/matricula/${matricula}`);
+  return data;
+}
+
 export async function enrollStudent(data: { idEstudiante: number; matricula: string }): Promise<unknown> {
   return await apiClient.put<unknown>(`/estudiantes/matricular`, data);
 }
