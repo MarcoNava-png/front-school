@@ -42,14 +42,11 @@ export default function ScholarshipsPage() {
     }
   }
 
-  async function handleDesactivar(idBeca: number) {
+  async function handleDesactivar(idBecaAsignacion: number) {
     if (!confirm("¿Seguro que deseas desactivar esta beca?")) return;
 
     try {
-      const motivo = prompt("Ingresa el motivo de la desactivación:");
-      if (!motivo) return;
-
-      await desactivarBeca(idBeca, motivo);
+      await desactivarBeca(idBecaAsignacion);
       toast.success("Beca desactivada exitosamente");
       buscarBecas();
     } catch (error: any) {
@@ -119,7 +116,7 @@ export default function ScholarshipsPage() {
               <div>
                 <CardTitle>Becas del Estudiante ({becas.length})</CardTitle>
                 <CardDescription>
-                  {becas.filter((b) => b.activa).length} activas
+                  {becas.filter((b) => b.activo).length} activas
                 </CardDescription>
               </div>
               <Button onClick={() => setCreateModalOpen(true)}>
@@ -147,7 +144,6 @@ export default function ScholarshipsPage() {
                     <TableHead>Tipo</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Concepto</TableHead>
-                    <TableHead>Periodo</TableHead>
                     <TableHead>Vigencia</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Observaciones</TableHead>
@@ -156,35 +152,32 @@ export default function ScholarshipsPage() {
                 </TableHeader>
                 <TableBody>
                   {becas.map((beca) => (
-                    <TableRow key={beca.idBeca}>
+                    <TableRow key={beca.idBecaAsignacion}>
                       <TableCell>
-                        <Badge variant={beca.tipoBeca === "PORCENTAJE" ? "default" : "secondary"}>
-                          {beca.tipoBeca === "PORCENTAJE" ? "Porcentaje" : "Monto Fijo"}
+                        <Badge variant={beca.tipo === "PORCENTAJE" ? "default" : "secondary"}>
+                          {beca.tipo === "PORCENTAJE" ? "Porcentaje" : "Monto Fijo"}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-semibold">
-                        {beca.tipoBeca === "PORCENTAJE" ? `${beca.valor}%` : `$${beca.valor.toLocaleString("es-MX")}`}
+                        {beca.tipo === "PORCENTAJE" ? `${beca.valor}%` : `$${beca.valor.toLocaleString("es-MX")}`}
                       </TableCell>
                       <TableCell>
                         {beca.nombreConcepto || "Todos los conceptos"}
                       </TableCell>
                       <TableCell>
-                        {beca.nombrePeriodo || "Todos los periodos"}
-                      </TableCell>
-                      <TableCell>
                         <div className="text-sm">
                           <div>
-                            {new Date(beca.fechaInicio).toLocaleDateString("es-MX")}
+                            {new Date(beca.vigenciaDesde).toLocaleDateString("es-MX")}
                           </div>
-                          {beca.fechaFin && (
+                          {beca.vigenciaHasta && (
                             <div className="text-muted-foreground">
-                              hasta {new Date(beca.fechaFin).toLocaleDateString("es-MX")}
+                              hasta {new Date(beca.vigenciaHasta).toLocaleDateString("es-MX")}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {beca.activa ? (
+                        {beca.activo ? (
                           <Badge variant="default">Activa</Badge>
                         ) : (
                           <Badge variant="destructive">Inactiva</Badge>
@@ -195,11 +188,11 @@ export default function ScholarshipsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
-                          {beca.activa && (
+                          {beca.activo && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDesactivar(beca.idBeca)}
+                              onClick={() => handleDesactivar(beca.idBecaAsignacion)}
                             >
                               <Power className="w-4 h-4 text-red-600" />
                             </Button>

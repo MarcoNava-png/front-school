@@ -22,7 +22,7 @@ export async function obtenerBecasEstudiante(
   }
 
   const { data } = await apiClient.get<BecaEstudiante[]>(
-    `/estudiantes/${idEstudiante}/becas?${params.toString()}`
+    `/becas/estudiante/${idEstudiante}?${params.toString()}`
   );
   return data;
 }
@@ -64,43 +64,43 @@ export async function obtenerBecaPorId(id: number): Promise<BecaEstudiante> {
  * @returns Beca creada
  */
 export async function crearBeca(payload: PayloadCreateBeca): Promise<BecaEstudiante> {
-  const { data } = await apiClient.post<BecaEstudiante>("/becas", payload);
+  // Mapear campos del frontend a los nombres que espera el backend
+  const backendPayload = {
+    IdEstudiante: payload.idEstudiante,
+    IdConceptoPago: payload.idConceptoPago ?? null,
+    Tipo: payload.tipoBeca,
+    Valor: payload.valor,
+    VigenciaDesde: payload.vigenciaDesde,
+    VigenciaHasta: payload.vigenciaHasta ?? null,
+    TopeMensual: payload.topeMensual ?? null,
+    Observaciones: payload.observaciones ?? null,
+  };
+  const { data } = await apiClient.post<BecaEstudiante>("/becas/asignar", backendPayload);
   return data;
 }
 
 /**
  * Actualiza una beca existente
- * @param id ID de la beca
- * @param payload Datos a actualizar
- * @returns Beca actualizada
+ * NOTA: Este endpoint NO existe en el backend actualmente.
+ * Para modificar una beca, se debe eliminar y crear una nueva.
  */
 export async function actualizarBeca(
-  id: number,
-  payload: Partial<PayloadCreateBeca>
+  _id: number,
+  _payload: Partial<PayloadCreateBeca>
 ): Promise<BecaEstudiante> {
-  const { data } = await apiClient.put<BecaEstudiante>(`/becas/${id}`, payload);
-  return data;
+  throw new Error("Endpoint no implementado en el backend. Elimina la beca y crea una nueva.");
 }
 
 /**
- * Desactiva una beca
- * @param id ID de la beca
- * @param motivo Motivo de la desactivación (opcional)
- */
-export async function desactivarBeca(id: number, motivo?: string): Promise<void> {
-  await apiClient.patch(`/becas/${id}/desactivar`, { motivo });
-}
-
-/**
- * Activa una beca
+ * Desactiva/elimina una beca
  * @param id ID de la beca
  */
-export async function activarBeca(id: number): Promise<void> {
-  await apiClient.patch(`/becas/${id}/activar`);
+export async function desactivarBeca(id: number): Promise<void> {
+  await apiClient.delete(`/becas/${id}`);
 }
 
 /**
- * Elimina una beca
+ * Elimina una beca (alias de desactivarBeca)
  * @param id ID de la beca
  */
 export async function eliminarBeca(id: number): Promise<void> {
@@ -108,17 +108,15 @@ export async function eliminarBeca(id: number): Promise<void> {
 }
 
 /**
- * Verifica becas activas de un estudiante para un periodo
+ * Verifica becas activas de un estudiante
  * @param idEstudiante ID del estudiante
- * @param idPeriodoAcademico ID del periodo
  * @returns Becas activas aplicables
  */
 export async function verificarBecasActivas(
-  idEstudiante: number,
-  idPeriodoAcademico: number
+  idEstudiante: number
 ): Promise<BecaEstudiante[]> {
   const { data } = await apiClient.get<BecaEstudiante[]>(
-    `/estudiantes/${idEstudiante}/becas/activas?idPeriodoAcademico=${idPeriodoAcademico}`
+    `/becas/estudiante/${idEstudiante}?soloActivas=true`
   );
   return data;
 }
@@ -135,34 +133,30 @@ export async function listarBecasEstudiante(idEstudiante: number): Promise<BecaE
     // Datos mock temporales para desarrollo
     const mockBecas: BecaEstudiante[] = [
       {
-        idBeca: 1,
+        idBecaAsignacion: 1,
         idEstudiante: 1,
-        tipoBeca: "PORCENTAJE",
+        tipo: "PORCENTAJE",
         valor: 50,
         idConceptoPago: null,
-        idPeriodoAcademico: null,
-        fechaInicio: "2024-09-01",
-        fechaFin: "2025-06-30",
-        activa: true,
+        vigenciaDesde: "2024-09-01",
+        vigenciaHasta: "2025-06-30",
+        activo: true,
         observaciones: "Beca por excelencia académica",
         nombreConcepto: "Todos los conceptos",
-        nombrePeriodo: "Todos los periodos",
         matriculaEstudiante: "2024001",
         nombreEstudiante: "Juan Pérez García",
       },
       {
-        idBeca: 2,
+        idBecaAsignacion: 2,
         idEstudiante: 1,
-        tipoBeca: "MONTO_FIJO",
+        tipo: "MONTO",
         valor: 1000,
         idConceptoPago: 2, // Colegiatura
-        idPeriodoAcademico: 1,
-        fechaInicio: "2024-09-01",
-        fechaFin: "2024-12-31",
-        activa: false,
+        vigenciaDesde: "2024-09-01",
+        vigenciaHasta: "2024-12-31",
+        activo: false,
         observaciones: "Beca de apoyo económico (vencida)",
         nombreConcepto: "Colegiatura Mensual",
-        nombrePeriodo: "Septiembre 2024 - Diciembre 2024",
         matriculaEstudiante: "2024001",
         nombreEstudiante: "Juan Pérez García",
       },

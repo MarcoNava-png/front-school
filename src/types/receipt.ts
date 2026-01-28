@@ -222,38 +222,36 @@ export interface ConceptoPago {
 // ============================================================================
 
 export interface BecaEstudiante {
-  idBeca: number;
+  idBecaAsignacion: number;
   idEstudiante: number;
-  tipoBeca: 'PORCENTAJE' | 'MONTO_FIJO';
-  valor: number;
   idConceptoPago?: number | null;
-  idPeriodoAcademico?: number | null;
-  fechaInicio: string;
-  fechaFin?: string | null;
-  activa: boolean;
+  tipo: 'PORCENTAJE' | 'MONTO';
+  valor: number;
+  topeMensual?: number | null;
+  vigenciaDesde: string;
+  vigenciaHasta?: string | null;
+  activo: boolean;
   observaciones?: string | null;
 
-  // Campos calculados
+  // Campos calculados/relaciones
   nombreConcepto?: string;
-  nombrePeriodo?: string;
   matriculaEstudiante?: string;
   nombreEstudiante?: string;
 }
 
 export interface PayloadCreateBeca {
   idEstudiante: number;
-  tipoBeca: 'PORCENTAJE' | 'MONTO_FIJO';
+  tipoBeca: 'PORCENTAJE' | 'MONTO';
   valor: number;
   idConceptoPago?: number | null;
-  idPeriodoAcademico?: number | null;
+  vigenciaDesde: string;
+  vigenciaHasta?: string | null;
+  topeMensual?: number | null;
   observaciones?: string | null;
 }
 
 // Alias para compatibilidad con modales
-export type CreateBecaEstudianteDto = PayloadCreateBeca & {
-  fechaInicio?: string;
-  fechaFin?: string | null;
-};
+export type CreateBecaEstudianteDto = PayloadCreateBeca;
 
 // ============================================================================
 // REPORTES

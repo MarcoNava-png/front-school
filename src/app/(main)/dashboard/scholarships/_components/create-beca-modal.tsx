@@ -36,10 +36,10 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
   const [loading, setLoading] = useState(false);
 
   // Form state
-  const [tipoBeca, setTipoBeca] = useState<"PORCENTAJE" | "MONTO_FIJO">("PORCENTAJE");
+  const [tipoBeca, setTipoBeca] = useState<"PORCENTAJE" | "MONTO">("PORCENTAJE");
   const [valor, setValor] = useState("");
-  const [fechaInicio, setFechaInicio] = useState(new Date().toISOString().split("T")[0]);
-  const [fechaFin, setFechaFin] = useState("");
+  const [vigenciaDesde, setVigenciaDesde] = useState(new Date().toISOString().split("T")[0]);
+  const [vigenciaHasta, setVigenciaHasta] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -56,7 +56,7 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
       return;
     }
 
-    if (!fechaInicio) {
+    if (!vigenciaDesde) {
       toast.error("Ingresa la fecha de inicio");
       return;
     }
@@ -69,9 +69,8 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
         tipoBeca,
         valor: parseFloat(valor),
         idConceptoPago: null, // Por ahora null = aplica a todos
-        idPeriodoAcademico: null, // Por ahora null = aplica a todos
-        fechaInicio,
-        fechaFin: fechaFin || null,
+        vigenciaDesde,
+        vigenciaHasta: vigenciaHasta || null,
         observaciones,
       };
 
@@ -89,8 +88,8 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
   function resetForm() {
     setTipoBeca("PORCENTAJE");
     setValor("");
-    setFechaInicio(new Date().toISOString().split("T")[0]);
-    setFechaFin("");
+    setVigenciaDesde(new Date().toISOString().split("T")[0]);
+    setVigenciaHasta("");
     setObservaciones("");
   }
 
@@ -113,7 +112,7 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="PORCENTAJE">Porcentaje (%)</SelectItem>
-                <SelectItem value="MONTO_FIJO">Monto Fijo ($)</SelectItem>
+                <SelectItem value="MONTO">Monto Fijo ($)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -150,8 +149,8 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
               <Input
                 id="inicio"
                 type="date"
-                value={fechaInicio}
-                onChange={(e) => setFechaInicio(e.target.value)}
+                value={vigenciaDesde}
+                onChange={(e) => setVigenciaDesde(e.target.value)}
               />
             </div>
 
@@ -160,8 +159,8 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
               <Input
                 id="fin"
                 type="date"
-                value={fechaFin}
-                onChange={(e) => setFechaFin(e.target.value)}
+                value={vigenciaHasta}
+                onChange={(e) => setVigenciaHasta(e.target.value)}
               />
             </div>
           </div>
