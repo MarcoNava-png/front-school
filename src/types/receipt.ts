@@ -271,6 +271,7 @@ export interface BecaEstudiante {
   idEstudiante: number;
   idBeca?: number | null;
   idConceptoPago?: number | null;
+  idPeriodoAcademico?: number | null;
   tipo: 'PORCENTAJE' | 'MONTO';
   valor: number;
   topeMensual?: number | null;
@@ -284,6 +285,13 @@ export interface BecaEstudiante {
   nombreConcepto?: string;
   matriculaEstudiante?: string;
   nombreEstudiante?: string;
+  periodoAcademico?: {
+    idPeriodoAcademico: number;
+    nombre: string;
+    clave?: string;
+    fechaInicio?: string;
+    fechaFin?: string;
+  } | null;
 }
 
 export interface PayloadCreateBeca {
@@ -300,9 +308,18 @@ export interface PayloadCreateBeca {
 export interface PayloadAsignarBecaCatalogo {
   idEstudiante: number;
   idBeca: number;
+  idPeriodoAcademico?: number | null;
   vigenciaDesde: string;
   vigenciaHasta?: string | null;
   observaciones?: string | null;
+}
+
+export interface PayloadActualizarBeca {
+  idPeriodoAcademico?: number | null;
+  vigenciaDesde?: string | null;
+  vigenciaHasta?: string | null;
+  observaciones?: string | null;
+  activo?: boolean | null;
 }
 
 // Alias para compatibilidad con modales

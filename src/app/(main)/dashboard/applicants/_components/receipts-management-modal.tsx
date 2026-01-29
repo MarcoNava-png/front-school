@@ -367,7 +367,7 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
                           </div>
                           {recibo.descuento > 0 && (
                             <div className="flex justify-between text-sm text-green-600">
-                              <span>Descuento:</span>
+                              <span>Descuento (Beca):</span>
                               <span>-{formatCurrency(recibo.descuento)}</span>
                             </div>
                           )}

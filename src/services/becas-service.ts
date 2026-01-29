@@ -1,5 +1,6 @@
 import {
   BecaEstudiante,
+  PayloadActualizarBeca,
   PayloadAsignarBecaCatalogo,
   PayloadCreateBeca,
 } from "@/types/receipt";
@@ -100,14 +101,16 @@ export async function asignarBecaDesdeCatalogo(
 
 /**
  * Actualiza una beca existente
- * NOTA: Este endpoint NO existe en el backend actualmente.
- * Para modificar una beca, se debe eliminar y crear una nueva.
+ * @param id ID de la beca asignación
+ * @param payload Datos a actualizar (período, vigencias, observaciones, activo)
+ * @returns Beca actualizada
  */
 export async function actualizarBeca(
-  _id: number,
-  _payload: Partial<PayloadCreateBeca>
+  id: number,
+  payload: PayloadActualizarBeca
 ): Promise<BecaEstudiante> {
-  throw new Error("Endpoint no implementado en el backend. Elimina la beca y crea una nueva.");
+  const { data } = await apiClient.put<BecaEstudiante>(`/becas/${id}`, payload);
+  return data;
 }
 
 /**

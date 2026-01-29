@@ -43,6 +43,7 @@ import { BecaCatalogo, BecaEstudiante } from "@/types/receipt";
 import { Student } from "@/types/student";
 
 import { AsignarBecaModal } from "./_components/asignar-beca-modal";
+import { EditarBecaModal } from "./_components/editar-beca-modal";
 import { CreateBecaCatalogoModal } from "./catalog/_components/create-beca-catalogo-modal";
 
 export default function ScholarshipsPage() {
@@ -66,6 +67,8 @@ export default function ScholarshipsPage() {
   const [loadingBecas, setLoadingBecas] = useState(false);
   const [loadingRecalcular, setLoadingRecalcular] = useState(false);
   const [asignarBecaModalOpen, setAsignarBecaModalOpen] = useState(false);
+  const [editarBecaModalOpen, setEditarBecaModalOpen] = useState(false);
+  const [becaToEdit, setBecaToEdit] = useState<BecaEstudiante | null>(null);
 
   // Cargar catálogo al montar
   useEffect(() => {
@@ -185,6 +188,19 @@ export default function ScholarshipsPage() {
     setMatricula("");
     setEstudiante(null);
     setBecasEstudiante([]);
+  }
+
+  function handleEditBeca(beca: BecaEstudiante) {
+    setBecaToEdit(beca);
+    setEditarBecaModalOpen(true);
+  }
+
+  function handleCloseEditarBecaModal(shouldReload?: boolean) {
+    setEditarBecaModalOpen(false);
+    setBecaToEdit(null);
+    if (shouldReload && estudiante) {
+      cargarBecasEstudiante(estudiante.idEstudiante);
+    }
   }
 
   async function handleRecalcularDescuentos() {
@@ -511,7 +527,7 @@ export default function ScholarshipsPage() {
                         <TableHead>Tipo</TableHead>
                         <TableHead>Valor</TableHead>
                         <TableHead>Concepto</TableHead>
-                        <TableHead>Vigencia</TableHead>
+                        <TableHead>Período / Vigencia</TableHead>
                         <TableHead>Estado</TableHead>
                         <TableHead>Observaciones</TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
@@ -535,13 +551,26 @@ export default function ScholarshipsPage() {
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div>
-                                {new Date(beca.vigenciaDesde).toLocaleDateString("es-MX")}
-                              </div>
-                              {beca.vigenciaHasta && (
-                                <div className="text-muted-foreground">
-                                  hasta {new Date(beca.vigenciaHasta).toLocaleDateString("es-MX")}
-                                </div>
+                              {beca.periodoAcademico ? (
+                                <>
+                                  <div className="font-medium">
+                                    {beca.periodoAcademico.nombre}
+                                  </div>
+                                  <div className="text-muted-foreground text-xs">
+                                    {new Date(beca.vigenciaDesde).toLocaleDateString("es-MX")} - {beca.vigenciaHasta ? new Date(beca.vigenciaHasta).toLocaleDateString("es-MX") : "Sin fin"}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div>
+                                    {new Date(beca.vigenciaDesde).toLocaleDateString("es-MX")}
+                                  </div>
+                                  {beca.vigenciaHasta && (
+                                    <div className="text-muted-foreground">
+                                      hasta {new Date(beca.vigenciaHasta).toLocaleDateString("es-MX")}
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
                           </TableCell>
@@ -557,6 +586,14 @@ export default function ScholarshipsPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditBeca(beca)}
+                                title="Editar vigencia"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
                               {beca.activo && (
                                 <Button
                                   variant="ghost"
@@ -610,6 +647,13 @@ export default function ScholarshipsPage() {
           idEstudiante={estudiante.idEstudiante}
         />
       )}
+
+      {/* Modal para editar beca existente */}
+      <EditarBecaModal
+        open={editarBecaModalOpen}
+        onClose={handleCloseEditarBecaModal}
+        beca={becaToEdit}
+      />
     </div>
   );
 }

@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BookOpen, Building2, GraduationCap, Mail, Phone, Search, Users } from "lucide-react";
+import { BookOpen, Building2, ExternalLink, GraduationCap, Mail, Phone, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -513,6 +516,21 @@ export default function StudentsPage() {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Botón Ver Panel */}
+                <div className="flex-shrink-0 ml-4">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="hover:bg-[#14356F] hover:text-white transition-colors"
+                  >
+                    <Link href={`/dashboard/students/${student.idEstudiante}/panel`}>
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Ver Panel
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>

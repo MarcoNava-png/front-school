@@ -112,7 +112,7 @@ export function ReceiptDetailsModal({ open, onOpenChange, receipt }: ReceiptDeta
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm">Descuento:</span>
+              <span className="text-sm">Descuento (Beca):</span>
               <span className="font-medium text-green-600">
                 -{new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(receipt.descuento)}
               </span>

@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import Link from "next/link";
-
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,38 +23,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { obtenerCatalogoBecas } from "@/services/beca-catalogo-service";
-import { asignarBecaDesdeCatalogo } from "@/services/becas-service";
+import { actualizarBeca } from "@/services/becas-service";
 import { getAcademicPeriods } from "@/services/catalogs-service";
 import { AcademicPeriod } from "@/types/catalog";
-import { BecaCatalogo } from "@/types/receipt";
+import { BecaEstudiante } from "@/types/receipt";
 
 interface Props {
   open: boolean;
-  onClose: () => void;
-  idEstudiante: number;
+  onClose: (shouldReload?: boolean) => void;
+  beca: BecaEstudiante | null;
 }
 
-export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
+export function EditarBecaModal({ open, onClose, beca }: Props) {
   const [loading, setLoading] = useState(false);
-  const [loadingCatalogo, setLoadingCatalogo] = useState(false);
   const [loadingPeriodos, setLoadingPeriodos] = useState(false);
-  const [catalogoBecas, setCatalogoBecas] = useState<BecaCatalogo[]>([]);
   const [periodos, setPeriodos] = useState<AcademicPeriod[]>([]);
 
   // Form state
-  const [idBeca, setIdBeca] = useState<string>("");
+  const [usarPeriodo, setUsarPeriodo] = useState(false);
   const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("");
-  const [usarPeriodo, setUsarPeriodo] = useState(true); // Por defecto usar período
   const [vigenciaDesde, setVigenciaDesde] = useState("");
   const [vigenciaHasta, setVigenciaHasta] = useState("");
   const [observaciones, setObservaciones] = useState("");
-
-  // Beca seleccionada para mostrar información
-  const becaSeleccionada = catalogoBecas.find(
-    (b) => b.idBeca.toString() === idBeca
-  );
+  const [activo, setActivo] = useState(true);
 
   // Período seleccionado
   const periodoSeleccionado = periodos.find(
@@ -65,30 +56,44 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
 
   useEffect(() => {
     if (open) {
-      cargarCatalogo();
       cargarPeriodos();
     }
   }, [open]);
 
+  // Inicializar formulario cuando se abre con una beca
+  useEffect(() => {
+    if (open && beca) {
+      // Determinar si la beca está asociada a un período
+      if (beca.idPeriodoAcademico) {
+        setUsarPeriodo(true);
+        setIdPeriodoAcademico(beca.idPeriodoAcademico.toString());
+      } else {
+        setUsarPeriodo(false);
+        setIdPeriodoAcademico("");
+      }
+
+      // Formatear fechas para input type="date"
+      setVigenciaDesde(formatDateForInput(beca.vigenciaDesde));
+      setVigenciaHasta(beca.vigenciaHasta ? formatDateForInput(beca.vigenciaHasta) : "");
+      setObservaciones(beca.observaciones || "");
+      setActivo(beca.activo);
+    }
+  }, [open, beca]);
+
   // Cuando se selecciona un período, actualizar las fechas de vigencia
   useEffect(() => {
     if (periodoSeleccionado && usarPeriodo) {
-      setVigenciaDesde(periodoSeleccionado.fechaInicio);
-      setVigenciaHasta(periodoSeleccionado.fechaFin);
+      setVigenciaDesde(formatDateForInput(periodoSeleccionado.fechaInicio));
+      setVigenciaHasta(formatDateForInput(periodoSeleccionado.fechaFin));
     }
   }, [periodoSeleccionado, usarPeriodo]);
 
-  async function cargarCatalogo() {
-    setLoadingCatalogo(true);
-    try {
-      const data = await obtenerCatalogoBecas(true); // Solo activas
-      setCatalogoBecas(data);
-    } catch (error) {
-      toast.error("Error al cargar catálogo de becas");
-      console.error(error);
-    } finally {
-      setLoadingCatalogo(false);
-    }
+  function formatDateForInput(dateStr: string): string {
+    if (!dateStr) return "";
+    // Si ya está en formato YYYY-MM-DD, retornar
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    // Si es ISO string, extraer solo la fecha
+    return dateStr.split("T")[0];
   }
 
   async function cargarPeriodos() {
@@ -96,11 +101,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
     try {
       const data = await getAcademicPeriods();
       setPeriodos(data);
-      // Seleccionar automáticamente el período actual si existe
-      const periodoActual = data.find((p: AcademicPeriod) => p.esPeriodoActual);
-      if (periodoActual) {
-        setIdPeriodoAcademico(periodoActual.idPeriodoAcademico.toString());
-      }
     } catch (error) {
       toast.error("Error al cargar períodos académicos");
       console.error(error);
@@ -109,29 +109,22 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
     }
   }
 
-  function resetForm() {
-    setIdBeca("");
-    setIdPeriodoAcademico("");
-    setUsarPeriodo(true);
-    setVigenciaDesde("");
-    setVigenciaHasta("");
-    setObservaciones("");
-    // Reseleccionar período actual
-    const periodoActual = periodos.find((p) => p.esPeriodoActual);
-    if (periodoActual) {
-      setIdPeriodoAcademico(periodoActual.idPeriodoAcademico.toString());
-    }
+  function formatDate(dateStr: string) {
+    if (!dateStr) return "";
+    const date = new Date(dateStr + "T00:00:00");
+    return date.toLocaleDateString("es-MX", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones
-    if (!idBeca) {
-      toast.error("Selecciona una beca del catálogo");
-      return;
-    }
+    if (!beca) return;
 
+    // Validaciones
     if (usarPeriodo && !idPeriodoAcademico) {
       toast.error("Selecciona un período académico");
       return;
@@ -150,117 +143,84 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
     setLoading(true);
 
     try {
-      await asignarBecaDesdeCatalogo({
-        idEstudiante,
-        idBeca: parseInt(idBeca),
+      await actualizarBeca(beca.idBecaAsignacion, {
         idPeriodoAcademico: usarPeriodo ? parseInt(idPeriodoAcademico) : null,
         vigenciaDesde: usarPeriodo ? periodoSeleccionado!.fechaInicio : vigenciaDesde,
         vigenciaHasta: usarPeriodo ? periodoSeleccionado!.fechaFin : (vigenciaHasta || null),
         observaciones: observaciones.trim() || null,
+        activo,
       });
 
-      toast.success("Beca asignada exitosamente");
-      resetForm();
-      onClose();
+      toast.success("Beca actualizada exitosamente");
+      onClose(true);
     } catch (error: any) {
       toast.error(
         error.response?.data?.message ||
           error.response?.data?.error ||
-          "Error al asignar beca"
+          "Error al actualizar beca"
       );
     } finally {
       setLoading(false);
     }
   }
 
-  function formatDate(dateStr: string) {
-    if (!dateStr) return "";
-    const date = new Date(dateStr + "T00:00:00");
-    return date.toLocaleDateString("es-MX", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  }
+  if (!beca) return null;
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Asignar Beca</DialogTitle>
+          <DialogTitle>Editar Beca</DialogTitle>
           <DialogDescription>
-            Selecciona una beca del catálogo para asignar al estudiante
+            Modifica la vigencia y observaciones de la beca asignada
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Selector de Beca */}
-          <div className="space-y-2">
-            <Label htmlFor="beca">Tipo de Beca</Label>
-            {loadingCatalogo ? (
-              <div className="text-sm text-muted-foreground">
-                Cargando catálogo...
-              </div>
-            ) : catalogoBecas.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                No hay becas disponibles en el catálogo.
-                <br />
-                <Link
-                  href="/dashboard/scholarships/catalog"
-                  className="text-primary underline"
-                >
-                  Ir al catálogo de becas
-                </Link>
-              </div>
-            ) : (
-              <Select value={idBeca} onValueChange={setIdBeca}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una beca..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {catalogoBecas.map((beca) => (
-                    <SelectItem key={beca.idBeca} value={beca.idBeca.toString()}>
-                      {beca.clave} - {beca.nombre} (
-                      {beca.tipo === "PORCENTAJE"
-                        ? `${beca.valor}%`
-                        : `$${beca.valor.toLocaleString("es-MX")}`}
-                      )
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        {/* Información de la beca (no editable) */}
+        <div className="rounded-lg bg-muted p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-medium">
+              {beca.beca?.nombre || `Beca ${beca.tipo}`}
+            </span>
+            <Badge variant={beca.tipo === "PORCENTAJE" ? "default" : "secondary"}>
+              {beca.tipo === "PORCENTAJE" ? "Porcentaje" : "Monto Fijo"}
+            </Badge>
+          </div>
+          <div className="text-sm">
+            <span className="font-medium">Descuento: </span>
+            {beca.tipo === "PORCENTAJE"
+              ? `${beca.valor}%`
+              : `$${beca.valor.toLocaleString("es-MX")}`}
+            {beca.topeMensual && (
+              <span className="text-muted-foreground">
+                {" "}
+                (Tope: ${beca.topeMensual.toLocaleString("es-MX")})
+              </span>
             )}
           </div>
-
-          {/* Información de la beca seleccionada */}
-          {becaSeleccionada && (
-            <div className="rounded-lg bg-muted p-4 space-y-2">
-              <div className="font-medium">{becaSeleccionada.nombre}</div>
-              {becaSeleccionada.descripcion && (
-                <div className="text-sm text-muted-foreground">
-                  {becaSeleccionada.descripcion}
-                </div>
-              )}
-              <div className="text-sm">
-                <span className="font-medium">Descuento: </span>
-                {becaSeleccionada.tipo === "PORCENTAJE"
-                  ? `${becaSeleccionada.valor}%`
-                  : `$${becaSeleccionada.valor.toLocaleString("es-MX")}`}
-                {becaSeleccionada.topeMensual && (
-                  <span className="text-muted-foreground">
-                    {" "}
-                    (Tope: ${becaSeleccionada.topeMensual.toLocaleString("es-MX")})
-                  </span>
-                )}
-              </div>
-              {becaSeleccionada.conceptoPago && (
-                <div className="text-sm">
-                  <span className="font-medium">Aplica a: </span>
-                  {becaSeleccionada.conceptoPago.nombre}
-                </div>
-              )}
+          {beca.nombreConcepto && (
+            <div className="text-sm">
+              <span className="font-medium">Aplica a: </span>
+              {beca.nombreConcepto}
             </div>
           )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Estado activo/inactivo */}
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <Label htmlFor="activo" className="font-medium">Estado de la beca</Label>
+              <p className="text-sm text-muted-foreground">
+                {activo ? "La beca está activa y se aplicará a los recibos" : "La beca está inactiva"}
+              </p>
+            </div>
+            <Switch
+              id="activo"
+              checked={activo}
+              onCheckedChange={setActivo}
+            />
+          </div>
 
           {/* Selector de vigencia: por período o manual */}
           <div className="space-y-3">
@@ -358,7 +318,7 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
               id="observaciones"
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
-              placeholder="Ej: Beca otorgada por convenio con empresa X"
+              placeholder="Ej: Extendida al siguiente período por buen desempeño"
               rows={2}
             />
           </div>
@@ -369,14 +329,9 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
             </Button>
             <Button
               type="submit"
-              disabled={
-                loading ||
-                !idBeca ||
-                catalogoBecas.length === 0 ||
-                (usarPeriodo && !idPeriodoAcademico)
-              }
+              disabled={loading || (usarPeriodo && !idPeriodoAcademico)}
             >
-              {loading ? "Asignando..." : "Asignar Beca"}
+              {loading ? "Guardando..." : "Guardar Cambios"}
             </Button>
           </DialogFooter>
         </form>

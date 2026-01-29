@@ -697,7 +697,7 @@ export default function CashierPage() {
                                     </TableRow>
                                     {recibo.descuento > 0 && (
                                       <TableRow className="text-green-600">
-                                        <TableCell colSpan={4} className="text-right text-xs">Descuento:</TableCell>
+                                        <TableCell colSpan={4} className="text-right text-xs">Descuento (Beca):</TableCell>
                                         <TableCell className="text-right text-xs">-{formatCurrency(recibo.descuento)}</TableCell>
                                       </TableRow>
                                     )}
