@@ -9,6 +9,7 @@ import {
   Eye,
   Ban,
   Filter,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -47,6 +48,7 @@ import { getAcademicPeriodsList } from "@/services/academic-period-service";
 import {
   listarRecibos,
   cancelarRecibo,
+  reversarRecibo,
   descargarReciboPDF,
   exportarCarteraVencida,
   exportarIngresosPeriodo,
@@ -72,6 +74,9 @@ export default function ReceiptsAdminPage() {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
+  const [reverseModalOpen, setReverseModalOpen] = useState(false);
+  const [motivoReversion, setMotivoReversion] = useState("");
+  const [loadingReverse, setLoadingReverse] = useState(false);
 
   // Reportes
   const [loadingReporte, setLoadingReporte] = useState(false);
@@ -139,6 +144,27 @@ export default function ReceiptsAdminPage() {
       buscarRecibos();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Error al cancelar recibo");
+    }
+  }
+
+  async function handleReversarRecibo() {
+    if (!selectedReceipt || !motivoReversion.trim()) {
+      toast.error("Ingresa el motivo de la reversión");
+      return;
+    }
+
+    setLoadingReverse(true);
+    try {
+      await reversarRecibo(selectedReceipt.idRecibo, motivoReversion);
+      toast.success("Recibo reversado exitosamente. Los pagos aplicados han sido eliminados.");
+      setReverseModalOpen(false);
+      setSelectedReceipt(null);
+      setMotivoReversion("");
+      buscarRecibos();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Error al reversar recibo");
+    } finally {
+      setLoadingReverse(false);
     }
   }
 
@@ -423,6 +449,7 @@ export default function ReceiptsAdminPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => setSelectedReceipt(recibo)}
+                            title="Ver detalles"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -430,18 +457,39 @@ export default function ReceiptsAdminPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDescargarPDF(recibo)}
+                            title="Descargar PDF"
                           >
                             <Download className="w-4 h-4" />
                           </Button>
+                          {/* Botón de reversar - solo para recibos con pagos (PAGADO o PARCIAL) */}
+                          {(recibo.estatus === ReceiptStatus.PAGADO ||
+                            recibo.estatus === ReceiptStatus.PARCIAL) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                              onClick={() => {
+                                setSelectedReceipt(recibo);
+                                setReverseModalOpen(true);
+                              }}
+                              title="Reversar pagos"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {/* Botón de cancelar - solo para recibos pendientes sin pagos */}
                           {recibo.estatus !== ReceiptStatus.CANCELADO &&
-                            recibo.estatus !== ReceiptStatus.PAGADO && (
+                            recibo.estatus !== ReceiptStatus.PAGADO &&
+                            recibo.estatus !== ReceiptStatus.PARCIAL && (
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onClick={() => {
                                   setSelectedReceipt(recibo);
                                   setCancelModalOpen(true);
                                 }}
+                                title="Cancelar recibo"
                               >
                                 <Ban className="w-4 h-4" />
                               </Button>
@@ -501,6 +549,93 @@ export default function ReceiptsAdminPage() {
             >
               <Ban className="w-4 h-4 mr-2" />
               Confirmar Cancelación
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Reversión */}
+      <Dialog open={reverseModalOpen} onOpenChange={setReverseModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="w-5 h-5 text-orange-600" />
+              Reversar Recibo
+            </DialogTitle>
+            <DialogDescription>
+              Estás a punto de reversar el recibo <strong>{selectedReceipt?.folio}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h4 className="font-semibold text-orange-800 mb-2">Esta acción:</h4>
+              <ul className="list-disc list-inside text-sm text-orange-700 space-y-1">
+                <li>Eliminará todos los pagos aplicados a este recibo</li>
+                <li>Regresará el saldo a su valor original</li>
+                <li>Cambiará el estado del recibo a PENDIENTE</li>
+                <li>Se registrará en la bitácora del sistema</li>
+              </ul>
+            </div>
+
+            {selectedReceipt && (
+              <div className="bg-muted rounded-lg p-4 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total del recibo:</span>
+                  <span className="font-semibold">{formatCurrency(selectedReceipt.total)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Saldo actual:</span>
+                  <span className="font-semibold">{formatCurrency(selectedReceipt.saldo)}</span>
+                </div>
+                <div className="flex justify-between text-orange-600">
+                  <span>Pagos a reversar:</span>
+                  <span className="font-semibold">
+                    {formatCurrency(selectedReceipt.total - selectedReceipt.saldo)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="motivoReversion">
+                Motivo de la Reversión <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="motivoReversion"
+                placeholder="Ingresa el motivo de la reversión (ej: pago duplicado, error de captura, devolución, etc.)"
+                value={motivoReversion}
+                onChange={(e) => setMotivoReversion(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReverseModalOpen(false);
+                setMotivoReversion("");
+              }}
+              disabled={loadingReverse}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="default"
+              className="bg-orange-600 hover:bg-orange-700"
+              onClick={handleReversarRecibo}
+              disabled={!motivoReversion.trim() || loadingReverse}
+            >
+              {loadingReverse ? (
+                <>Reversando...</>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Confirmar Reversión
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
-import { BookOpen, Edit, Filter, GraduationCap, Hash, Search, Trash2, Upload, X } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronUp, Edit, Filter, GraduationCap, Hash, Search, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
-import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,8 +25,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getCampusList } from "@/services/campus-service";
 import { deleteMatterPlan, getMatterPlanList } from "@/services/matter-plan-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
+import { Campus } from "@/types/campus";
 import { MatterPlan } from "@/types/matter-plan";
 import { StudyPlan } from "@/types/study-plan";
 
@@ -40,10 +41,8 @@ export default function SubjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCampusId, setSelectedCampusId] = useState<string>("all");
   const [selectedPlanId, setSelectedPlanId] = useState<string>("all");
-  const [selectedCuatrimestre, setSelectedCuatrimestre] = useState<string>("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState<MatterPlan | null>(null);
@@ -52,33 +51,47 @@ export default function SubjectsPage() {
   const [subjectToEdit, setSubjectToEdit] = useState<MatterPlan | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [planes, setPlanes] = useState<StudyPlan[]>([]);
+  const [campuses, setCampuses] = useState<Campus[]>([]);
+  const [expandedCuatrimestres, setExpandedCuatrimestres] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    loadSubjects();
-    loadPlanes();
+    loadData();
   }, []);
 
-  const loadPlanes = async () => {
-    try {
-      const res = await getStudyPlansList(1, 100);
-      setPlanes(res?.items ?? []);
-    } catch {
-      // Silently fail - planes are optional for import
-    }
-  };
-
-  const loadSubjects = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const res = await getMatterPlanList();
-      setSubjects(res ?? []);
+      const [subjectsRes, planesRes, campusesRes] = await Promise.all([
+        getMatterPlanList(),
+        getStudyPlansList(1, 100),
+        getCampusList()
+      ]);
+      setSubjects(subjectsRes ?? []);
+      setPlanes(planesRes?.items ?? []);
+      setCampuses(campusesRes?.items ?? []);
     } catch {
-      setError("Error al cargar materias");
-      toast.error("Error al cargar las materias");
+      setError("Error al cargar datos");
+      toast.error("Error al cargar los datos");
     } finally {
       setLoading(false);
     }
   };
+
+  // Filtrar planes por campus seleccionado
+  const filteredPlanes = useMemo(() => {
+    if (selectedCampusId === "all") return planes;
+    return planes.filter(p => p.idCampus?.toString() === selectedCampusId);
+  }, [planes, selectedCampusId]);
+
+  // Reset plan cuando cambia el campus
+  useEffect(() => {
+    if (selectedCampusId !== "all") {
+      const planStillValid = filteredPlanes.some(p => p.idPlanEstudios.toString() === selectedPlanId);
+      if (!planStillValid) {
+        setSelectedPlanId("all");
+      }
+    }
+  }, [selectedCampusId, filteredPlanes, selectedPlanId]);
 
   const openDeleteDialog = (subject: MatterPlan) => {
     setSubjectToDelete(subject);
@@ -115,68 +128,82 @@ export default function SubjectsPage() {
     setEditDialogOpen(true);
   };
 
-  // Obtener cuatrimestres únicos para el filtro
-  const cuatrimestresUnicos = Array.from(
-    new Set(subjects.map((s) => s.cuatrimestre).filter(Boolean))
-  ).sort((a, b) => (a ?? 0) - (b ?? 0));
+  // Filtrar materias
+  const filteredSubjects = useMemo(() => {
+    return subjects.filter((s) => {
+      // Filtro por texto
+      const matchesSearch =
+        s.nombreMateria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.materia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.claveMateria?.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const filteredSubjects = subjects.filter((s) => {
-    // Filtro por texto
-    const matchesSearch =
-      s.nombreMateria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.materia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.claveMateria?.toLowerCase().includes(searchTerm.toLowerCase());
+      // Filtro por plan de estudios
+      const matchesPlan =
+        selectedPlanId === "all" || s.idPlanEstudios?.toString() === selectedPlanId;
 
-    // Filtro por plan de estudios
-    const matchesPlan =
-      selectedPlanId === "all" || s.idPlanEstudios?.toString() === selectedPlanId;
+      // Filtro por campus (a través del plan)
+      let matchesCampus = true;
+      if (selectedCampusId !== "all") {
+        const plan = planes.find(p => p.idPlanEstudios === s.idPlanEstudios);
+        matchesCampus = plan?.idCampus?.toString() === selectedCampusId;
+      }
 
-    // Filtro por cuatrimestre
-    const matchesCuatrimestre =
-      selectedCuatrimestre === "all" || s.cuatrimestre?.toString() === selectedCuatrimestre;
+      return matchesSearch && matchesPlan && matchesCampus;
+    });
+  }, [subjects, searchTerm, selectedPlanId, selectedCampusId, planes]);
 
-    return matchesSearch && matchesPlan && matchesCuatrimestre;
-  });
+  // Agrupar materias por cuatrimestre
+  const subjectsByCuatrimestre = useMemo(() => {
+    const grouped: Record<number, MatterPlan[]> = {};
+    filteredSubjects.forEach((s) => {
+      const cuatri = s.cuatrimestre ?? 0;
+      if (!grouped[cuatri]) {
+        grouped[cuatri] = [];
+      }
+      grouped[cuatri].push(s);
+    });
+    // Ordenar por cuatrimestre
+    return Object.entries(grouped)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([cuatri, materias]) => ({
+        cuatrimestre: Number(cuatri),
+        materias
+      }));
+  }, [filteredSubjects]);
 
-  // Paginación
-  const totalPages = Math.ceil(filteredSubjects.length / pageSize);
-  const paginatedSubjects = filteredSubjects.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
+  const toggleCuatrimestre = (cuatri: number) => {
+    setExpandedCuatrimestres(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(cuatri)) {
+        newSet.delete(cuatri);
+      } else {
+        newSet.add(cuatri);
+      }
+      return newSet;
+    });
   };
 
-  const handlePlanChange = (value: string) => {
-    setSelectedPlanId(value);
-    setCurrentPage(1);
+  const expandAll = () => {
+    setExpandedCuatrimestres(new Set(subjectsByCuatrimestre.map(g => g.cuatrimestre)));
   };
 
-  const handleCuatrimestreChange = (value: string) => {
-    setSelectedCuatrimestre(value);
-    setCurrentPage(1);
+  const collapseAll = () => {
+    setExpandedCuatrimestres(new Set());
   };
 
   const handleClearFilters = () => {
     setSearchTerm("");
+    setSelectedCampusId("all");
     setSelectedPlanId("all");
-    setSelectedCuatrimestre("all");
-    setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchTerm || selectedPlanId !== "all" || selectedCuatrimestre !== "all";
+  const hasActiveFilters = searchTerm || selectedCampusId !== "all" || selectedPlanId !== "all";
 
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1);
-  };
-
-  // Calcular estadísticas
-  const totalCreditos = subjects.reduce((sum, s) => sum + (s.creditos ?? 0), 0);
-  const cuatrimestres = new Set(subjects.map(s => s.cuatrimestre).filter(Boolean));
+  // Obtener nombre del plan seleccionado
+  const selectedPlanName = useMemo(() => {
+    if (selectedPlanId === "all") return null;
+    return planes.find(p => p.idPlanEstudios.toString() === selectedPlanId)?.nombrePlanEstudios;
+  }, [selectedPlanId, planes]);
 
   if (loading) {
     return (
@@ -195,7 +222,7 @@ export default function SubjectsPage() {
         <Card className="max-w-md">
           <CardContent className="pt-6">
             <div className="text-center text-destructive">{error}</div>
-            <Button onClick={loadSubjects} className="mt-4 w-full">
+            <Button onClick={loadData} className="mt-4 w-full">
               Reintentar
             </Button>
           </CardContent>
@@ -235,58 +262,18 @@ export default function SubjectsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card
-          className="border-2"
-          style={{ borderColor: 'rgba(20, 53, 111, 0.2)', background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
-        >
-          <CardHeader className="pb-2">
-            <CardDescription style={{ color: '#1e4a8f' }}>Total Materias</CardDescription>
-            <CardTitle className="text-4xl" style={{ color: '#14356F' }}>
-              {subjects.length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-green-600 dark:text-green-400">Total Créditos</CardDescription>
-            <CardTitle className="text-4xl text-green-700 dark:text-green-300">
-              {totalCreditos}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-purple-600 dark:text-purple-400">Cuatrimestres</CardDescription>
-            <CardTitle className="text-4xl text-purple-700 dark:text-purple-300">
-              {cuatrimestres.size}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-orange-600 dark:text-orange-400">Promedio Créditos</CardDescription>
-            <CardTitle className="text-4xl text-orange-700 dark:text-orange-300">
-              {subjects.length > 0 ? Math.round(totalCreditos / subjects.length) : 0}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Table Card */}
+      {/* Filtros */}
       <Card>
-        <CardHeader className="border-b bg-muted/40">
+        <CardHeader className="border-b bg-muted/40 pb-4">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Filter className="h-5 w-5" style={{ color: '#14356F' }} />
-                  Listado de Materias
+                  Filtros
                 </CardTitle>
                 <CardDescription>
-                  {filteredSubjects.length} materias encontradas
-                  {hasActiveFilters && " (filtradas)"}
+                  Selecciona Campus y Plan de Estudios para ver las materias
                 </CardDescription>
               </div>
               {hasActiveFilters && (
@@ -302,27 +289,31 @@ export default function SubjectsPage() {
               )}
             </div>
 
-            {/* Filtros */}
+            {/* Filtros en cascada */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Búsqueda */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre, clave..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+              {/* Campus */}
+              <Select value={selectedCampusId} onValueChange={setSelectedCampusId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar Campus" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los campus</SelectItem>
+                  {campuses.map((campus) => (
+                    <SelectItem key={campus.idCampus} value={campus.idCampus.toString()}>
+                      {campus.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               {/* Plan de Estudios */}
-              <Select value={selectedPlanId} onValueChange={handlePlanChange}>
+              <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por plan de estudios" />
+                  <SelectValue placeholder="Seleccionar Plan de Estudios" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los planes</SelectItem>
-                  {planes.map((plan) => (
+                  {filteredPlanes.map((plan) => (
                     <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()}>
                       {plan.nombrePlanEstudios}
                     </SelectItem>
@@ -330,126 +321,177 @@ export default function SubjectsPage() {
                 </SelectContent>
               </Select>
 
-              {/* Cuatrimestre */}
-              <Select value={selectedCuatrimestre} onValueChange={handleCuatrimestreChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por cuatrimestre" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los cuatrimestres</SelectItem>
-                  {cuatrimestresUnicos.map((cuatri) => (
-                    <SelectItem key={cuatri} value={cuatri?.toString() ?? ""}>
-                      {cuatri}° Cuatrimestre
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Búsqueda */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, clave..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow
-                className="hover:bg-transparent"
-                style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
-              >
-                <TableHead className="font-semibold text-white">Clave</TableHead>
-                <TableHead className="font-semibold text-white">Nombre</TableHead>
-                <TableHead className="font-semibold text-white text-center">Cuatrimestre</TableHead>
-                <TableHead className="font-semibold text-white text-center">Créditos</TableHead>
-                <TableHead className="font-semibold text-white">Plan de Estudios</TableHead>
-                <TableHead className="font-semibold text-white text-center">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedSubjects.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center">
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                      <BookOpen className="h-8 w-8" />
-                      <span>No se encontraron materias</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedSubjects.map((s, index) => (
-                  <TableRow
-                    key={s.idMateriaPlan}
-                    className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
-                  >
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className="font-mono"
-                        style={{ background: 'rgba(20, 53, 111, 0.05)', color: '#14356F', borderColor: 'rgba(20, 53, 111, 0.2)' }}
-                      >
-                        {s.claveMateria ?? "—"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="p-1.5 rounded"
-                          style={{ background: 'rgba(20, 53, 111, 0.1)' }}
-                        >
-                          <BookOpen className="h-4 w-4" style={{ color: '#14356F' }} />
-                        </div>
-                        <span className="font-medium">{s.nombreMateria ?? s.materia}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-100">
-                        {s.cuatrimestre}°
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Hash className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-semibold">{s.creditos ?? 0}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <GraduationCap className="h-4 w-4 shrink-0" />
-                        <span className="truncate max-w-xs">{s.nombrePlanEstudios ?? "—"}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
-                          onClick={() => openEditDialog(s)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
-                          onClick={() => openDeleteDialog(s)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          <TablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            totalItems={filteredSubjects.length}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        </CardContent>
       </Card>
+
+      {/* Listado por Cuatrimestre */}
+      {selectedPlanId !== "all" && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">{selectedPlanName}</h2>
+            <p className="text-muted-foreground text-sm">
+              {filteredSubjects.length} materias en {subjectsByCuatrimestre.length} cuatrimestres
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={expandAll}>
+              Expandir todos
+            </Button>
+            <Button variant="outline" size="sm" onClick={collapseAll}>
+              Colapsar todos
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {subjectsByCuatrimestre.length === 0 ? (
+        <Card>
+          <CardContent className="py-12">
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+              <BookOpen className="h-12 w-12" />
+              <span className="text-lg">No se encontraron materias</span>
+              <span className="text-sm">Selecciona un campus y plan de estudios para ver las materias</span>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {subjectsByCuatrimestre.map(({ cuatrimestre, materias }) => {
+            const isExpanded = expandedCuatrimestres.has(cuatrimestre);
+            return (
+              <Card key={cuatrimestre} className="overflow-hidden">
+                <button
+                  onClick={() => toggleCuatrimestre(cuatrimestre)}
+                  className="w-full"
+                >
+                  <CardHeader
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    style={{ background: 'linear-gradient(to right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="p-2 rounded-lg"
+                          style={{ background: 'linear-gradient(to bottom right, #14356F, #1e4a8f)' }}
+                        >
+                          <span className="text-white font-bold text-lg">{cuatrimestre}</span>
+                        </div>
+                        <div className="text-left">
+                          <CardTitle className="text-lg">
+                            {cuatrimestre === 0 ? "Sin cuatrimestre asignado" : `${cuatrimestre}° Cuatrimestre`}
+                          </CardTitle>
+                          <CardDescription>
+                            {materias.length} materia{materias.length !== 1 ? "s" : ""}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </CardHeader>
+                </button>
+
+                {isExpanded && (
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow
+                          className="hover:bg-transparent"
+                          style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
+                        >
+                          <TableHead className="font-semibold text-white">Clave</TableHead>
+                          <TableHead className="font-semibold text-white">Nombre</TableHead>
+                          <TableHead className="font-semibold text-white text-center">Créditos</TableHead>
+                          <TableHead className="font-semibold text-white text-center">Tipo</TableHead>
+                          <TableHead className="font-semibold text-white text-center">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {materias.map((s, index) => (
+                          <TableRow
+                            key={s.idMateriaPlan}
+                            className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
+                          >
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className="font-mono"
+                                style={{ background: 'rgba(20, 53, 111, 0.05)', color: '#14356F', borderColor: 'rgba(20, 53, 111, 0.2)' }}
+                              >
+                                {s.claveMateria ?? "—"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="p-1.5 rounded"
+                                  style={{ background: 'rgba(20, 53, 111, 0.1)' }}
+                                >
+                                  <BookOpen className="h-4 w-4" style={{ color: '#14356F' }} />
+                                </div>
+                                <span className="font-medium">{s.nombreMateria ?? s.materia}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <Hash className="h-3 w-3 text-muted-foreground" />
+                                <span className="font-semibold">{s.creditos ?? 0}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge
+                                variant={s.esOptativa ? "secondary" : "default"}
+                                className={s.esOptativa ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}
+                              >
+                                {s.esOptativa ? "Optativa" : "Obligatoria"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-center gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
+                                  onClick={() => openEditDialog(s)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                                  onClick={() => openDeleteDialog(s)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}
@@ -465,14 +507,14 @@ export default function SubjectsPage() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         subject={subjectToEdit}
-        onSuccess={loadSubjects}
+        onSuccess={loadData}
       />
 
       <ImportSubjectsModal
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
         planes={planes}
-        onSuccess={loadSubjects}
+        onSuccess={loadData}
       />
     </div>
   );
