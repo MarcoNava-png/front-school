@@ -74,6 +74,7 @@ export const MODULE_ROUTES: Record<string, string[]> = {
 
 // Roles del sistema
 export const SYSTEM_ROLES = {
+  SUPER_ADMIN: 'superadmin',
   ADMIN: 'admin',
   DIRECTOR: 'director',
   COORDINADOR: 'coordinador',
@@ -88,6 +89,7 @@ export type SystemRole = typeof SYSTEM_ROLES[keyof typeof SYSTEM_ROLES]
 
 // Mapeo de roles a etiquetas
 export const ROLE_LABELS: Record<string, string> = {
+  superadmin: 'Super Admin',
   admin: 'Administrador',
   director: 'Director',
   coordinador: 'Coordinador',
@@ -98,14 +100,40 @@ export const ROLE_LABELS: Record<string, string> = {
   admisiones: 'Admisiones',
 }
 
+// Descripciones de roles
+export const ROLE_DESCRIPTIONS: Record<string, string> = {
+  superadmin: 'Acceso total al sistema incluyendo gestión de administradores',
+  admin: 'Acceso completo a todos los módulos excepto Sistema',
+  director: 'Supervisión general, puede ver todo y modificar la mayoría',
+  coordinador: 'Gestión académica: grupos, horarios, estudiantes',
+  docente: 'Calificaciones y asistencia de sus grupos',
+  alumno: 'Acceso limitado a su información personal',
+  controlescolar: 'Admisiones, estudiantes y finanzas',
+  finanzas: 'Módulo financiero completo: caja, pagos, recibos',
+  admisiones: 'Proceso de admisión y cobro de inscripciones',
+}
+
 // Colores de roles
-export const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
-  admin: { bg: 'bg-red-100', text: 'text-red-700' },
-  director: { bg: 'bg-purple-100', text: 'text-purple-700' },
-  coordinador: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  docente: { bg: 'bg-green-100', text: 'text-green-700' },
-  alumno: { bg: 'bg-orange-100', text: 'text-orange-700' },
-  controlescolar: { bg: 'bg-indigo-100', text: 'text-indigo-700' },
-  finanzas: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
-  admisiones: { bg: 'bg-cyan-100', text: 'text-cyan-700' },
+export const ROLE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  superadmin: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300' },
+  admin: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
+  director: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300' },
+  coordinador: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300' },
+  docente: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
+  alumno: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300' },
+  controlescolar: { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-300' },
+  finanzas: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300' },
+  admisiones: { bg: 'bg-cyan-100', text: 'text-cyan-700', border: 'border-cyan-300' },
+}
+
+// Iconos de módulos (nombres de lucide-react icons)
+export const MODULE_ICONS: Record<string, string> = {
+  Dashboard: 'LayoutDashboard',
+  Admisiones: 'UserPlus',
+  Estudiantes: 'GraduationCap',
+  Catalogos: 'BookOpen',
+  Academico: 'School',
+  Finanzas: 'Wallet',
+  Configuracion: 'Settings',
+  Sistema: 'Server',
 }

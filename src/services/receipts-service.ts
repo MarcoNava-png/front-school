@@ -216,7 +216,20 @@ export async function aplicarAjusteRecibo(payload: AjusteReciboRequest): Promise
  * @returns Recibo cancelado
  */
 export async function cancelarRecibo(idRecibo: number, motivo: string): Promise<Receipt> {
-  const { data } = await apiClient.post<Receipt>(`/recibos/${idRecibo}/cancelar`, {
+  const { data } = await apiClient.put<Receipt>(`/recibos/${idRecibo}/cancelar`, {
+    motivo,
+  });
+  return data;
+}
+
+/**
+ * Reversa un recibo (elimina pagos aplicados y regresa a estado PENDIENTE)
+ * @param idRecibo ID del recibo
+ * @param motivo Motivo de la reversión
+ * @returns Recibo reversado
+ */
+export async function reversarRecibo(idRecibo: number, motivo: string): Promise<Receipt> {
+  const { data } = await apiClient.put<Receipt>(`/recibos/${idRecibo}/reversar`, {
     motivo,
   });
   return data;

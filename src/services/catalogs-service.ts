@@ -67,6 +67,34 @@ export async function getPeriodicity(): Promise<Periodicity[]> {
   return res.data;
 }
 
+/**
+ * Obtiene todas las periodicidades (activas e inactivas) para administración
+ */
+export async function getPeriodicityAdmin(): Promise<Periodicity[]> {
+  const res = await apiClient.get<Periodicity[]>(`${baseUrlCatalogs}/periodicidad/admin`);
+  return res.data;
+}
+
+/**
+ * Crea una nueva periodicidad
+ */
+export async function createPeriodicity(data: {
+  descPeriodicidad: string;
+  periodosPorAnio: number;
+  mesesPorPeriodo: number;
+}): Promise<Periodicity> {
+  const res = await apiClient.post<Periodicity>(`${baseUrlCatalogs}/periodicidad`, data);
+  return res.data;
+}
+
+/**
+ * Activa o desactiva una periodicidad
+ */
+export async function togglePeriodicity(id: number): Promise<Periodicity> {
+  const res = await apiClient.put<Periodicity>(`${baseUrlCatalogs}/periodicidad/${id}/toggle`);
+  return res.data;
+}
+
 export async function getPaymentMethods(): Promise<PaymentMethod[]> {
   const res = await apiClient.get<PaymentMethod[]>(`${baseUrlCatalogs}/medios-pago`);
   return res.data;
