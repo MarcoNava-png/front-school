@@ -86,7 +86,6 @@ function ResetPasswordContent() {
       const message = axiosError.response?.data?.message ?? "No se pudo restablecer la contraseña";
       toast.error("Error", { description: message });
 
-      // Si el token es inválido o expiró
       if (message.includes("token") || message.includes("Invalid")) {
         setInvalidToken(true);
       }

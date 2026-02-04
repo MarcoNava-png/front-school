@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { getAcademicPeriods, getStudyPlans } from "@/services/catalogs-service";
 import { enrollStudentInGroup, searchGroups } from "@/services/groups-service";
-import { getStudentsList } from "@/services/students-service";
+import { getStudentsWithoutGroup } from "@/services/students-service";
 import { AcademicPeriod, StudyPlan } from "@/types/catalog";
 import { Group, GroupEnrollmentResult } from "@/types/group";
 import { Student } from "@/types/student";
@@ -44,22 +44,20 @@ export function useGroupEnrollment() {
   const loadInitialData = async () => {
     setInitialLoading(true);
     try {
-      const [studentsData, plansData, periodsData] = await Promise.all([
-        getStudentsList(1, 1000),
+      const [plansData, periodsData] = await Promise.all([
         getStudyPlans(),
         getAcademicPeriods(),
       ]);
 
-      setStudents(studentsData.items ?? []);
       setStudyPlans(plansData);
       setAcademicPeriods(periodsData);
 
-      const activePeriod = periodsData.find((p) => p.status === 1);
+      const activePeriod = periodsData.find((p) => p.status === 1 || p.esPeriodoActual);
       if (activePeriod) {
         setSelectedPeriodId(activePeriod.idPeriodoAcademico.toString());
       }
 
-      toast.success(`Cargados: ${plansData.length} planes, ${periodsData.length} períodos, ${studentsData.items?.length ?? 0} estudiantes`);
+      toast.success(`Cargados: ${plansData.length} planes, ${periodsData.length} periodos`);
     } catch (error) {
       toast.error("Error al cargar los datos");
     } finally {
@@ -68,29 +66,40 @@ export function useGroupEnrollment() {
   };
 
   const loadAvailableGroups = async () => {
+    if (!selectedPlanId || !selectedPeriodId) return;
+
     setLoading(true);
     try {
-      const groups = await searchGroups({
-        idPlanEstudios: parseInt(selectedPlanId),
-        numeroCuatrimestre: parseInt(cuatrimestreFilter),
-      });
+      const [groups, studentsData] = await Promise.all([
+        searchGroups({
+          idPlanEstudios: parseInt(selectedPlanId),
+          numeroCuatrimestre: parseInt(cuatrimestreFilter),
+        }),
+        getStudentsWithoutGroup(
+          parseInt(selectedPlanId),
+          parseInt(selectedPeriodId)
+        ),
+      ]);
       setAvailableGroups(groups);
+      setStudents(studentsData.items ?? []);
     } catch (error) {
-      toast.error("Error al cargar los grupos");
+      toast.error("Error al cargar los datos");
       setAvailableGroups([]);
+      setStudents([]);
     } finally {
       setLoading(false);
     }
   };
 
   const refreshStudentsAfterEnrollment = async (enrolledStudentId?: number) => {
-    // Si se proporciona el ID del estudiante inscrito, filtrarlo de la lista
     if (enrolledStudentId) {
       setStudents(prevStudents => prevStudents.filter(s => s.idEstudiante !== enrolledStudentId));
       setSelectedStudentId(null);
-    } else {
-      // Si no, recargar toda la lista desde el servidor
-      const studentsData = await getStudentsList(1, 1000);
+    } else if (selectedPlanId && selectedPeriodId) {
+      const studentsData = await getStudentsWithoutGroup(
+        parseInt(selectedPlanId),
+        parseInt(selectedPeriodId)
+      );
       setStudents(studentsData.items ?? []);
       setSelectedStudentId(null);
     }
@@ -119,15 +128,12 @@ export function useGroupEnrollment() {
       const isFullSuccess = result.materiasInscritas === result.totalMaterias;
       if (isFullSuccess) {
         toast.success(`Estudiante inscrito exitosamente al grupo ${codigoGrupo}`);
-        // Refrescar la lista de estudiantes para quitar al inscrito
         await refreshStudentsAfterEnrollment(selectedStudentId);
       } else {
         toast.warning(`Inscripción parcial: ${result.materiasInscritas}/${result.totalMaterias} materias`);
-        // También refrescar en caso de inscripción parcial
         await refreshStudentsAfterEnrollment(selectedStudentId);
       }
     } catch (error: unknown) {
-      // Mejorar el manejo de errores
       const err = error as {
         response?: {
           data?: {
@@ -154,7 +160,6 @@ export function useGroupEnrollment() {
           errorData?.Message ||
           "Error en la solicitud de inscripción";
 
-        // Proporcionar detalles específicos según el tipo de error
         if (errorMessage.toLowerCase().includes("transaction") || errorMessage.toLowerCase().includes("sql")) {
           errorDetails = "Error de base de datos. Por favor, contacta al administrador del sistema.";
         } else if (errorMessage.toLowerCase().includes("ya")) {
@@ -175,7 +180,6 @@ export function useGroupEnrollment() {
         errorMessage = err.message;
       }
 
-      // Verificar si el estudiante ya está inscrito en el grupo (pero sin materias)
       const isAlreadyInGroup =
         errorMessage.toLowerCase().includes("ya está inscrito en el grupo") ||
         errorMessage.toLowerCase().includes("ya inscrito en el grupo") ||
@@ -183,7 +187,6 @@ export function useGroupEnrollment() {
         errorMessage.toLowerCase().includes("ya pertenece al grupo");
 
       if (isAlreadyInGroup) {
-        // Mostrar modal indicando que solo falta inscribir a materias
         setAlreadyInGroupInfo({
           studentName: student?.nombreCompleto ?? "Estudiante",
           groupCode: codigoGrupo,
@@ -192,7 +195,6 @@ export function useGroupEnrollment() {
         return;
       }
 
-      // Verificar si es un error que puede solucionarse forzando la inscripción
       const canForceEnroll =
         errorMessage.toLowerCase().includes("cupo") ||
         errorMessage.toLowerCase().includes("lleno") ||
@@ -205,12 +207,10 @@ export function useGroupEnrollment() {
         err?.response?.status === 400;
 
       if (canForceEnroll && !forceEnroll) {
-        // Mostrar diálogo para preguntar si quiere forzar la inscripción
         setPendingEnrollment({ idGrupo, codigoGrupo });
         setShowForceEnrollDialog(true);
         toast.warning(errorMessage, { duration: 6000 });
       } else {
-        // Mostrar error con detalles si están disponibles
         const fullMessage = errorDetails ? `${errorMessage}\n\n${errorDetails}` : errorMessage;
         toast.error(fullMessage, { duration: 8000 });
       }
@@ -221,7 +221,6 @@ export function useGroupEnrollment() {
   };
 
   const handleEnrollStudent = async (idGrupo: number, codigoGrupo: string) => {
-    // Prevenir múltiples inscripciones simultáneas
     if (enrolling || enrollingGroupId !== null) {
       toast.warning("Ya hay una inscripción en proceso. Por favor espera.");
       return;
@@ -244,7 +243,6 @@ export function useGroupEnrollment() {
       return;
     }
 
-    // Validar si el estudiante necesita asignación de plan
     if (!student?.idPlanActual) {
       toast.error(
         "El estudiante no tiene plan de estudios asignado. Por favor, asígnalo desde el módulo de Estudiantes primero.",
@@ -253,7 +251,6 @@ export function useGroupEnrollment() {
       return;
     }
 
-    // Validar que el plan del estudiante coincide con el plan seleccionado
     if (student.idPlanActual.toString() !== selectedPlanId) {
       toast.error(
         `El estudiante está inscrito en un plan diferente. Plan actual: ${student.planEstudios}`,
@@ -262,7 +259,6 @@ export function useGroupEnrollment() {
       return;
     }
 
-    // Intentar inscripción normal primero
     await performEnrollment(idGrupo, codigoGrupo, false);
   };
 
@@ -283,20 +279,8 @@ export function useGroupEnrollment() {
   const selectedStudent = students.find((s) => s.idEstudiante === selectedStudentId);
   const selectedPlan = studyPlans.find((p) => p.idPlanEstudios.toString() === selectedPlanId);
 
-  // Filtrar estudiantes:
-  // - Si NO hay plan seleccionado: mostrar estudiantes SIN plan (idPlanActual es null o undefined)
-  // - Si HAY plan seleccionado: mostrar estudiantes con ese plan O sin plan
-  const studentsWithoutGroup = students.filter((s) => {
-    if (!selectedPlanId) {
-      // Sin plan seleccionado: mostrar solo estudiantes sin plan
-      return !s.idPlanActual;
-    }
-    // Con plan seleccionado: mostrar estudiantes con ese plan O sin plan
-    return !s.idPlanActual || s.idPlanActual.toString() === selectedPlanId;
-  });
-
   return {
-    students: studentsWithoutGroup,
+    students,
     studyPlans,
     academicPeriods,
     availableGroups,

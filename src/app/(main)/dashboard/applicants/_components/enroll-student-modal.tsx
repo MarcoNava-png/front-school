@@ -42,12 +42,10 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
   const [fichaAdmision, setFichaAdmision] = useState<FichaAdmisionDto | null>(null);
   const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
 
-  // Form state
   const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("");
   const [forzarInscripcion, setForzarInscripcion] = useState(false);
   const [observaciones, setObservaciones] = useState("");
 
-  // Validation state
   const [canEnroll, setCanEnroll] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
@@ -72,7 +70,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
       setFichaAdmision(fichaData);
       setAcademicPeriods(periodsData);
 
-      // Validar requisitos
       validateRequirements(fichaData);
     } catch (error) {
       console.error("Error al cargar datos:", error);
@@ -85,7 +82,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
   const validateRequirements = (ficha: FichaAdmisionDto) => {
     const errors: string[] = [];
 
-    // 1. Validar documentos obligatorios
     const documentosObligatorios = ficha.documentos.filter((d) => d.esObligatorio);
     const documentosPendientes = documentosObligatorios.filter((d) => d.estatus !== EstatusDocumentoEnum.VALIDADO);
 
@@ -95,13 +91,11 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
       );
     }
 
-    // 2. Validar que el pago de inscripción esté completo
     const saldoPendiente = ficha.informacionPagos.saldoPendiente;
     if (saldoPendiente > 0) {
       errors.push(`Tiene un saldo pendiente de ${formatCurrency(saldoPendiente)}`);
     }
 
-    // 3. Validar estatus del aspirante
     const estatusValidos = ["PAGO COMPLETO", "INSCRITO", "PAGADO", "ACEPTADO"];
     const estatusActual = ficha.estatusActual.toUpperCase();
     if (!estatusValidos.some((e) => estatusActual.includes(e))) {
@@ -148,7 +142,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
 
       console.log("✅ Inscripción exitosa:", result);
 
-      // Mostrar información de credenciales
       toast.success(
         <div className="space-y-2">
           <p className="font-bold">Inscripción exitosa</p>
@@ -163,7 +156,7 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
       onClose();
       resetForm();
     } catch (error: unknown) {
-      console.error("❌ Error al inscribir:", error);
+      console.error("Error al inscribir:", error);
       const err = error as { response?: { data?: { mensaje?: string } }; message?: string };
       const errorMessage = err?.response?.data?.mensaje ?? err?.message ?? "Error al inscribir el aspirante";
       toast.error(errorMessage);
@@ -226,7 +219,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
           <div className="py-8 text-center text-sm text-gray-500">Cargando información...</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Validación de Requisitos */}
             <div
               className={`border rounded-lg p-4 ${
                 canEnroll ? "bg-green-50 border-green-300" : "bg-orange-50 border-orange-300"
@@ -243,7 +235,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
 
               {fichaAdmision && (
                 <div className="space-y-3 text-xs">
-                  {/* Documentos */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4" />
@@ -262,8 +253,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
                         ))}
                     </div>
                   </div>
-
-                  {/* Pagos */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4" />
@@ -294,16 +283,12 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
                       </div>
                     </div>
                   </div>
-
-                  {/* Estatus */}
                   <div className="flex items-center gap-2 pt-2 border-t">
                     <span className="font-medium">Estatus actual:</span>
                     <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
                       {fichaAdmision.estatusActual}
                     </span>
                   </div>
-
-                  {/* Errores de validación */}
                   {validationErrors.length > 0 && (
                     <div className="pt-2 border-t space-y-1">
                       <p className="font-medium text-orange-800">Advertencias:</p>
@@ -318,7 +303,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
               )}
             </div>
 
-            {/* Parámetros de Inscripción */}
             <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
               <h3 className="font-semibold text-sm">Parámetros de Inscripción</h3>
 
@@ -379,7 +363,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
               </div>
             </div>
 
-            {/* Información del Proceso */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
               <h4 className="font-semibold text-sm text-blue-900">¿Qué sucederá al inscribir?</h4>
               <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
@@ -391,9 +374,7 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
               </ul>
             </div>
 
-            {/* Acciones */}
             <div className="flex justify-between pt-4 border-t">
-              {/* Botón de imprimir a la izquierda */}
               <Button
                 type="button"
                 variant="outline"
@@ -404,8 +385,6 @@ export function EnrollStudentModal({ open, applicant, onClose, onEnrollmentSucce
                 <Printer className="w-4 h-4" />
                 {downloadingPdf ? "Generando..." : "Imprimir Hoja de Inscripción"}
               </Button>
-
-              {/* Botones principales a la derecha */}
               <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={onClose} disabled={submitting} className="text-xs">
                   Cancelar

@@ -26,9 +26,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
+import { getCampusList } from "@/services/campus-service";
 import { crearPlantilla, actualizarPlantilla, obtenerConceptosPago, obtenerCuatrimestresPorPlan, generarPreviewRecibos, ReciboPreview } from "@/services/plantillas-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
 import { AcademicPeriod } from "@/types/academic-period";
+import { Campus } from "@/types/campus";
 import { PlantillaCobro, CreatePlantillaCobroDto, CreatePlantillaCobroDetalleDto, ConceptoPago } from "@/types/receipt";
 import { StudyPlan } from "@/types/study-plan";
 
@@ -65,13 +67,13 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Datos para selects
   const [conceptos, setConceptos] = useState<ConceptoPago[]>([]);
   const [planesEstudio, setPlanesEstudio] = useState<StudyPlan[]>([]);
+  const [campuses, setCampuses] = useState<Campus[]>([]);
   const [periodosAcademicos, setPeriodosAcademicos] = useState<AcademicPeriod[]>([]);
   const [cuatrimestresDisponibles, setCuatrimestresDisponibles] = useState<number[]>([]);
+  const [selectedCampus, setSelectedCampus] = useState<string>("");
 
-  // Form state
   const [nombrePlantilla, setNombrePlantilla] = useState("");
   const [idPlanEstudios, setIdPlanEstudios] = useState<string>("");
   const [numeroCuatrimestre, setNumeroCuatrimestre] = useState<string>("");
@@ -83,10 +85,8 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
     new Date().toISOString().split("T")[0]
   );
 
-  // Detalles (conceptos)
   const [detalles, setDetalles] = useState<DetalleLocal[]>([]);
 
-  // Preview de recibos
   const [previewRecibos, setPreviewRecibos] = useState<ReciboPreview[]>([]);
   const [mostrarPreview, setMostrarPreview] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(false);
@@ -105,7 +105,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
     }
   }, [plantillaToEdit, loadingData]);
 
-  // Cargar cuatrimestres cuando cambia el plan de estudios
   useEffect(() => {
     if (idPlanEstudios) {
       cargarCuatrimestres(parseInt(idPlanEstudios));
@@ -117,15 +116,17 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
   async function cargarDatosIniciales() {
     setLoadingData(true);
     try {
-      const [conceptosData, planesData, periodosData] = await Promise.all([
+      const [conceptosData, planesData, periodosData, campusData] = await Promise.all([
         obtenerConceptosPago(true),
         getStudyPlansList(),
         getAcademicPeriodsList(),
+        getCampusList(),
       ]);
 
       setConceptos(conceptosData);
       setPlanesEstudio(planesData.items);
       setPeriodosAcademicos(periodosData.items);
+      setCampuses(campusData.items);
     } catch (error) {
       console.error("Error al cargar datos iniciales:", error);
       toast.error("Error al cargar datos. Algunos selectores pueden estar vacíos.");
@@ -139,13 +140,16 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
       const cuatrimestres = await obtenerCuatrimestresPorPlan(idPlan);
       setCuatrimestresDisponibles(cuatrimestres);
     } catch {
-      // Si falla, usar un rango por defecto
       setCuatrimestresDisponibles([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
   }
 
   function cargarDatosPlantilla(plantilla: PlantillaCobro) {
     setNombrePlantilla(plantilla.nombrePlantilla);
+    const plan = planesEstudio.find((p) => p.idPlanEstudios === plantilla.idPlanEstudios);
+    if (plan) {
+      setSelectedCampus(plan.idCampus.toString());
+    }
     setIdPlanEstudios(plantilla.idPlanEstudios.toString());
     setNumeroCuatrimestre(plantilla.numeroCuatrimestre.toString());
     setIdPeriodoAcademico(plantilla.idPeriodoAcademico?.toString() ?? "");
@@ -158,7 +162,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
         : new Date().toISOString().split("T")[0]
     );
 
-    // Mapear detalles
     if (plantilla.detalles && plantilla.detalles.length > 0) {
       setDetalles(
         plantilla.detalles.map((d) => ({
@@ -178,6 +181,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
   function resetForm() {
     setNombrePlantilla("");
+    setSelectedCampus("");
     setIdPlanEstudios("");
     setNumeroCuatrimestre("");
     setIdPeriodoAcademico("");
@@ -191,7 +195,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
     setMostrarPreview(false);
   }
 
-  // Genera la vista previa de recibos con fechas de vencimiento
   async function generarPreview() {
     if (detalles.length === 0) {
       setPreviewRecibos([]);
@@ -200,7 +203,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
     setLoadingPreview(true);
     try {
-      // Obtener fecha de inicio del periodo seleccionado
       let fechaInicio = fechaVigenciaInicio;
       if (idPeriodoAcademico) {
         const periodo = periodosAcademicos.find(p => p.idPeriodoAcademico.toString() === idPeriodoAcademico);
@@ -225,38 +227,32 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
       setMostrarPreview(true);
     } catch (error) {
       console.error("Error al generar preview:", error);
-      // Generar preview local si falla el backend
       generarPreviewLocal();
     } finally {
       setLoadingPreview(false);
     }
   }
 
-  // Parsea una fecha string (YYYY-MM-DD o ISO) evitando problemas de timezone
   function parsearFechaLocal(fechaStr: string): { año: number; mes: number; dia: number } {
-    // Si viene en formato ISO con T, extraer solo la parte de la fecha
     const fechaParte = fechaStr.split("T")[0];
     const partes = fechaParte.split("-");
     return {
       año: parseInt(partes[0]),
-      mes: parseInt(partes[1]) - 1, // Convertir a 0-indexed
+      mes: parseInt(partes[1]) - 1,
       dia: parseInt(partes[2]),
     };
   }
 
-  // Genera preview local sin llamar al backend
   function generarPreviewLocal() {
     const numRec = parseInt(numeroRecibos) || 4;
     const dia = parseInt(diaVencimiento) || 10;
 
-    // Obtener fecha de inicio del periodo
     let añoBase: number;
-    let mesBase: number; // 0-indexed (0 = Enero, 8 = Septiembre)
+    let mesBase: number;
 
     if (idPeriodoAcademico) {
       const periodo = periodosAcademicos.find(p => p.idPeriodoAcademico.toString() === idPeriodoAcademico);
       if (periodo?.fechaInicio) {
-        // Parsear la fecha evitando conversión de timezone
         const { año, mes } = parsearFechaLocal(periodo.fechaInicio);
         añoBase = año;
         mesBase = mes;
@@ -266,7 +262,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
         mesBase = hoy.getMonth();
       }
     } else {
-      // Parsear la fecha de vigencia evitando conversión de timezone
       const { año, mes } = parsearFechaLocal(fechaVigenciaInicio);
       añoBase = año;
       mesBase = mes;
@@ -279,21 +274,17 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
     const recibos: ReciboPreview[] = [];
     for (let i = 0; i < numRec; i++) {
-      // Calcular mes y año para este recibo
       let mes = mesBase + i;
       let año = añoBase;
 
-      // Ajustar si el mes pasa de diciembre
       while (mes > 11) {
         mes -= 12;
         año += 1;
       }
 
-      // Calcular día de vencimiento (ajustar si el mes tiene menos días)
       const diasEnMes = new Date(año, mes + 1, 0).getDate();
       const diaFinal = Math.min(dia, diasEnMes);
 
-      // Crear fecha de vencimiento
       const fechaVenc = new Date(año, mes, diaFinal);
 
       const conceptosRecibo = detalles
@@ -340,7 +331,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
   }
 
   function agregarConceptoRapido(concepto: ConceptoPago) {
-    // Determinar si es inscripción (aplica solo al primer recibo) o colegiatura (aplica a todos)
     const esInscripcion = concepto.nombre.toLowerCase().includes("inscripci") ??
                           concepto.clave?.toLowerCase().includes("insc");
 
@@ -350,9 +340,9 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
         idConceptoPago: concepto.idConceptoPago,
         descripcion: concepto.nombre,
         cantidad: 1,
-        precioUnitario: 0, // El usuario debe ingresar el precio
+        precioUnitario: 0,
         orden: detalles.length + 1,
-        aplicaEnRecibo: esInscripcion ? 1 : null, // Inscripción solo en primer recibo, colegiatura en todos
+        aplicaEnRecibo: esInscripcion ? 1 : null,
         nombreConcepto: concepto.nombre,
       },
     ]);
@@ -362,7 +352,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
   function eliminarDetalle(index: number) {
     const nuevosDetalles = detalles.filter((_, i) => i !== index);
-    // Reordenar
     setDetalles(nuevosDetalles.map((d, i) => ({ ...d, orden: i + 1 })));
   }
 
@@ -373,7 +362,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
       [campo]: valor,
     };
 
-    // Si cambió el concepto, actualizar descripción y nombre
     if (campo === "idConceptoPago") {
       const concepto = conceptos.find((c) => c.idConceptoPago === valor);
       if (concepto) {
@@ -407,7 +395,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
         aplicaEnRecibo = numRecibos;
         break;
       case "especifico":
-        aplicaEnRecibo = 1; // Default al primer recibo
+        aplicaEnRecibo = 1;
         break;
     }
 
@@ -417,7 +405,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones
     if (!nombrePlantilla.trim()) {
       toast.error("Ingresa el nombre de la plantilla");
       return;
@@ -429,7 +416,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
     }
 
     if (!numeroCuatrimestre) {
-      toast.error("Selecciona el cuatrimestre");
+      toast.error(`Selecciona el ${periodicidadLabel.toLowerCase()}`);
       return;
     }
 
@@ -438,7 +425,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
       return;
     }
 
-    // Validar precios
     const preciosInvalidos = detalles.filter((d) => d.precioUnitario <= 0);
     if (preciosInvalidos.length > 0) {
       toast.error("Todos los precios deben ser mayores a 0");
@@ -495,7 +481,25 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
     }
   }
 
-  // Calcular totales
+  const planesFiltrados = selectedCampus
+    ? planesEstudio.filter((p) => p.idCampus === parseInt(selectedCampus))
+    : planesEstudio;
+
+  const planSeleccionado = idPlanEstudios
+    ? planesEstudio.find((p) => p.idPlanEstudios === parseInt(idPlanEstudios))
+    : null;
+
+  const periodicidadLabel = planSeleccionado?.periodicidad?.toLowerCase().includes("semest")
+    ? "Semestre"
+    : "Cuatrimestre";
+
+  function handleCampusChange(value: string) {
+    setSelectedCampus(value);
+    setIdPlanEstudios("");
+    setNumeroCuatrimestre("");
+    setCuatrimestresDisponibles([]);
+  }
+
   const numRecibos = parseInt(numeroRecibos) || 1;
 
   const totalPrimerRecibo = detalles
@@ -508,10 +512,8 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
   const totalGeneral = detalles.reduce((sum, d) => {
     if (d.aplicaEnRecibo === null) {
-      // Aplica a todos los recibos
       return sum + d.precioUnitario * d.cantidad * numRecibos;
     } else {
-      // Aplica solo a un recibo específico
       return sum + d.precioUnitario * d.cantidad;
     }
   }, 0);
@@ -542,13 +544,12 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
             {plantillaToEdit ? "Editar Plantilla de Cobro" : "Nueva Plantilla de Cobro"}
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Define cómo se generarán los recibos para un plan de estudios y cuatrimestre específico
+            Define cómo se generarán los recibos para un plan de estudios y periodo específico
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6">
           <form id="plantilla-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 pb-4">
-            {/* Información General */}
             <div className="space-y-3 sm:space-y-4">
               <h3 className="font-semibold text-sm sm:text-base text-blue-600">Información General</h3>
 
@@ -561,9 +562,31 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                     id="nombre"
                     value={nombrePlantilla}
                     onChange={(e) => setNombrePlantilla(e.target.value)}
-                    placeholder="Ej: Lic. Administración - 1er Cuatrimestre"
+                    placeholder={`Ej: Lic. Administración - 1er ${periodicidadLabel}`}
                     className="text-sm"
                   />
+                </div>
+
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="campus" className="text-xs sm:text-sm">
+                    Campus <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={selectedCampus}
+                    onValueChange={handleCampusChange}
+                    disabled={!!plantillaToEdit}
+                  >
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="Selecciona un campus" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[250px]">
+                      {campuses.map((campus) => (
+                        <SelectItem key={campus.idCampus} value={campus.idCampus.toString()}>
+                          {campus.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
@@ -573,15 +596,16 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                   <Select
                     value={idPlanEstudios}
                     onValueChange={setIdPlanEstudios}
-                    disabled={!!plantillaToEdit}
+                    disabled={!selectedCampus || !!plantillaToEdit}
                   >
                     <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Selecciona un plan de estudios" />
+                      <SelectValue placeholder={selectedCampus ? "Selecciona un plan de estudios" : "Primero selecciona un campus"} />
                     </SelectTrigger>
                     <SelectContent className="max-h-[250px]">
-                      {planesEstudio.map((plan) => (
+                      {planesFiltrados.map((plan) => (
                         <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()}>
                           {plan.clavePlanEstudios} - {plan.nombrePlanEstudios}
+                          {plan.periodicidad ? ` (${plan.periodicidad})` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -590,7 +614,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
 
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="cuatrimestre" className="text-xs sm:text-sm">
-                    Cuatrimestre/Semestre <span className="text-red-500">*</span>
+                    {periodicidadLabel} <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={numeroCuatrimestre}
@@ -598,7 +622,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                     disabled={!idPlanEstudios || !!plantillaToEdit}
                   >
                     <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Selecciona el cuatrimestre" />
+                      <SelectValue placeholder={`Selecciona el ${periodicidadLabel.toLowerCase()}`} />
                     </SelectTrigger>
                     <SelectContent>
                       {(cuatrimestresDisponibles.length > 0
@@ -606,7 +630,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                         : [1, 2, 3, 4, 5, 6, 7, 8, 9]
                       ).map((num) => (
                         <SelectItem key={num} value={num.toString()}>
-                          {num}° Cuatrimestre
+                          {num}° {periodicidadLabel}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -693,14 +717,10 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                 </div>
               </div>
             </div>
-
-            {/* Conceptos de Pago */}
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-sm sm:text-base text-blue-600">Conceptos de Pago</h3>
               </div>
-
-              {/* Botones rápidos para agregar conceptos comunes */}
               <div className="flex flex-wrap gap-1.5 sm:gap-2 p-2 sm:p-3 bg-blue-50 rounded-lg border border-blue-100">
                 <span className="text-xs sm:text-sm text-blue-700 mr-1 sm:mr-2 self-center font-medium">Agregar:</span>
                 {conceptos.slice(0, 4).map((concepto) => (
@@ -849,8 +869,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                   ))}
                 </div>
               )}
-
-              {/* Resumen de Montos */}
               {detalles.length > 0 && (
                 <div className="bg-blue-50 p-3 sm:p-4 rounded-lg space-y-2 border border-blue-100">
                   <div className="flex justify-between text-xs sm:text-sm">
@@ -871,8 +889,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                       ${totalGeneral.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-
-                  {/* Botón para ver preview de fechas */}
                   <div className="pt-2 border-t border-blue-200">
                     <Button
                       type="button"
@@ -892,8 +908,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                   </div>
                 </div>
               )}
-
-              {/* Vista Previa de Recibos con Fechas */}
               {mostrarPreview && previewRecibos.length > 0 && (
                 <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-200 space-y-3">
                   <div className="flex items-center justify-between">

@@ -75,7 +75,6 @@ export function CreateApplicantModal({
     },
   });
 
-  // Limpiar timeout al desmontar
   useEffect(() => {
     return () => {
       if (closeTimeoutRef.current) {
@@ -84,9 +83,7 @@ export function CreateApplicantModal({
     };
   }, []);
 
-  // Función para cerrar el modal de forma segura (evita conflictos con portales)
   const safeClose = useCallback(() => {
-    // Pequeño delay para permitir que los portales de Radix se cierren primero
     closeTimeoutRef.current = setTimeout(() => {
       form.reset();
       onOpenChange(false);
@@ -101,7 +98,6 @@ export function CreateApplicantModal({
       await createApplicant(data);
       toast.success("Aspirante creado correctamente");
       safeClose();
-      // Notificar que se creó un aspirante para actualizar la lista
       onApplicantCreated?.();
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || error?.response?.data || "Intenta nuevamente.";

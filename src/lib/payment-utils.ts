@@ -1,23 +1,8 @@
 import { ReceiptStatus } from "@/types/receipt";
 
-// ============================================================================
-// CONSTANTES
-// ============================================================================
+export const TASA_RECARGO_DIARIO = 0.01;
+export const RECARGO_FIJO_DIARIO = 10;
 
-export const TASA_RECARGO_DIARIO = 0.01; // 1% diario
-export const RECARGO_FIJO_DIARIO = 10; // $10 por día (alternativa)
-
-// ============================================================================
-// CÁLCULOS DE RECARGOS
-// ============================================================================
-
-/**
- * Calcula el recargo por días vencidos
- * @param fechaVencimiento Fecha de vencimiento del recibo
- * @param saldo Saldo pendiente
- * @param tasaDiaria Tasa de recargo diario (por defecto 1%)
- * @returns Monto del recargo
- */
 export function calcularRecargo(
   fechaVencimiento: string | Date,
   saldo: number,
@@ -40,11 +25,6 @@ export function calcularRecargo(
   return saldo * tasaDiaria * diasVencido;
 }
 
-/**
- * Calcula los días de vencimiento
- * @param fechaVencimiento Fecha de vencimiento
- * @returns Días vencidos (0 si no está vencido)
- */
 export function calcularDiasVencido(fechaVencimiento: string | Date): number {
   const fecha = typeof fechaVencimiento === "string"
     ? new Date(fechaVencimiento)
@@ -61,12 +41,6 @@ export function calcularDiasVencido(fechaVencimiento: string | Date): number {
   );
 }
 
-/**
- * Calcula el total a pagar hoy (saldo + recargo)
- * @param fechaVencimiento Fecha de vencimiento
- * @param saldo Saldo pendiente
- * @returns Total a pagar
- */
 export function calcularTotalAPagarHoy(
   fechaVencimiento: string | Date,
   saldo: number
@@ -75,16 +49,33 @@ export function calcularTotalAPagarHoy(
   return saldo + recargo;
 }
 
-// ============================================================================
-// FORMATEO DE ESTATUS
-// ============================================================================
+function normalizeReceiptStatus(status: ReceiptStatus | number | string): ReceiptStatus {
+  if (typeof status === 'number') {
+    return status as ReceiptStatus;
+  }
 
-/**
- * Convierte el enum de estatus a texto legible
- * @param status Estatus del recibo
- * @returns Texto del estatus
- */
-export function formatReceiptStatus(status: ReceiptStatus): string {
+  if (typeof status === 'string') {
+    const statusUpper = status.toUpperCase();
+    switch (statusUpper) {
+      case 'PENDIENTE': return ReceiptStatus.PENDIENTE;
+      case 'PARCIAL': return ReceiptStatus.PARCIAL;
+      case 'PAGADO': return ReceiptStatus.PAGADO;
+      case 'VENCIDO': return ReceiptStatus.VENCIDO;
+      case 'CANCELADO': return ReceiptStatus.CANCELADO;
+      case 'BONIFICADO': return ReceiptStatus.BONIFICADO;
+      default: {
+        const num = parseInt(status);
+        if (!isNaN(num)) return num as ReceiptStatus;
+        return ReceiptStatus.PENDIENTE;
+      }
+    }
+  }
+
+  return ReceiptStatus.PENDIENTE;
+}
+
+export function formatReceiptStatus(status: ReceiptStatus | number | string): string {
+  const normalizedStatus = normalizeReceiptStatus(status);
   const labels: Record<ReceiptStatus, string> = {
     [ReceiptStatus.PENDIENTE]: "Pendiente",
     [ReceiptStatus.PARCIAL]: "Pago Parcial",
@@ -93,17 +84,13 @@ export function formatReceiptStatus(status: ReceiptStatus): string {
     [ReceiptStatus.CANCELADO]: "Cancelado",
     [ReceiptStatus.BONIFICADO]: "Bonificado",
   };
-  return labels[status] || "Desconocido";
+  return labels[normalizedStatus] || "Desconocido";
 }
 
-/**
- * Obtiene el color para el badge de estatus
- * @param status Estatus del recibo
- * @returns Variante del badge
- */
 export function getReceiptStatusVariant(
-  status: ReceiptStatus
+  status: ReceiptStatus | number | string
 ): "default" | "secondary" | "destructive" | "outline" {
+  const normalizedStatus = normalizeReceiptStatus(status);
   const variants: Record<ReceiptStatus, "default" | "secondary" | "destructive" | "outline"> = {
     [ReceiptStatus.PENDIENTE]: "secondary",
     [ReceiptStatus.PARCIAL]: "outline",
@@ -112,15 +99,11 @@ export function getReceiptStatusVariant(
     [ReceiptStatus.CANCELADO]: "outline",
     [ReceiptStatus.BONIFICADO]: "secondary",
   };
-  return variants[status] || "outline";
+  return variants[normalizedStatus] || "outline";
 }
 
-/**
- * Obtiene la clase de color para el texto del estatus
- * @param status Estatus del recibo
- * @returns Clase de Tailwind CSS
- */
-export function getReceiptStatusColor(status: ReceiptStatus): string {
+export function getReceiptStatusColor(status: ReceiptStatus | number | string): string {
+  const normalizedStatus = normalizeReceiptStatus(status);
   const colors: Record<ReceiptStatus, string> = {
     [ReceiptStatus.PENDIENTE]: "text-blue-600",
     [ReceiptStatus.PARCIAL]: "text-yellow-600",
@@ -129,18 +112,19 @@ export function getReceiptStatusColor(status: ReceiptStatus): string {
     [ReceiptStatus.CANCELADO]: "text-gray-600",
     [ReceiptStatus.BONIFICADO]: "text-purple-600",
   };
-  return colors[status] || "text-gray-600";
+  return colors[normalizedStatus] || "text-gray-600";
 }
 
-// ============================================================================
-// DESCARGAS DE ARCHIVOS
-// ============================================================================
+export function isPaidOrPartial(status: ReceiptStatus | number | string): boolean {
+  const normalizedStatus = normalizeReceiptStatus(status);
+  return normalizedStatus === ReceiptStatus.PAGADO || normalizedStatus === ReceiptStatus.PARCIAL;
+}
 
-/**
- * Descarga un archivo Blob con el nombre especificado
- * @param blob Blob del archivo
- * @param nombreArchivo Nombre del archivo a descargar
- */
+export function isCanceledOrPaid(status: ReceiptStatus | number | string): boolean {
+  const normalizedStatus = normalizeReceiptStatus(status);
+  return normalizedStatus === ReceiptStatus.CANCELADO || normalizedStatus === ReceiptStatus.PAGADO;
+}
+
 export function descargarArchivo(blob: Blob, nombreArchivo: string): void {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -152,43 +136,19 @@ export function descargarArchivo(blob: Blob, nombreArchivo: string): void {
   window.URL.revokeObjectURL(url);
 }
 
-/**
- * Descarga un recibo en PDF
- * @param blob Blob del PDF
- * @param folio Folio del recibo
- */
 export function descargarReciboPDF(blob: Blob, folio: string): void {
   descargarArchivo(blob, `Recibo_${folio}.pdf`);
 }
 
-/**
- * Descarga un comprobante de pago en PDF
- * @param blob Blob del PDF
- * @param folioPago Folio del pago
- */
 export function descargarComprobantePDF(blob: Blob, folioPago: string): void {
   descargarArchivo(blob, `Comprobante_${folioPago}.pdf`);
 }
 
-/**
- * Descarga un archivo Excel
- * @param blob Blob del Excel
- * @param nombreBase Nombre base del archivo (sin extensión)
- */
 export function descargarExcel(blob: Blob, nombreBase: string): void {
   const fecha = new Date().toISOString().split("T")[0];
   descargarArchivo(blob, `${nombreBase}_${fecha}.xlsx`);
 }
 
-// ============================================================================
-// FORMATEO DE MONEDA
-// ============================================================================
-
-/**
- * Formatea un número como moneda MXN
- * @param amount Monto a formatear
- * @returns Monto formateado
- */
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("es-MX", {
     style: "currency",
@@ -196,11 +156,6 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-/**
- * Formatea un número como porcentaje
- * @param value Valor decimal (0.5 = 50%)
- * @returns Porcentaje formateado
- */
 export function formatPercentage(value: number): string {
   return new Intl.NumberFormat("es-MX", {
     style: "percent",
@@ -209,16 +164,6 @@ export function formatPercentage(value: number): string {
   }).format(value);
 }
 
-// ============================================================================
-// VALIDACIONES
-// ============================================================================
-
-/**
- * Valida si un recibo puede ser cobrado
- * @param status Estatus del recibo
- * @param saldo Saldo del recibo
- * @returns true si puede ser cobrado
- */
 export function puedeSerCobrado(status: ReceiptStatus, saldo: number): boolean {
   return (
     saldo > 0 &&
@@ -228,12 +173,6 @@ export function puedeSerCobrado(status: ReceiptStatus, saldo: number): boolean {
   );
 }
 
-/**
- * Valida si un pago puede ser cancelado
- * @param fechaPago Fecha del pago
- * @param horasLimite Horas límite para cancelar (por defecto 24)
- * @returns true si puede ser cancelado
- */
 export function puedeCancelarPago(
   fechaPago: string | Date,
   horasLimite: number = 24
@@ -246,17 +185,6 @@ export function puedeCancelarPago(
   return diferenciaHoras <= horasLimite;
 }
 
-// ============================================================================
-// CÁLCULOS DE APLICACIÓN DE BECAS
-// ============================================================================
-
-/**
- * Calcula el descuento por beca
- * @param importe Importe original
- * @param tipoBeca Tipo de beca (PORCENTAJE o MONTO_FIJO)
- * @param valor Valor de la beca
- * @returns Monto del descuento
- */
 export function calcularDescuentoBeca(
   importe: number,
   tipoBeca: "PORCENTAJE" | "MONTO_FIJO",
@@ -269,12 +197,6 @@ export function calcularDescuentoBeca(
   }
 }
 
-/**
- * Calcula el importe neto después de aplicar beca
- * @param importe Importe original
- * @param descuentoBeca Descuento aplicado
- * @returns Importe neto
- */
 export function calcularImporteNeto(
   importe: number,
   descuentoBeca: number

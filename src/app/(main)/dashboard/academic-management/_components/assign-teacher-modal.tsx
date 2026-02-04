@@ -42,7 +42,6 @@ export function AssignTeacherModal({ open, onClose, grupoMateria, onSuccess }: A
   const [validating, setValidating] = useState(false);
   const [conflict, setConflict] = useState<TeacherScheduleConflict | null>(null);
 
-  // TODO: Obtener campusId del usuario autenticado
   const campusId = 1;
 
   useEffect(() => {
@@ -144,7 +143,6 @@ export function AssignTeacherModal({ open, onClose, grupoMateria, onSuccess }: A
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Información de la materia */}
           <Card className="bg-gray-50">
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
@@ -172,7 +170,6 @@ export function AssignTeacherModal({ open, onClose, grupoMateria, onSuccess }: A
                 )}
               </div>
 
-              {/* Mostrar horarios si existen */}
               {grupoMateria.horarioJson && grupoMateria.horarioJson.length > 0 && (
                 <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
                   <div className="font-semibold text-sm mb-3 flex items-center gap-2 text-gray-700">
@@ -204,7 +201,6 @@ export function AssignTeacherModal({ open, onClose, grupoMateria, onSuccess }: A
             </CardContent>
           </Card>
 
-          {/* Selector de profesor */}
           <div className="space-y-2">
             <Label htmlFor="teacher">Profesor</Label>
             <Select
@@ -226,7 +222,6 @@ export function AssignTeacherModal({ open, onClose, grupoMateria, onSuccess }: A
             </Select>
           </div>
 
-          {/* Mensaje de validación */}
           {validating && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
@@ -234,7 +229,6 @@ export function AssignTeacherModal({ open, onClose, grupoMateria, onSuccess }: A
             </div>
           )}
 
-          {/* Resultado de validación */}
           {conflict && !validating && selectedTeacherId && selectedTeacherId !== "0" && (
             <Card className={conflict.tieneConflicto ? "border-red-300 bg-red-50" : "border-green-300 bg-green-50"}>
               <CardContent className="pt-6">
@@ -282,7 +276,6 @@ export function AssignTeacherModal({ open, onClose, grupoMateria, onSuccess }: A
             </Card>
           )}
 
-          {/* Advertencia si no hay horarios */}
           {(!grupoMateria.horarioJson || grupoMateria.horarioJson.length === 0) && selectedTeacherId && selectedTeacherId !== "0" && (
             <Card className="border-yellow-300 bg-yellow-50">
               <CardContent className="pt-6">

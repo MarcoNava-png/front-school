@@ -63,7 +63,6 @@ interface EstudianteParaInscribir extends EstudianteImportar {
 
 type Step = 'select-group' | 'load-students' | 'confirm' | 'results'
 
-// Columnas de la plantilla Excel
 const PLANTILLA_COLUMNAS = [
   'Nombre',
   'ApellidoPaterno',
@@ -77,11 +76,9 @@ const PLANTILLA_COLUMNAS = [
   'Matricula',
 ]
 
-// Mapeo de género texto a ID
 const mapearGenero = (generoTexto: string): number | undefined => {
   if (!generoTexto) return undefined
   const texto = generoTexto.toLowerCase().trim()
-  // Masculino = 1, Femenino = 2 (ajustar según tu BD)
   if (['m', 'masculino', 'hombre', 'h', 'male', '1'].includes(texto)) return 1
   if (['f', 'femenino', 'mujer', 'female', '2'].includes(texto)) return 2
   return undefined
@@ -91,7 +88,6 @@ export default function InscribirEstudiantesGrupoPage() {
   const [step, setStep] = useState<Step>('select-group')
   const [loading, setLoading] = useState(false)
 
-  // Selección de grupo
   const [planes, setPlanes] = useState<StudyPlan[]>([])
   const [periodos, setPeriodos] = useState<AcademicPeriod[]>([])
   const [grupos, setGrupos] = useState<{ idGrupo: number; nombreGrupo: string; codigoGrupo?: string }[]>([])
@@ -100,14 +96,11 @@ export default function InscribirEstudiantesGrupoPage() {
   const [selectedGrupo, setSelectedGrupo] = useState<string>('')
   const [grupoInfo, setGrupoInfo] = useState<EstudiantesDelGrupoResponse | null>(null)
 
-  // Estudiantes
   const [estudiantes, setEstudiantes] = useState<EstudianteParaInscribir[]>([])
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Resultados
   const [resultado, setResultado] = useState<ImportarEstudiantesGrupoResponse | null>(null)
 
-  // Cargar planes y periodos al inicio
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -125,7 +118,6 @@ export default function InscribirEstudiantesGrupoPage() {
     loadInitialData()
   }, [])
 
-  // Cargar grupos cuando cambie plan o periodo
   useEffect(() => {
     const loadGrupos = async () => {
       if (!selectedPlan || !selectedPeriodo) {
@@ -150,7 +142,6 @@ export default function InscribirEstudiantesGrupoPage() {
     loadGrupos()
   }, [selectedPlan, selectedPeriodo])
 
-  // Cargar info del grupo seleccionado
   useEffect(() => {
     const loadGrupoInfo = async () => {
       if (!selectedGrupo) {
@@ -183,7 +174,6 @@ export default function InscribirEstudiantesGrupoPage() {
     loadGrupoInfo()
   }, [selectedGrupo, grupos, planes, periodos, selectedPlan, selectedPeriodo])
 
-  // Descargar plantilla Excel
   const handleDownloadTemplate = () => {
     const wsData = XLSX.utils.aoa_to_sheet([
       PLANTILLA_COLUMNAS,
@@ -191,18 +181,17 @@ export default function InscribirEstudiantesGrupoPage() {
       ['María', 'García', 'Ruiz', 'F', 'GARM850220MDFRRC02', 'maria.garcia@email.com', '', '5558765432', '1985-02-20', ''],
     ])
 
-    // Establecer anchos de columna
     wsData['!cols'] = [
-      { wch: 15 }, // Nombre
-      { wch: 15 }, // ApellidoPaterno
-      { wch: 15 }, // ApellidoMaterno
-      { wch: 10 }, // Genero
-      { wch: 20 }, // CURP
-      { wch: 25 }, // Correo
-      { wch: 12 }, // Telefono
-      { wch: 12 }, // Celular
-      { wch: 15 }, // FechaNacimiento
-      { wch: 12 }, // Matricula
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 20 },
+      { wch: 25 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 15 },
+      { wch: 12 },
     ]
 
     const wb = XLSX.utils.book_new()
@@ -247,7 +236,6 @@ export default function InscribirEstudiantesGrupoPage() {
       for (const row of jsonData) {
         const keys = Object.keys(row)
 
-        // Función helper para buscar valores en diferentes formatos de columna
         const getValue = (possibleNames: string[]): string => {
           for (const name of possibleNames) {
             const key = keys.find(k => k.toLowerCase().replace(/[_\s]/g, '') === name.toLowerCase().replace(/[_\s]/g, ''))
@@ -269,10 +257,8 @@ export default function InscribirEstudiantesGrupoPage() {
         const fechaNacimiento = getValue(['fechanacimiento', 'fecha_nacimiento', 'nacimiento', 'birthdate'])
         const matricula = getValue(['matricula', 'matricula', 'enrollment'])
 
-        // Mapear género texto a ID
         const idGenero = mapearGenero(generoTexto)
 
-        // Validar que al menos tenga nombre y apellido paterno
         if (!nombre || !apellidoPaterno) {
           console.warn(`Fila ${fila + 1} ignorada: falta nombre o apellido paterno`)
           fila++
@@ -333,7 +319,6 @@ export default function InscribirEstudiantesGrupoPage() {
     setLoading(true)
 
     try {
-      // Preparar datos para enviar (sin los campos de UI)
       const estudiantesParaImportar: EstudianteImportar[] = seleccionados.map(e => ({
         nombre: e.nombre,
         apellidoPaterno: e.apellidoPaterno,
@@ -389,7 +374,6 @@ export default function InscribirEstudiantesGrupoPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
@@ -406,8 +390,6 @@ export default function InscribirEstudiantesGrupoPage() {
           </p>
         </div>
       </div>
-
-      {/* Progress Steps */}
       <div className="flex items-center justify-center gap-2">
         {['select-group', 'load-students', 'confirm', 'results'].map((s, i) => (
           <div key={s} className="flex items-center">
@@ -431,8 +413,6 @@ export default function InscribirEstudiantesGrupoPage() {
           </div>
         ))}
       </div>
-
-      {/* Step 1: Select Group */}
       {step === 'select-group' && (
         <Card>
           <CardHeader>
@@ -527,8 +507,6 @@ export default function InscribirEstudiantesGrupoPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Step 2: Load Students */}
       {step === 'load-students' && (
         <Card>
           <CardHeader>
@@ -546,7 +524,6 @@ export default function InscribirEstudiantesGrupoPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Info de columnas */}
             <Alert>
               <FileSpreadsheet className="h-4 w-4" />
               <AlertTitle>Columnas del Excel</AlertTitle>
@@ -668,7 +645,6 @@ export default function InscribirEstudiantesGrupoPage() {
         </Card>
       )}
 
-      {/* Step 3: Confirm */}
       {step === 'confirm' && grupoInfo && (
         <div className="space-y-6">
           <Card>
@@ -745,10 +721,8 @@ export default function InscribirEstudiantesGrupoPage() {
         </div>
       )}
 
-      {/* Step 4: Results */}
       {step === 'results' && resultado && (
         <div className="space-y-6">
-          {/* Resumen */}
           <div className="grid gap-4 md:grid-cols-5">
             <Card>
               <CardHeader className="pb-2">
@@ -781,8 +755,6 @@ export default function InscribirEstudiantesGrupoPage() {
               </CardHeader>
             </Card>
           </div>
-
-          {/* Alerta */}
           {resultado.fallidos === 0 ? (
             <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -801,8 +773,6 @@ export default function InscribirEstudiantesGrupoPage() {
               </AlertDescription>
             </Alert>
           )}
-
-          {/* Detalle */}
           <Card>
             <CardHeader>
               <CardTitle>Detalle de Importación</CardTitle>

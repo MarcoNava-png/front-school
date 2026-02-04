@@ -41,7 +41,7 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
   const [loading, setLoading] = useState(false);
   const [estudiantes, setEstudiantes] = useState<EstudianteConCalificaciones[]>([]);
   const [parciales, setParciales] = useState<Parcial[]>([]);
-  const [saving, setSaving] = useState<string | null>(null); // "estudianteId-parcialId"
+  const [saving, setSaving] = useState<string | null>(null);
   const [actasPorParcial, setActasPorParcial] = useState<{ [parcialId: number]: number }>({});
 
   useEffect(() => {
@@ -51,15 +51,12 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
   const loadData = async () => {
     setLoading(true);
     try {
-      // 1. Cargar todos los parciales
       const parcialesResult = await getParciales(1, 100);
       const parcialesOrdenados = parcialesResult.items.sort((a: any, b: any) => a.orden - b.orden);
       setParciales(parcialesOrdenados);
 
-      // 2. Cargar estudiantes inscritos
       const estudiantesInscritos = await getStudentsByGroupSubject(grupoMateriaId);
 
-      // 3. Cargar actas de calificaciones para cada parcial
       const actasMap: { [parcialId: number]: number } = {};
       for (const parcial of parcialesOrdenados) {
         try {
@@ -73,7 +70,6 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
       }
       setActasPorParcial(actasMap);
 
-      // 4. Cargar calificaciones de cada parcial
       const calificacionesPorParcial: { [parcialId: number]: { inscripcionId: number; aporteParcial: number }[] } = {};
 
       for (const parcial of parcialesOrdenados) {
@@ -85,7 +81,6 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
         }
       }
 
-      // 5. Combinar datos en estructura matricial
       const estudiantesConCalif: EstudianteConCalificaciones[] = estudiantesInscritos.map((est) => {
         const calificaciones: CalificacionPorParcial = {};
         const calificacionesTemp: { [parcialId: number]: string } = {};
@@ -98,8 +93,7 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
           editando[parcial.id] = false;
         });
 
-        // Calcular calificación final (promedio de P1, P2, P3)
-        const parcialesPrevios = parcialesOrdenados.filter((p: any) => p.orden < 4); // P1, P2, P3
+        const parcialesPrevios = parcialesOrdenados.filter((p: any) => p.orden < 4);
         const califsPrevias = parcialesPrevios
           .map((p: any) => calificaciones[p.id])
           .filter((c: any): c is number => c !== undefined);
@@ -161,7 +155,6 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
   const handleSave = async (estudiante: EstudianteConCalificaciones, parcialId: number) => {
     const calificacion = parseFloat(estudiante.calificacionesTemp[parcialId] || "0");
 
-    // Validar rango (0-100)
     if (calificacion < 0 || calificacion > 100) {
       toast.error("La calificación debe estar entre 0 y 100");
       return;
@@ -176,20 +169,18 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
     setSaving(saveKey);
 
     try {
-      // 1. Si no existe el acta de calificaciones, crearla
       let actaId = actasPorParcial[parcialId];
       if (!actaId) {
         const nuevaActa = await abrirParcial({
           grupoMateriaId,
           parcialId,
-          profesorId: 1, // TODO: Obtener del contexto de usuario autenticado
+          profesorId: 1, //
           fechaApertura: new Date().toISOString(),
         });
         actaId = nuevaActa.id;
         setActasPorParcial((prev) => ({ ...prev, [parcialId]: actaId }));
       }
 
-      // 2. Guardar la calificación
       await upsertCalificacion({
         calificacionParcialId: actaId,
         grupoMateriaId,
@@ -204,13 +195,11 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
 
       toast.success("Calificación guardada correctamente");
 
-      // 3. Actualizar estado local
       setEstudiantes((prev) =>
         prev.map((est) => {
           if (est.idEstudiante === estudiante.idEstudiante) {
             const nuevasCalif = { ...est.calificaciones, [parcialId]: calificacion };
 
-            // Recalcular calificación final
             const parcialesPrevios = parciales.filter(p => p.orden < 4);
             const califsPrevias = parcialesPrevios
               .map(p => nuevasCalif[p.id])
@@ -259,8 +248,8 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
     return "text-red-600";
   };
 
-  const parcialesPrevios = parciales.filter(p => p.orden < 4); // P1, P2, P3
-  const parcialFinal = parciales.find(p => p.orden === 4); // P4
+  const parcialesPrevios = parciales.filter(p => p.orden < 4);
+  const parcialFinal = parciales.find(p => p.orden === 4);
 
   return (
     <Card>
@@ -307,8 +296,6 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
                     <TableCell className="sticky left-[100px] bg-white">
                       {estudiante.nombreCompleto}
                     </TableCell>
-
-                    {/* Parciales P1, P2, P3 */}
                     {parcialesPrevios.map((parcial) => (
                       <TableCell key={parcial.id} className="text-center">
                         {estudiante.editando[parcial.id] ? (
@@ -351,8 +338,6 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
                         )}
                       </TableCell>
                     ))}
-
-                    {/* Calificación Final (P4) - Calculada */}
                     <TableCell className="text-center bg-blue-50">
                       <span className={`font-bold text-lg ${getColorClass(estudiante.calificacionFinal)}`}>
                         {estudiante.calificacionFinal !== undefined
@@ -360,8 +345,6 @@ export function TablaCalificacionesMatricial({ grupoMateriaId }: TablaCalificaci
                           : "-"}
                       </span>
                     </TableCell>
-
-                    {/* Estado */}
                     <TableCell className="text-center">
                       {estudiante.calificacionFinal !== undefined ? (
                         <Badge variant={estudiante.calificacionFinal >= 70 ? "default" : "destructive"}>

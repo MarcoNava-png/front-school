@@ -1,7 +1,3 @@
-// ============================================================================
-// PARCIALES (Periodos de evaluación: Parcial 1, 2, 3, etc.)
-// ============================================================================
-
 export interface Parcial {
   id: number;
   name: string;
@@ -12,10 +8,6 @@ export interface ParcialesRequest {
   name: string;
   orden: number;
 }
-
-// ============================================================================
-// CALIFICACIÓN PARCIAL (Acta de calificaciones por grupo-materia y parcial)
-// ============================================================================
 
 export enum StatusParcial {
   Cerrado = 0,
@@ -47,10 +39,6 @@ export interface CalificacionParcialEstadoRequest {
   statusParcial: StatusParcial;
 }
 
-// ============================================================================
-// DETALLE DE CALIFICACIONES (Evaluaciones individuales)
-// ============================================================================
-
 export enum TipoEvaluacion {
   Examen = 0,
   Tarea = 1,
@@ -67,19 +55,19 @@ export interface CalificacionDetalle {
   tipoEvaluacionEnum: number;
   tipoEvaluacionName: string;
   nombre: string;
-  pesoEvaluacion: number; // Porcentaje que vale (0-100)
-  maxPuntos: number; // Puntos máximos de la evaluación
-  puntos: number; // Puntos obtenidos por el estudiante
+  pesoEvaluacion: number;
+  maxPuntos: number;
+  puntos: number;
   fechaAplicacion: string;
   applicationUserName: string;
   fechaCaptura: string;
 }
 
 export interface CalificacionDetalleUpsertRequest {
-  id?: number; // Si existe, actualiza; si no, crea
+  id?: number;
   calificacionParcialId: number;
   grupoMateriaId: number;
-  inscripcionId: number; // ID de la inscripción del estudiante
+  inscripcionId: number;
   tipoEvaluacionEnum: number;
   nombre: string;
   pesoEvaluacion: number;
@@ -87,10 +75,6 @@ export interface CalificacionDetalleUpsertRequest {
   puntos: number;
   fechaAplicacion: string;
 }
-
-// ============================================================================
-// CONCENTRADO DE CALIFICACIONES
-// ============================================================================
 
 export interface ConcentradoAlumno {
   inscripcionId: number;
@@ -107,10 +91,6 @@ export interface ConcentradoGrupoParcial {
   }[];
 }
 
-// ============================================================================
-// CALIFICACIONES POR ESTUDIANTE (Vista para tabla)
-// ============================================================================
-
 export interface EstudianteConCalificaciones {
   inscripcionId: number;
   idEstudiante: number;
@@ -120,10 +100,6 @@ export interface EstudianteConCalificaciones {
   calificacionFinal?: number;
   evaluaciones: CalificacionDetalle[];
 }
-
-// ============================================================================
-// VALIDACIÓN DE PESOS
-// ============================================================================
 
 export interface ValidacionPesos {
   esValido: boolean;

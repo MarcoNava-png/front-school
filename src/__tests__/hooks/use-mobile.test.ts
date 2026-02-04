@@ -5,7 +5,6 @@ import { useIsMobile } from '@/hooks/use-mobile'
 describe('useIsMobile Hook', () => {
   const MOBILE_BREAKPOINT = 768
 
-  // Guardar el valor original
   let originalInnerWidth: number
   let matchMediaListeners: Array<() => void> = []
 
@@ -13,7 +12,6 @@ describe('useIsMobile Hook', () => {
     originalInnerWidth = window.innerWidth
     matchMediaListeners = []
 
-    // Mock de matchMedia
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation((query) => ({
@@ -52,7 +50,7 @@ describe('useIsMobile Hook', () => {
   }
 
   it('debe retornar false cuando el ancho es mayor al breakpoint', () => {
-    setWindowWidth(1024) // Desktop
+    setWindowWidth(1024)
 
     const { result } = renderHook(() => useIsMobile())
 
@@ -60,7 +58,7 @@ describe('useIsMobile Hook', () => {
   })
 
   it('debe retornar true cuando el ancho es menor al breakpoint', () => {
-    setWindowWidth(375) // Mobile
+    setWindowWidth(375)
 
     const { result } = renderHook(() => useIsMobile())
 
@@ -89,10 +87,9 @@ describe('useIsMobile Hook', () => {
     const { result, rerender } = renderHook(() => useIsMobile())
     expect(result.current).toBe(false)
 
-    // Simular cambio a mobile
     act(() => {
       setWindowWidth(375)
-      // Disparar el evento de cambio
+
       matchMediaListeners.forEach((listener) => listener())
     })
 

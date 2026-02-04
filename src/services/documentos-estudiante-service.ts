@@ -13,7 +13,6 @@ import axiosInstance from './api-client'
 const API_URL = '/documentoestudiante'
 
 export const documentosEstudianteService = {
-  // ==================== Tipos de Documento ====================
 
   async getTiposDocumento(): Promise<TipoDocumento[]> {
     const response = await axiosInstance.get<TipoDocumento[]>(`${API_URL}/tipos`)
@@ -24,8 +23,6 @@ export const documentosEstudianteService = {
     const response = await axiosInstance.get<TipoDocumento>(`${API_URL}/tipos/${id}`)
     return response.data
   },
-
-  // ==================== Solicitudes ====================
 
   async crearSolicitud(request: CrearSolicitudRequest): Promise<SolicitudDocumento> {
     const response = await axiosInstance.post<SolicitudDocumento>(`${API_URL}/solicitar`, request)
@@ -62,8 +59,6 @@ export const documentosEstudianteService = {
     await axiosInstance.post(`${API_URL}/solicitudes/${idSolicitud}/cancelar`, { motivo })
   },
 
-  // ==================== Generación de PDFs ====================
-
   async descargarKardexPdf(idSolicitud: number): Promise<Blob> {
     const response = await axiosInstance.get(`${API_URL}/solicitudes/${idSolicitud}/kardex/pdf`, {
       responseType: 'blob',
@@ -88,8 +83,6 @@ export const documentosEstudianteService = {
     return response.data
   },
 
-  // ==================== Verificación Pública ====================
-
   async verificarDocumento(codigoVerificacion: string): Promise<VerificacionDocumento> {
     const response = await axiosInstance.get<VerificacionDocumento>(
       `${API_URL}/verificar/${codigoVerificacion}`
@@ -97,13 +90,10 @@ export const documentosEstudianteService = {
     return response.data
   },
 
-  // ==================== Utilidades ====================
-
   async notificarPago(idRecibo: number): Promise<void> {
     await axiosInstance.post(`${API_URL}/notificar-pago/${idRecibo}`)
   },
 
-  // Helper para descargar PDFs
   downloadPdf(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -115,7 +105,6 @@ export const documentosEstudianteService = {
     window.URL.revokeObjectURL(url)
   },
 
-  // Helper para abrir PDF en nueva ventana
   openPdfInNewTab(blob: Blob): void {
     const url = window.URL.createObjectURL(blob)
     window.open(url, '_blank')

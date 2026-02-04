@@ -51,7 +51,6 @@ export default function AcademicPeriodsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [open, setOpen] = useState(false);
 
-  // Estados para edición y eliminación
   const [editOpen, setEditOpen] = useState(false);
   const [periodToEdit, setPeriodToEdit] = useState<AcademicPeriod | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -84,7 +83,6 @@ export default function AcademicPeriodsPage() {
     p.clave?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Paginación
   const totalPages = Math.ceil(filteredPeriods.length / pageSize);
   const paginatedPeriods = filteredPeriods.slice(
     (currentPage - 1) * pageSize,
@@ -101,8 +99,7 @@ export default function AcademicPeriodsPage() {
     setCurrentPage(1);
   };
 
-  // Calcular estadísticas
-  const periodosActivos = periods.length; // Todos los periodos se consideran activos
+  const periodosActivos = periods.length;
   const periodoActual = periods.find(p => p.esPeriodoActual);
 
   const formatDate = (date: string | Date | null | undefined) => {
@@ -114,7 +111,6 @@ export default function AcademicPeriodsPage() {
     });
   };
 
-  // Manejadores de acciones
   const handleEdit = (period: AcademicPeriod) => {
     setPeriodToEdit(period);
     setEditOpen(true);
@@ -173,7 +169,6 @@ export default function AcademicPeriodsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -192,7 +187,6 @@ export default function AcademicPeriodsPage() {
         <CreateAcademicPeriodDialog open={open} setOpen={setOpen} onSuccess={loadAcademicPeriods} />
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card
           className="border-2"
@@ -234,12 +228,9 @@ export default function AcademicPeriodsPage() {
         </Card>
       </div>
 
-      {/* Selector de periodo actual */}
       {periods.length > 0 && (
         <SetCurrentPeriod periods={periods} onUpdate={loadAcademicPeriods} />
       )}
-
-      {/* Table Card */}
       <Card>
         <CardHeader className="border-b bg-muted/40">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -385,7 +376,6 @@ export default function AcademicPeriodsPage() {
         </CardContent>
       </Card>
 
-      {/* Diálogo de edición */}
       {periodToEdit && (
         <EditAcademicPeriodDialog
           open={editOpen}
@@ -398,7 +388,6 @@ export default function AcademicPeriodsPage() {
         />
       )}
 
-      {/* Diálogo de confirmación de eliminación */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

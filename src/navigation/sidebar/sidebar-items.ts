@@ -5,6 +5,7 @@ import {
   BriefcaseBusiness,
   Building2,
   Calendar,
+  CalendarRange,
   DollarSign,
   FileSpreadsheet,
   FileText,
@@ -16,6 +17,8 @@ import {
   UserCircle,
   UserPlus,
   Users,
+  School,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 
@@ -109,6 +112,12 @@ export const sidebarItems: NavGroup[] = [
         icon: Calendar,
         requiredModule: "Catalogos",
       },
+      {
+        title: "Periodicidades",
+        url: "/dashboard/periodicities",
+        icon: CalendarRange,
+        requiredModule: "Catalogos",
+      },
     ],
   },
   {
@@ -165,7 +174,6 @@ export const sidebarItems: NavGroup[] = [
           { title: "Grupos", url: "/dashboard/academic-management", newTab: false, requiredModule: "Academico" },
           { title: "Promoción", url: "/dashboard/promotions", newTab: false, requiredModule: "Academico", isNew: true },
           { title: "Horarios", url: "/dashboard/schedules", newTab: false, requiredModule: "Academico" },
-          // { title: "Aulas", url: "/dashboard/classrooms", newTab: false, requiredModule: "Academico" },
           { title: "Profesores", url: "/dashboard/teachers", newTab: false, requiredModule: "Academico" },
         ],
       },
@@ -229,13 +237,38 @@ export const sidebarItems: NavGroup[] = [
       },
     ],
   },
+  {
+    id: 8,
+    label: "SUPER ADMIN",
+    requiredModule: "SuperAdmin",
+    items: [
+      {
+        title: "Panel Multi-Escuela",
+        url: "/dashboard/super-admin",
+        icon: School,
+        requiredModule: "SuperAdmin",
+        isNew: true,
+      },
+      {
+        title: "Escuelas",
+        url: "/dashboard/super-admin/tenants",
+        icon: Building2,
+        requiredModule: "SuperAdmin",
+      },
+      {
+        title: "Importar Escuelas",
+        url: "/dashboard/super-admin/tenants/import",
+        icon: Upload,
+        requiredModule: "SuperAdmin",
+        isNew: true,
+      },
+    ],
+  },
 ];
 
-// Funcion para filtrar items del sidebar segun modulos accesibles
 export function filterSidebarByModules(accessibleModules: string[]): NavGroup[] {
   return sidebarItems
     .filter((group) => {
-      // Si no tiene modulo requerido, mostrar siempre
       if (!group.requiredModule) return true;
       return accessibleModules.includes(group.requiredModule);
     })

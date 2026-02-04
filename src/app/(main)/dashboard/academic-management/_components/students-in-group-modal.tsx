@@ -45,7 +45,6 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
   const loadStudents = async () => {
     setLoading(true);
     try {
-      // Cargar de ambas fuentes en paralelo
       const [directos, porMaterias] = await Promise.allSettled([
         getEstudiantesDelGrupoDirecto(idGrupo),
         getStudentsInGroup(idGrupo),
@@ -54,7 +53,6 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
       const allStudents: StudentDisplay[] = [];
       const seenIds = new Set<number>();
 
-      // Procesar estudiantes inscritos directamente al grupo
       if (directos.status === 'fulfilled' && directos.value.estudiantes) {
         for (const est of directos.value.estudiantes) {
           if (!seenIds.has(est.idEstudiante)) {
@@ -74,7 +72,6 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
         }
       }
 
-      // Procesar estudiantes inscritos por materias
       if (porMaterias.status === 'fulfilled' && porMaterias.value.estudiantes) {
         for (const est of porMaterias.value.estudiantes) {
           if (!seenIds.has(est.idEstudiante)) {
@@ -95,7 +92,6 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
         }
       }
 
-      // Ordenar por nombre
       allStudents.sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto));
 
       setStudents(allStudents);
@@ -124,7 +120,6 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Loading */}
           {loading && (
             <div className="text-center py-8 text-sm text-gray-500">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-3" style={{ borderColor: '#14356F' }}></div>
@@ -132,7 +127,6 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
             </div>
           )}
 
-          {/* Empty State */}
           {!loading && students.length === 0 && (
             <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -143,7 +137,6 @@ export function StudentsInGroupModal({ open, onOpenChange, idGrupo, nombreGrupo 
             </div>
           )}
 
-          {/* Students List */}
           {!loading && students.length > 0 && (
             <div className="space-y-3">
               {students.map((student) => (

@@ -122,14 +122,12 @@ export default function Page() {
     c.direccion?.toLowerCase().includes(searchTerm.toLowerCase())
   ) ?? [];
 
-  // Paginación
   const totalPages = Math.ceil(filteredCampus.length / pageSize);
   const paginatedCampus = filteredCampus.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
-  // Reset a página 1 cuando cambia el filtro
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
@@ -168,7 +166,6 @@ export default function Page() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -196,7 +193,6 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card
           className="border-2"
@@ -226,8 +222,6 @@ export default function Page() {
           </CardHeader>
         </Card>
       </div>
-
-      {/* Table Card */}
       <Card>
         <CardHeader className="border-b bg-muted/40">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -350,8 +344,6 @@ export default function Page() {
           />
         </CardContent>
       </Card>
-
-      {/* Modals */}
       <CreateCampusModal
         open={modalOpen}
         states={states}

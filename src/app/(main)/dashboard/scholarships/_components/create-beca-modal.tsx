@@ -35,7 +35,6 @@ interface Props {
 export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
   const [loading, setLoading] = useState(false);
 
-  // Form state
   const [tipoBeca, setTipoBeca] = useState<"PORCENTAJE" | "MONTO">("PORCENTAJE");
   const [valor, setValor] = useState("");
   const [vigenciaDesde, setVigenciaDesde] = useState(new Date().toISOString().split("T")[0]);
@@ -45,7 +44,6 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones
     if (!valor || parseFloat(valor) <= 0) {
       toast.error("Ingresa un valor válido");
       return;
@@ -68,7 +66,7 @@ export function CreateBecaModal({ open, onClose, idEstudiante }: Props) {
         idEstudiante,
         tipoBeca,
         valor: parseFloat(valor),
-        idConceptoPago: null, // Por ahora null = aplica a todos
+        idConceptoPago: null,
         vigenciaDesde,
         vigenciaHasta: vigenciaHasta || null,
         observaciones,

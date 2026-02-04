@@ -3,7 +3,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { getCurrentUserProfile } from "@/services/users-service";
 import { UserAuth } from "@/types/user-auth";
 
-// Función para obtener el usuario del localStorage
 function getStoredUser(): UserAuth | null {
   if (typeof window === "undefined") return null;
   try {
@@ -20,14 +19,12 @@ export function useCurrentUser() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const hasFetched = useRef(false);
 
-  // Cargar usuario del localStorage al montar (solo en cliente)
   useEffect(() => {
     const stored = getStoredUser();
     setUser(stored);
     setIsLoading(false);
   }, []);
 
-  // Cargar perfil del backend una sola vez
   useEffect(() => {
     if (!user || hasFetched.current || profileLoaded) return;
 
@@ -36,7 +33,6 @@ export function useCurrentUser() {
       try {
         const profile = await getCurrentUserProfile();
 
-        // Actualizar con datos del backend
         const updatedUser: UserAuth = {
           ...user,
           nombres: profile.nombres || user.nombres,
@@ -46,7 +42,6 @@ export function useCurrentUser() {
           photoUrl: profile.photoUrl ?? user.photoUrl,
         };
 
-        // Actualizar localStorage
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
         setProfileLoaded(true);
@@ -59,7 +54,6 @@ export function useCurrentUser() {
     loadProfile();
   }, [user, profileLoaded]);
 
-  // Escuchar cambios en localStorage
   useEffect(() => {
     const handleStorage = () => {
       const stored = getStoredUser();
@@ -70,7 +64,6 @@ export function useCurrentUser() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  // Función para refrescar manualmente
   const refreshProfile = useCallback(async () => {
     const stored = getStoredUser();
     if (!stored) return;
@@ -88,7 +81,7 @@ export function useCurrentUser() {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
     } catch {
-      // Mantener datos locales
+      // silently ignore profile refresh errors
     }
   }, []);
 

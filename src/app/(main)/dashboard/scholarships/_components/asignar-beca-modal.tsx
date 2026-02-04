@@ -45,20 +45,17 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
   const [catalogoBecas, setCatalogoBecas] = useState<BecaCatalogo[]>([]);
   const [periodos, setPeriodos] = useState<AcademicPeriod[]>([]);
 
-  // Form state
   const [idBeca, setIdBeca] = useState<string>("");
   const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("");
-  const [usarPeriodo, setUsarPeriodo] = useState(true); // Por defecto usar período
+  const [usarPeriodo, setUsarPeriodo] = useState(true);
   const [vigenciaDesde, setVigenciaDesde] = useState("");
   const [vigenciaHasta, setVigenciaHasta] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
-  // Beca seleccionada para mostrar información
   const becaSeleccionada = catalogoBecas.find(
     (b) => b.idBeca.toString() === idBeca
   );
 
-  // Período seleccionado
   const periodoSeleccionado = periodos.find(
     (p) => p.idPeriodoAcademico.toString() === idPeriodoAcademico
   );
@@ -70,7 +67,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
     }
   }, [open]);
 
-  // Cuando se selecciona un período, actualizar las fechas de vigencia
   useEffect(() => {
     if (periodoSeleccionado && usarPeriodo) {
       setVigenciaDesde(periodoSeleccionado.fechaInicio);
@@ -81,7 +77,7 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
   async function cargarCatalogo() {
     setLoadingCatalogo(true);
     try {
-      const data = await obtenerCatalogoBecas(true); // Solo activas
+      const data = await obtenerCatalogoBecas(true);
       setCatalogoBecas(data);
     } catch (error) {
       toast.error("Error al cargar catálogo de becas");
@@ -96,7 +92,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
     try {
       const data = await getAcademicPeriods();
       setPeriodos(data);
-      // Seleccionar automáticamente el período actual si existe
       const periodoActual = data.find((p: AcademicPeriod) => p.esPeriodoActual);
       if (periodoActual) {
         setIdPeriodoAcademico(periodoActual.idPeriodoAcademico.toString());
@@ -116,7 +111,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
     setVigenciaDesde("");
     setVigenciaHasta("");
     setObservaciones("");
-    // Reseleccionar período actual
     const periodoActual = periodos.find((p) => p.esPeriodoActual);
     if (periodoActual) {
       setIdPeriodoAcademico(periodoActual.idPeriodoAcademico.toString());
@@ -126,7 +120,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones
     if (!idBeca) {
       toast.error("Selecciona una beca del catálogo");
       return;
@@ -194,7 +187,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Selector de Beca */}
           <div className="space-y-2">
             <Label htmlFor="beca">Tipo de Beca</Label>
             {loadingCatalogo ? (
@@ -231,8 +223,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
               </Select>
             )}
           </div>
-
-          {/* Información de la beca seleccionada */}
           {becaSeleccionada && (
             <div className="rounded-lg bg-muted p-4 space-y-2">
               <div className="font-medium">{becaSeleccionada.nombre}</div>
@@ -261,8 +251,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
               )}
             </div>
           )}
-
-          {/* Selector de vigencia: por período o manual */}
           <div className="space-y-3">
             <Label>Vigencia de la Beca</Label>
             <div className="flex gap-2">
@@ -286,7 +274,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
           </div>
 
           {usarPeriodo ? (
-            /* Selector de Período Académico */
             <div className="space-y-2">
               <Label htmlFor="periodo">Período Académico</Label>
               {loadingPeriodos ? (
@@ -323,7 +310,6 @@ export function AsignarBecaModal({ open, onClose, idEstudiante }: Props) {
               )}
             </div>
           ) : (
-            /* Fechas manuales */
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="vigenciaDesde">Fecha de Inicio</Label>

@@ -28,7 +28,6 @@ interface DocenteDashboardProps {
 }
 
 function formatTime(timeString: string): string {
-  // Handle TimeSpan format (HH:mm:ss)
   const parts = timeString.split(":");
   if (parts.length >= 2) {
     return `${parts[0]}:${parts[1]}`;
@@ -39,7 +38,6 @@ function formatTime(timeString: string): string {
 export function DocenteDashboard({ data }: DocenteDashboardProps) {
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -55,8 +53,6 @@ export function DocenteDashboard({ data }: DocenteDashboardProps) {
         </div>
         <Separator />
       </div>
-
-      {/* Pendientes del Dia */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <ClipboardList className="h-5 w-5 text-orange-600" />
@@ -81,8 +77,6 @@ export function DocenteDashboard({ data }: DocenteDashboardProps) {
           />
         </StatGrid>
       </div>
-
-      {/* Clases de Hoy */}
       <Card className="border-2 border-orange-200 dark:border-orange-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -140,8 +134,6 @@ export function DocenteDashboard({ data }: DocenteDashboardProps) {
           )}
         </CardContent>
       </Card>
-
-      {/* Mis Grupos */}
       {data.misGrupos.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -198,7 +190,6 @@ export function DocenteDashboard({ data }: DocenteDashboardProps) {
         </Card>
       )}
 
-      {/* Fechas Importantes */}
       {data.fechasCierreCalificaciones.length > 0 && (
         <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20">
           <CardHeader>
@@ -239,8 +230,6 @@ export function DocenteDashboard({ data }: DocenteDashboardProps) {
           </CardContent>
         </Card>
       )}
-
-      {/* Alertas */}
       <AlertCard alerts={data.alertas} title="Tus Alertas" description="Recordatorios y pendientes" />
     </div>
   );

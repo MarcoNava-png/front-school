@@ -11,25 +11,11 @@ import {
 
 import apiClient from "./api-client";
 
-// ============================================================================
-// SERVICIOS DE RECIBOS
-// ============================================================================
-
-/**
- * Genera recibos para un estudiante en un periodo académico
- * @param payload Datos para generar los recibos
- * @returns Lista de recibos generados
- */
 export async function generateReceipts(payload: GenerateReceiptsRequest): Promise<Receipt[]> {
   const { data } = await apiClient.post<Receipt[]>(`/recibos/generar`, payload);
   return data;
 }
 
-/**
- * Obtiene un recibo específico por su ID
- * @param id ID del recibo
- * @returns Datos completos del recibo con sus líneas de detalle
- */
 export async function getReceiptById(id: number): Promise<Receipt | null> {
   try {
     const { data } = await apiClient.get<Receipt>(`/recibos/${id}`);
@@ -39,11 +25,6 @@ export async function getReceiptById(id: number): Promise<Receipt | null> {
   }
 }
 
-/**
- * Busca recibo por folio
- * @param folio Folio del recibo
- * @returns Recibo encontrado o null
- */
 export async function buscarReciboPorFolio(folio: string): Promise<Receipt | null> {
   try {
     const { data } = await apiClient.get<Receipt>(`/recibos/folio/${folio}`);
@@ -53,9 +34,6 @@ export async function buscarReciboPorFolio(folio: string): Promise<Receipt | nul
   }
 }
 
-/**
- * Respuesta del endpoint de administración de recibos
- */
 interface RecibosAdminResponse {
   recibos: Receipt[];
   totalRegistros: number;
@@ -69,11 +47,6 @@ interface RecibosAdminResponse {
   totalPendientes: number;
 }
 
-/**
- * Lista recibos con filtros avanzados
- * @param filtros Filtros de búsqueda
- * @returns Lista de recibos
- */
 export async function listarRecibos(filtros: ReceiptFilters): Promise<Receipt[]> {
   const params = new URLSearchParams();
 
@@ -100,13 +73,11 @@ export async function listarRecibos(filtros: ReceiptFilters): Promise<Receipt[]>
     params.append("folio", filtros.folio);
   }
 
-  // Usar el endpoint de administración si hay filtros avanzados (matrícula, folio, etc.)
   const useAdminEndpoint = filtros.matricula || filtros.folio || filtros.soloVencidos;
   const endpoint = useAdminEndpoint ? "/recibos/admin" : "/recibos";
 
   const { data } = await apiClient.get(`${endpoint}?${params.toString()}`);
 
-  // Manejar ambas estructuras de respuesta (array directo o objeto con recibos)
   if (Array.isArray(data)) {
     return data;
   } else if (data && data.recibos) {
@@ -115,11 +86,6 @@ export async function listarRecibos(filtros: ReceiptFilters): Promise<Receipt[]>
   return [];
 }
 
-/**
- * Lista recibos con filtros avanzados (incluye estadísticas)
- * @param filtros Filtros de búsqueda
- * @returns Respuesta completa con recibos y estadísticas
- */
 export async function listarRecibosAdmin(filtros: ReceiptFilters): Promise<RecibosAdminResponse> {
   const params = new URLSearchParams();
 
@@ -150,13 +116,6 @@ export async function listarRecibosAdmin(filtros: ReceiptFilters): Promise<Recib
   return data;
 }
 
-/**
- * Lista los recibos de un periodo académico
- * Opcionalmente filtrados por estudiante
- * @param idPeriodoAcademico ID del periodo académico
- * @param idEstudiante Opcional - ID del estudiante para filtrar
- * @returns Lista de recibos
- */
 export async function listReceiptsByPeriod(
   idPeriodoAcademico: number,
   idEstudiante?: number
@@ -167,12 +126,6 @@ export async function listReceiptsByPeriod(
   });
 }
 
-/**
- * Obtiene recibos pendientes de un estudiante
- * @param idEstudiante ID del estudiante
- * @param idPeriodoAcademico Opcional - filtrar por periodo
- * @returns Lista de recibos pendientes
- */
 export async function obtenerRecibosPendientes(
   idEstudiante: number,
   idPeriodoAcademico?: number
@@ -184,11 +137,6 @@ export async function obtenerRecibosPendientes(
   });
 }
 
-/**
- * Recalcula recibos pendientes de un estudiante aplicando becas actualizadas
- * @param payload Datos para recalcular
- * @returns Cantidad de recibos modificados
- */
 export async function recalcularRecibos(
   payload: RecalcularRecibosRequest
 ): Promise<{ recibosModificados: number }> {
@@ -199,22 +147,11 @@ export async function recalcularRecibos(
   return data;
 }
 
-/**
- * Aplica un ajuste manual a un recibo
- * @param payload Datos del ajuste
- * @returns Recibo actualizado
- */
 export async function aplicarAjusteRecibo(payload: AjusteReciboRequest): Promise<Receipt> {
   const { data } = await apiClient.post<Receipt>("/recibos/ajuste", payload);
   return data;
 }
 
-/**
- * Cancela un recibo
- * @param idRecibo ID del recibo
- * @param motivo Motivo de la cancelación
- * @returns Recibo cancelado
- */
 export async function cancelarRecibo(idRecibo: number, motivo: string): Promise<Receipt> {
   const { data } = await apiClient.put<Receipt>(`/recibos/${idRecibo}/cancelar`, {
     motivo,
@@ -222,12 +159,6 @@ export async function cancelarRecibo(idRecibo: number, motivo: string): Promise<
   return data;
 }
 
-/**
- * Reversa un recibo (elimina pagos aplicados y regresa a estado PENDIENTE)
- * @param idRecibo ID del recibo
- * @param motivo Motivo de la reversión
- * @returns Recibo reversado
- */
 export async function reversarRecibo(idRecibo: number, motivo: string): Promise<Receipt> {
   const { data } = await apiClient.put<Receipt>(`/recibos/${idRecibo}/reversar`, {
     motivo,
@@ -235,11 +166,6 @@ export async function reversarRecibo(idRecibo: number, motivo: string): Promise<
   return data;
 }
 
-/**
- * Descarga el PDF de un recibo
- * @param idRecibo ID del recibo
- * @returns Blob del PDF
- */
 export async function descargarReciboPDF(idRecibo: number): Promise<Blob> {
   const response = await apiClient.get(`/recibos/${idRecibo}/pdf`, {
     responseType: "blob",
@@ -247,16 +173,6 @@ export async function descargarReciboPDF(idRecibo: number): Promise<Blob> {
   return response.data;
 }
 
-// ============================================================================
-// REPORTES
-// ============================================================================
-
-/**
- * Obtiene el reporte de cartera vencida
- * @param idPeriodoAcademico Opcional - filtrar por periodo
- * @param diasVencidoMinimo Opcional - solo recibos con más de X días vencidos
- * @returns Reporte de cartera vencida
- */
 export async function obtenerCarteraVencida(
   idPeriodoAcademico?: number,
   diasVencidoMinimo?: number
@@ -275,13 +191,6 @@ export async function obtenerCarteraVencida(
   return data;
 }
 
-/**
- * Obtiene el reporte de ingresos por periodo
- * @param idPeriodoAcademico ID del periodo
- * @param fechaInicio Opcional - fecha inicio del reporte
- * @param fechaFin Opcional - fecha fin del reporte
- * @returns Reporte de ingresos
- */
 export async function obtenerIngresosPorPeriodo(
   idPeriodoAcademico: number,
   fechaInicio?: string,
@@ -302,11 +211,6 @@ export async function obtenerIngresosPorPeriodo(
   return data;
 }
 
-/**
- * Exporta cartera vencida a Excel
- * @param idPeriodoAcademico Opcional - filtrar por periodo
- * @returns Blob del archivo Excel
- */
 export async function exportarCarteraVencida(
   idPeriodoAcademico?: number
 ): Promise<Blob> {
@@ -322,11 +226,6 @@ export async function exportarCarteraVencida(
   return response.data;
 }
 
-/**
- * Exporta ingresos por periodo a Excel
- * @param idPeriodoAcademico ID del periodo
- * @returns Blob del archivo Excel
- */
 export async function exportarIngresosPeriodo(idPeriodoAcademico: number): Promise<Blob> {
   const response = await apiClient.get(
     `/recibos/reportes/ingresos/${idPeriodoAcademico}/excel`,
@@ -335,13 +234,6 @@ export async function exportarIngresosPeriodo(idPeriodoAcademico: number): Promi
   return response.data;
 }
 
-// ============================================================================
-// BÚSQUEDA AVANZADA Y ESTADÍSTICAS
-// ============================================================================
-
-/**
- * Filtros para buscar recibos
- */
 export interface ReciboBusquedaFiltros {
   folio?: string;
   matricula?: string;
@@ -358,9 +250,6 @@ export interface ReciboBusquedaFiltros {
   tamanioPagina?: number;
 }
 
-/**
- * Recibo con información extendida del estudiante/aspirante
- */
 export interface ReciboExtendido {
   idRecibo: number;
   folio?: string;
@@ -379,7 +268,6 @@ export interface ReciboExtendido {
   notas?: string;
   diasVencido: number;
   estaVencido: boolean;
-  // Datos del estudiante/aspirante
   matricula?: string;
   nombreCompleto?: string;
   carrera?: string;
@@ -387,13 +275,10 @@ export interface ReciboExtendido {
   grupo?: string;
   email?: string;
   telefono?: string;
-  tipoPersona: string; // "Estudiante" o "Aspirante"
+  tipoPersona: string;
   detalles: { descripcion: string; cantidad: number; precioUnitario: number; importe: number }[];
 }
 
-/**
- * Resultado de búsqueda de recibos con paginación
- */
 export interface ReciboBusquedaResultado {
   recibos: ReciboExtendido[];
   totalRegistros: number;
@@ -407,9 +292,6 @@ export interface ReciboBusquedaResultado {
   totalPendientes: number;
 }
 
-/**
- * Estadísticas de recibos
- */
 export interface ReciboEstadisticas {
   totalRecibos: number;
   saldoPendiente: number;
@@ -430,11 +312,6 @@ export interface EstadisticasPorPeriodo {
   recibosVencidos: number;
 }
 
-/**
- * Busca recibos con filtros avanzados
- * @param filtros Filtros de búsqueda
- * @returns Resultado paginado con estadísticas
- */
 export async function buscarRecibosAvanzado(filtros: ReciboBusquedaFiltros): Promise<ReciboBusquedaResultado> {
   const params = new URLSearchParams();
 
@@ -456,11 +333,6 @@ export async function buscarRecibosAvanzado(filtros: ReciboBusquedaFiltros): Pro
   return data;
 }
 
-/**
- * Obtiene estadísticas de recibos
- * @param idPeriodoAcademico Opcional - filtrar por periodo
- * @returns Estadísticas de recibos
- */
 export async function obtenerEstadisticasRecibos(idPeriodoAcademico?: number): Promise<ReciboEstadisticas> {
   const params = new URLSearchParams();
   if (idPeriodoAcademico) {
@@ -471,12 +343,6 @@ export async function obtenerEstadisticasRecibos(idPeriodoAcademico?: number): P
   return data;
 }
 
-/**
- * Exporta recibos a Excel con estadísticas y adeudos
- * Genera un archivo Excel con 3 hojas: Resumen, Detalle de Recibos, Adeudos
- * @param filtros Filtros aplicados
- * @returns Blob del archivo Excel
- */
 export async function exportarRecibosExcel(filtros: ReciboBusquedaFiltros): Promise<Blob> {
   const params = new URLSearchParams();
 

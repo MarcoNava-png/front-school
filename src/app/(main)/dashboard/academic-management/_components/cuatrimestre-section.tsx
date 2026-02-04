@@ -23,7 +23,6 @@ export function CuatrimestreSection({ cuatrimestre, idPlanEstudios, onUpdate }: 
 
   return (
     <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
-      {/* Header */}
       <div
         className="text-white p-4 cursor-pointer"
         style={{ background: 'linear-gradient(to right, #14356F, #1e4a8f)' }}
@@ -49,7 +48,6 @@ export function CuatrimestreSection({ cuatrimestre, idPlanEstudios, onUpdate }: 
         </div>
       </div>
 
-      {/* Groups Grid */}
       {isExpanded && (
         <div className="p-6">
           {cuatrimestre.grupos.length === 0 ? (

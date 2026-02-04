@@ -13,7 +13,6 @@ import axiosInstance from './api-client'
 const API_URL = '/permission'
 
 export const permissionsService = {
-  // Permisos
   async getAllPermissions(): Promise<Permission[]> {
     const response = await axiosInstance.get<Permission[]>(API_URL)
     return response.data
@@ -43,7 +42,6 @@ export const permissionsService = {
     await axiosInstance.delete(`${API_URL}/${id}`)
   },
 
-  // Roles con permisos
   async getAllRolesWithPermissions(): Promise<RoleWithPermissions[]> {
     const response = await axiosInstance.get<RoleWithPermissions[]>(`${API_URL}/roles`)
     return response.data
@@ -59,7 +57,6 @@ export const permissionsService = {
     return response.data
   },
 
-  // Asignacion de permisos
   async assignPermissionToRole(request: AssignPermissionRequest): Promise<void> {
     await axiosInstance.post(`${API_URL}/assign`, request)
   },
@@ -76,7 +73,6 @@ export const permissionsService = {
     await axiosInstance.delete(`${API_URL}/roles/${roleId}/permissions`)
   },
 
-  // Validacion de permisos
   async getUserPermissions(userId: string): Promise<UserPermissions> {
     const response = await axiosInstance.get<UserPermissions>(`${API_URL}/user/${userId}`)
     return response.data

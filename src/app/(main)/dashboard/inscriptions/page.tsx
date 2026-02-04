@@ -47,7 +47,6 @@ export default function InscriptionsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Inscripciones de Estudiantes</h1>
@@ -61,7 +60,6 @@ export default function InscriptionsPage() {
         )}
       </div>
 
-      {/* Filters Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border">
         <StudentSearch
           searchTerm={searchTerm}
@@ -106,10 +104,8 @@ export default function InscriptionsPage() {
         </div>
       </div>
 
-      {/* Student Info Card */}
       {selectedStudent && <StudentInfoCard student={selectedStudent} inscriptionsCount={filteredInscriptions.length} />}
 
-      {/* Inscriptions List */}
       {selectedStudentId ? (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Carga Académica</h2>
@@ -123,7 +119,6 @@ export default function InscriptionsPage() {
         </div>
       )}
 
-      {/* Enrollment Modal */}
       <EnrollGrupoMateriaModal
         open={enrollModalOpen}
         studentId={selectedStudentId ? parseInt(selectedStudentId) : null}

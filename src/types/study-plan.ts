@@ -14,6 +14,8 @@ export interface StudyPlan {
   idPeriodicidad: number;
   idNivelEducativo: number;
   idCampus: number;
+  nombreCampus?: string;
+  activo: boolean;
 }
 
 export interface PayloadCreateStudyPlan {

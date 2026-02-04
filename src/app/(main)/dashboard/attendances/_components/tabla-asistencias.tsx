@@ -69,12 +69,10 @@ export function TablaAsistencias({
   const [fechaInvalida, setFechaInvalida] = useState(false);
   const [mensajeValidacion, setMensajeValidacion] = useState("");
 
-  // Cargar días de clase al montar el componente
   useEffect(() => {
     loadDiasClase();
   }, [grupoMateriaId]);
 
-  // Validar fecha cada vez que cambia
   useEffect(() => {
     if (diasClase.length > 0) {
       const validacion = validarFechaClase(fechaSeleccionada, diasClase);
@@ -97,7 +95,7 @@ export function TablaAsistencias({
       setDiasClase(data.diasSemana);
     } catch (error) {
       console.error("Error al cargar días de clase:", error);
-      setDiasClase(["Lunes", "Miércoles", "Viernes"]); // Días de ejemplo
+      setDiasClase(["Lunes", "Miércoles", "Viernes"]);
     }
   };
 
@@ -131,7 +129,6 @@ export function TablaAsistencias({
     setAsistencias((prev) =>
       prev.map((est) => {
         if (est.idInscripcion === idInscripcion) {
-          // Ciclo: null -> true -> false -> null
           let nuevoEstado: boolean | null = null;
           if (est.presente === null) {
             nuevoEstado = true;
@@ -177,13 +174,11 @@ export function TablaAsistencias({
   };
 
   const guardarAsistencias = async () => {
-    // Validar que la fecha sea un día de clase
     if (fechaInvalida) {
       toast.error(mensajeValidacion);
       return;
     }
 
-    // Filtrar solo las asistencias que han sido registradas (no null)
     const asistenciasRegistradas = asistencias.filter((a) => a.presente !== null);
 
     if (asistenciasRegistradas.length === 0) {
@@ -197,7 +192,7 @@ export function TablaAsistencias({
         fecha: fechaSeleccionada,
         asistencias: asistenciasRegistradas.map((a) => ({
           idInscripcion: a.idInscripcion,
-          presente: a.presente!, // Ya filtramos los null
+          presente: a.presente!,
           justificada: a.justificada,
           motivoJustificacion: a.motivoJustificacion,
         })),
@@ -205,7 +200,6 @@ export function TablaAsistencias({
 
       toast.success(`Asistencias guardadas correctamente (${asistenciasRegistradas.length} estudiantes)`);
 
-      // Recargar para obtener IDs actualizados
       await loadAsistenciasDiarias();
     } catch (error) {
       console.error("Error al guardar asistencias:", error);
@@ -240,7 +234,6 @@ export function TablaAsistencias({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -257,16 +250,13 @@ export function TablaAsistencias({
         </Button>
       </div>
 
-      {/* Tabs */}
       <Tabs value={vistaActual} onValueChange={(v) => setVistaActual(v as "diaria" | "resumen")}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="diaria">Asistencia Diaria</TabsTrigger>
           <TabsTrigger value="resumen">Resumen General</TabsTrigger>
         </TabsList>
 
-        {/* Vista Diaria */}
         <TabsContent value="diaria" className="space-y-6">
-          {/* Información de Días de Clase */}
           {diasClase.length > 0 && (
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-4">
@@ -280,8 +270,6 @@ export function TablaAsistencias({
               </CardContent>
             </Card>
           )}
-
-          {/* Estadísticas del Día */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-3">
@@ -335,8 +323,6 @@ export function TablaAsistencias({
               </CardContent>
             </Card>
           </div>
-
-          {/* Selector de Fecha y Acciones */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -393,8 +379,6 @@ export function TablaAsistencias({
               </div>
             </CardContent>
           </Card>
-
-          {/* Tabla de Asistencias */}
           <Card>
             <CardHeader>
               <CardTitle>Lista de Asistencia</CardTitle>
@@ -473,8 +457,6 @@ export function TablaAsistencias({
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Vista Resumen */}
         <TabsContent value="resumen" className="space-y-6">
           <Card>
             <CardHeader>
@@ -545,7 +527,6 @@ export function TablaAsistencias({
         </TabsContent>
       </Tabs>
 
-      {/* Dialog de Justificación */}
       <Dialog open={!!estudianteJustificacion} onOpenChange={() => setEstudianteJustificacion(null)}>
         <DialogContent>
           <DialogHeader>

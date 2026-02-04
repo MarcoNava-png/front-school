@@ -1,25 +1,16 @@
 import type { HorarioMateria, DiaSemana } from "@/types/group";
 
-/**
- * Convierte una cadena de tiempo "HH:mm" a minutos desde la medianoche
- */
 export function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
 }
 
-/**
- * Convierte minutos desde la medianoche a formato "HH:mm"
- */
 export function minutesToTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
 }
 
-/**
- * Verifica si dos rangos de tiempo se solapan
- */
 export function hasTimeOverlap(
   start1: string,
   end1: string,
@@ -31,10 +22,6 @@ export function hasTimeOverlap(
   const s2 = timeToMinutes(start2);
   const e2 = timeToMinutes(end2);
 
-  // Los horarios se solapan si:
-  // - El inicio del horario 1 está entre el inicio y fin del horario 2
-  // - El fin del horario 1 está entre el inicio y fin del horario 2
-  // - El horario 1 contiene completamente al horario 2
   return (
     (s1 >= s2 && s1 < e2) ||
     (e1 > s2 && e1 <= e2) ||
@@ -42,9 +29,6 @@ export function hasTimeOverlap(
   );
 }
 
-/**
- * Encuentra choques de horario dentro de una lista de horarios
- */
 export function findScheduleConflicts(horarios: HorarioMateria[]): {
   hasConflicts: boolean;
   conflicts: Array<{
@@ -64,7 +48,6 @@ export function findScheduleConflicts(horarios: HorarioMateria[]): {
       const h1 = horarios[i];
       const h2 = horarios[j];
 
-      // Solo verificar si son el mismo día
       if (h1.dia === h2.dia) {
         if (hasTimeOverlap(h1.horaInicio, h1.horaFin, h2.horaInicio, h2.horaFin)) {
           conflicts.push({
@@ -83,9 +66,6 @@ export function findScheduleConflicts(horarios: HorarioMateria[]): {
   };
 }
 
-/**
- * Verifica si un nuevo horario choca con horarios existentes
- */
 export function validateNewSchedule(
   newHorario: HorarioMateria,
   existingHorarios: HorarioMateria[]
@@ -93,7 +73,6 @@ export function validateNewSchedule(
   valid: boolean;
   error?: string;
 } {
-  // Validar formato de horas
   if (newHorario.horaInicio >= newHorario.horaFin) {
     return {
       valid: false,
@@ -101,7 +80,6 @@ export function validateNewSchedule(
     };
   }
 
-  // Validar duración mínima (30 minutos)
   const duracion =
     timeToMinutes(newHorario.horaFin) - timeToMinutes(newHorario.horaInicio);
   if (duracion < 30) {
@@ -111,7 +89,6 @@ export function validateNewSchedule(
     };
   }
 
-  // Validar duración máxima (4 horas)
   if (duracion > 240) {
     return {
       valid: false,
@@ -119,7 +96,6 @@ export function validateNewSchedule(
     };
   }
 
-  // Verificar choques con horarios existentes
   for (const horario of existingHorarios) {
     if (horario.dia === newHorario.dia) {
       if (
@@ -141,9 +117,6 @@ export function validateNewSchedule(
   return { valid: true };
 }
 
-/**
- * Genera un resumen legible de los horarios
- */
 export function generateScheduleSummary(horarios: HorarioMateria[]): string {
   if (horarios.length === 0) return "Sin horario configurado";
 
@@ -186,9 +159,6 @@ export function generateScheduleSummary(horarios: HorarioMateria[]): string {
   return resumen.join(" | ");
 }
 
-/**
- * Agrupa horarios consecutivos del mismo día
- */
 export function groupConsecutiveSchedules(
   horarios: HorarioMateria[]
 ): Array<{
@@ -244,12 +214,10 @@ export function groupConsecutiveSchedules(
       for (let i = 1; i < horariosDelDia.length; i++) {
         const horarioActual = horariosDelDia[i];
 
-        // Si este horario es consecutivo al anterior (termina cuando empieza el siguiente)
         if (grupoActual.horaFin === horarioActual.horaInicio) {
           grupoActual.horaFin = horarioActual.horaFin;
           grupoActual.aulas.push(horarioActual.aula);
         } else {
-          // No es consecutivo, guardar el grupo actual y empezar uno nuevo
           grupos.push(grupoActual);
           grupoActual = {
             dia,
@@ -267,9 +235,6 @@ export function groupConsecutiveSchedules(
   return grupos;
 }
 
-/**
- * Calcula el total de horas semanales
- */
 export function calculateWeeklyHours(horarios: HorarioMateria[]): number {
   let totalMinutes = 0;
 
@@ -279,12 +244,9 @@ export function calculateWeeklyHours(horarios: HorarioMateria[]): number {
     totalMinutes += fin - inicio;
   });
 
-  return Math.round((totalMinutes / 60) * 10) / 10; // Redondear a 1 decimal
+  return Math.round((totalMinutes / 60) * 10) / 10;
 }
 
-/**
- * Obtiene los días de la semana en los que hay clase
- */
 export function getClassDays(horarios: HorarioMateria[]): DiaSemana[] {
   const dias = new Set<DiaSemana>();
   horarios.forEach((h) => dias.add(h.dia));

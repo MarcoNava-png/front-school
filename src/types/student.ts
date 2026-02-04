@@ -57,10 +57,6 @@ export interface InscripcionGrupoMateriaResponse {
 
 export type StudentsResponse = PaginatedResponse<Student>;
 
-// ============================================================================
-// KÁRDEX - Academic Transcript
-// ============================================================================
-
 export interface MateriaKardex {
   idInscripcion: number;
   nombreMateria: string;

@@ -116,9 +116,9 @@ export function FiltersSection({
       </div>
 
       <div className="flex items-end">
-        <Button onClick={loadAvailableGroups} disabled={!selectedPlanId || loading} className="w-full">
+        <Button onClick={loadAvailableGroups} disabled={!selectedPlanId || !selectedPeriodId || loading} className="w-full">
           <Search className="w-4 h-4 mr-2" />
-          {loading ? "Buscando..." : "Buscar Grupos"}
+          {loading ? "Buscando..." : "Buscar"}
         </Button>
       </div>
     </div>

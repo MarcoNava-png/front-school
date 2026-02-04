@@ -28,14 +28,11 @@ interface EditAcademicPeriodDialogProps {
   onSuccess?: () => void;
 }
 
-// Helper para formatear fecha evitando problemas de timezone
 function formatDateForInput(dateStr: string | Date | null | undefined): string {
   if (!dateStr) return "";
-  // Si ya es formato YYYY-MM-DD, retornarlo
   if (typeof dateStr === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr;
   }
-  // Si es ISO string o Date, extraer solo la parte de fecha
   const str = typeof dateStr === "string" ? dateStr : dateStr.toISOString();
   return str.split("T")[0];
 }
@@ -57,8 +54,6 @@ export function EditAcademicPeriodDialog({ open, setOpen, period, onSuccess }: E
   useEffect(() => {
     getPeriodicity().then((res) => setPeriodicity(res ?? []));
   }, []);
-
-  // Actualizar formulario cuando cambia el periodo
   useEffect(() => {
     form.reset({
       clave: period.clave ?? "",

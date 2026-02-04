@@ -65,7 +65,6 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
   return (
     <>
       <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
-        {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div>
             <h4 className="font-bold text-lg text-gray-900">{grupo.nombreGrupo}</h4>
@@ -99,7 +98,6 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
           </DropdownMenu>
         </div>
 
-        {/* Info */}
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4" />
@@ -111,7 +109,6 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="rounded-lg p-3" style={{ backgroundColor: 'rgba(20, 53, 111, 0.1)' }}>
             <div className="flex items-center gap-2 mb-1">
@@ -132,7 +129,6 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
           </div>
         </div>
 
-        {/* Progress Bar */}
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-gray-600">
             <span>Ocupación</span>
@@ -152,7 +148,6 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
           </div>
         </div>
 
-        {/* Actions */}
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Button
             variant="outline"
@@ -176,8 +171,6 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
           </Button>
         </div>
       </div>
-
-      {/* Modals */}
       <GroupSubjectsModal
         open={showSubjectsModal}
         onOpenChange={setShowSubjectsModal}

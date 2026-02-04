@@ -42,7 +42,6 @@ export function PaymentRegistrationModal({
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form state
   const [monto, setMonto] = useState<string>("");
   const [idMedioPago, setIdMedioPago] = useState<string>("");
   const [referencia, setReferencia] = useState<string>("");
@@ -63,7 +62,6 @@ export function PaymentRegistrationModal({
     setLoading(true);
     try {
       console.log("=== PASO 1: REPARACIÓN PREVENTIVA ===");
-      // SIEMPRE ejecutar reparación primero
       try {
         const { repairReceiptsWithoutDetails } = await import("@/services/applicants-service");
         const resultadoReparacion = await repairReceiptsWithoutDetails();
@@ -121,7 +119,6 @@ export function PaymentRegistrationModal({
     }
     setSelectedReceipts(newSelection);
 
-    // Auto-calculate total amount based on selections
     const total = Array.from(newSelection.values()).reduce((sum, amount) => sum + amount, 0);
     setMonto(total.toFixed(2));
   };
@@ -138,7 +135,6 @@ export function PaymentRegistrationModal({
     newSelection.set(reciboId, finalAmount);
     setSelectedReceipts(newSelection);
 
-    // Recalculate total
     const total = Array.from(newSelection.values()).reduce((sum, amt) => sum + amt, 0);
     setMonto(total.toFixed(2));
   };
@@ -148,13 +144,13 @@ export function PaymentRegistrationModal({
     console.log("🚀 handleSubmit iniciado");
 
     if (!applicant || !monto || !idMedioPago) {
-      console.error("❌ Validación fallida: campos requeridos faltantes");
+      console.error("Validación fallida: campos requeridos faltantes");
       toast.error("Por favor complete todos los campos requeridos");
       return;
     }
 
     if (selectedReceipts.size === 0) {
-      console.error("❌ Validación fallida: no hay recibos seleccionados");
+      console.error("Validación fallida: no hay recibos seleccionados");
       toast.error("Debe seleccionar al menos un recibo");
       return;
     }
@@ -162,15 +158,15 @@ export function PaymentRegistrationModal({
     const montoNum = parseFloat(monto);
     const totalSelected = Array.from(selectedReceipts.values()).reduce((sum, amt) => sum + amt, 0);
 
-    console.log(`💰 Monto ingresado: ${montoNum}, Total seleccionado: ${totalSelected}`);
+    console.log(`Monto ingresado: ${montoNum}, Total seleccionado: ${totalSelected}`);
 
     if (Math.abs(montoNum - totalSelected) > 0.01) {
-      console.error(`❌ Validación fallida: montos no coinciden (${montoNum} vs ${totalSelected})`);
+      console.error(`Validación fallida: montos no coinciden (${montoNum} vs ${totalSelected})`);
       toast.error("El monto total no coincide con la suma de los recibos seleccionados");
       return;
     }
 
-    console.log("✅ Todas las validaciones pasaron. Procesando pago...");
+    console.log("Todas las validaciones pasaron. Procesando pago...");
     setSubmitting(true);
     try {
       console.log("=== PROCESANDO PAGOS CON NUEVO ENDPOINT ===");
@@ -179,7 +175,6 @@ export function PaymentRegistrationModal({
       console.log("Medio de pago:", idMedioPago);
       console.log("Recibos seleccionados:", Array.from(selectedReceipts.entries()));
 
-      // Procesar cada recibo seleccionado con el nuevo endpoint unificado
       const resultados = [];
       for (const [reciboId, montoRecibo] of selectedReceipts.entries()) {
         console.log(`📋 Procesando recibo ${reciboId} con monto $${montoRecibo}`);
@@ -192,7 +187,7 @@ export function PaymentRegistrationModal({
           notas: notas || undefined,
         });
 
-        console.log(`✅ Recibo ${reciboId} procesado:`, resultado);
+        console.log(`  Recibo ${reciboId} procesado:`, resultado);
         console.log(`   Saldo: ${resultado.saldoAnterior} → ${resultado.saldoNuevo}`);
         console.log(`   Estatus: ${resultado.estatusReciboAnterior} → ${resultado.estatusReciboNuevo}`);
 
@@ -207,12 +202,12 @@ export function PaymentRegistrationModal({
       console.log(`Todos completados: ${todosCompletados}`);
 
       if (todosCompletados) {
-        toast.success("✅ Todos los recibos fueron pagados completamente");
+        toast.success(" Todos los recibos fueron pagados completamente");
       } else {
-        toast.success(`✅ Pago aplicado. Total: $${totalAplicado.toFixed(2)}`);
+        toast.success(` Pago aplicado. Total: $${totalAplicado.toFixed(2)}`);
       }
 
-      console.log("🔄 Recargando lista de aspirantes...");
+      console.log(" Recargando lista de aspirantes...");
       onPaymentRegistered();
       onClose();
       resetForm();
@@ -260,7 +255,6 @@ export function PaymentRegistrationModal({
           <div className="py-8 text-center text-sm text-gray-500">Cargando datos...</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Información del pago */}
             <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <CreditCard className="w-4 h-4" />
@@ -335,7 +329,6 @@ export function PaymentRegistrationModal({
               </div>
             </div>
 
-            {/* Recibos pendientes */}
             <div className="space-y-4 border rounded-lg p-4">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Receipt className="w-4 h-4" />
@@ -424,7 +417,6 @@ export function PaymentRegistrationModal({
               )}
             </div>
 
-            {/* Resumen */}
             {selectedReceipts.size > 0 && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
                 <h4 className="font-semibold text-sm text-blue-900">Resumen del Pago</h4>
@@ -441,7 +433,6 @@ export function PaymentRegistrationModal({
               </div>
             )}
 
-            {/* Acciones */}
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button type="button" variant="outline" onClick={onClose} disabled={submitting} className="text-xs">
                 Cancelar

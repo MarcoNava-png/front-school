@@ -4,8 +4,6 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
   eslint: {
-    // Ignorar errores de ESLint durante el build (temporal)
-    // TODO: Corregir todos los errores de linting y remover esta opción
     ignoreDuringBuilds: true,
   },
   async redirects() {

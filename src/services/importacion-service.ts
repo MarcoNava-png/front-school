@@ -94,10 +94,6 @@ export const importacionService = {
     return response.data
   },
 
-  // ========================================
-  // Importación de Campus
-  // ========================================
-
   async importarCampus(
     request: ImportarCampusRequest
   ): Promise<ImportarCampusResponse> {
@@ -107,10 +103,6 @@ export const importacionService = {
     )
     return response.data
   },
-
-  // ========================================
-  // Importación de Planes de Estudio
-  // ========================================
 
   async importarPlanesEstudios(
     request: ImportarPlanesEstudiosRequest
@@ -122,14 +114,9 @@ export const importacionService = {
     return response.data
   },
 
-  // ========================================
-  // Importación de Materias
-  // ========================================
-
   async importarMaterias(
     request: ImportarMateriasRequest
   ): Promise<ImportarMateriasResponse> {
-    // Usar endpoint de importacion que toma plan y campus de cada fila del archivo
     const response = await axiosInstance.post<{ data: ImportarMateriasResponse }>(
       '/importacion/materias',
       request
@@ -144,7 +131,6 @@ export const importacionService = {
     return response.data.data
   },
 
-  // Validar materias antes de importar (usa endpoint que lee plan y campus de cada fila)
   async validarMaterias(materias: ImportarMateriaDto[]): Promise<ValidarMateriasResponse> {
     const response = await axiosInstance.post<{ data: ValidarMateriasResponse }>(
       '/importacion/materias/validar',
@@ -153,7 +139,6 @@ export const importacionService = {
     return response.data.data
   },
 
-  // Descargar plantilla de materias
   async descargarPlantillaMaterias(idPlanEstudios?: number): Promise<Blob> {
     const url = idPlanEstudios
       ? `/materiaplan/plantilla?idPlanEstudios=${idPlanEstudios}`
@@ -164,10 +149,6 @@ export const importacionService = {
     return response.data
   },
 }
-
-// ========================================
-// Interfaces para Campus
-// ========================================
 
 export interface ImportarCampusDto {
   claveCampus: string
@@ -203,10 +184,6 @@ export interface ImportarCampusResponse {
   resultados: ResultadoImportacionCampus[]
 }
 
-// ========================================
-// Interfaces para Planes de Estudio
-// ========================================
-
 export interface ImportarPlanEstudiosDto {
   clavePlanEstudios: string
   nombrePlanEstudios: string
@@ -241,11 +218,6 @@ export interface ImportarPlanesEstudiosResponse {
   resultados: ResultadoImportacionPlanEstudios[]
 }
 
-// ========================================
-// Interfaces para Importación de Materias
-// ========================================
-
-// DTO para importar una materia desde archivo Excel/CSV
 export interface ImportarMateriaDto {
   clave: string
   nombre: string
@@ -259,7 +231,6 @@ export interface ImportarMateriaDto {
   tipo?: string
 }
 
-// Resultado de validación de materias
 export interface ResultadoValidacionMateria {
   fila: number
   clave: string
@@ -271,7 +242,6 @@ export interface ResultadoValidacionMateria {
   advertencias: string[]
 }
 
-// Respuesta de validación de materias
 export interface ValidarMateriasResponse {
   esValido: boolean
   totalRegistros: number

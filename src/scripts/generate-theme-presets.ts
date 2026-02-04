@@ -36,7 +36,6 @@ if (files.length === 0) {
 
 const presets = files.map((file) => {
   const filePath = path.join(presetDir, file);
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const content = fs.readFileSync(filePath, "utf8");
 
   const labelMatch = content.match(/label:\s*(.+)/);
@@ -112,15 +111,15 @@ async function main() {
   const formatted = await prettier.format(updated, { parser: "typescript" });
 
   if (formatted === fileContent) {
-    console.log("ℹ️  No changes in theme.ts");
+    console.log("No changes in theme.ts");
     return;
   }
 
   fs.writeFileSync(outputPath, formatted);
-  console.log("✅ theme.ts updated with new theme presets");
+  console.log("theme.ts updated with new theme presets");
 }
 
 main().catch((err) => {
-  console.error("❌ Unexpected error while generating theme presets:", err);
+  console.error("Unexpected error while generating theme presets:", err);
   process.exit(1);
 });

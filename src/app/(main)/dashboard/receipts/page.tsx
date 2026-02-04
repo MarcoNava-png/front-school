@@ -43,6 +43,8 @@ import {
   calcularDiasVencido,
   descargarReciboPDF as descargarPDF,
   descargarExcel,
+  isPaidOrPartial,
+  isCanceledOrPaid,
 } from "@/lib/payment-utils";
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
 import {
@@ -61,7 +63,6 @@ export default function ReceiptsAdminPage() {
   const [periodos, setPeriodos] = useState<AcademicPeriod[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Filtros
   const [filtros, setFiltros] = useState({
     matricula: "",
     folio: "",
@@ -70,7 +71,6 @@ export default function ReceiptsAdminPage() {
     soloVencidos: false,
   });
 
-  // Modales
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
@@ -78,7 +78,6 @@ export default function ReceiptsAdminPage() {
   const [motivoReversion, setMotivoReversion] = useState("");
   const [loadingReverse, setLoadingReverse] = useState(false);
 
-  // Reportes
   const [loadingReporte, setLoadingReporte] = useState(false);
 
   useEffect(() => {
@@ -118,12 +117,11 @@ export default function ReceiptsAdminPage() {
       }
 
       const data = await listarRecibos(params);
-      // Asegurar que siempre sea un array
       setRecibos(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error("Error al buscar recibos");
       console.error(error);
-      setRecibos([]); // Limpiar en caso de error
+      setRecibos([]);
     } finally {
       setLoading(false);
     }
@@ -212,7 +210,11 @@ export default function ReceiptsAdminPage() {
   }
 
   const totalSaldo = recibos.reduce((sum, r) => sum + r.saldo, 0);
-  const recibosVencidos = recibos.filter((r) => r.estatus === ReceiptStatus.VENCIDO);
+  const recibosVencidos = recibos.filter((r) => {
+    const estatusNum = typeof r.estatus === 'number' ? r.estatus :
+      (String(r.estatus).toUpperCase() === "VENCIDO" ? ReceiptStatus.VENCIDO : -1);
+    return estatusNum === ReceiptStatus.VENCIDO || r.estatus === 3;
+  });
   const totalRecargos = recibosVencidos.reduce(
     (sum, r) => sum + calcularRecargo(r.fechaVencimiento, r.saldo),
     0
@@ -243,7 +245,6 @@ export default function ReceiptsAdminPage() {
         </div>
       </div>
 
-      {/* Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
@@ -284,7 +285,6 @@ export default function ReceiptsAdminPage() {
         </Card>
       </div>
 
-      {/* Filtros */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -388,7 +388,6 @@ export default function ReceiptsAdminPage() {
         </CardContent>
       </Card>
 
-      {/* Tabla de Resultados */}
       <Card>
         <CardHeader>
           <CardTitle>Resultados ({recibos.length})</CardTitle>
@@ -422,7 +421,7 @@ export default function ReceiptsAdminPage() {
                     <TableRow key={recibo.idRecibo}>
                       <TableCell className="font-mono">{recibo.folio}</TableCell>
                       <TableCell>
-                        {/* TODO: Agregar nombre del estudiante */}
+
                         ID: {recibo.idEstudiante}
                       </TableCell>
                       <TableCell>{recibo.nombrePeriodo}</TableCell>
@@ -441,7 +440,7 @@ export default function ReceiptsAdminPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <ReceiptStatusBadge status={recibo.estatus} />
+                        <ReceiptStatusBadge status={recibo.estatus as ReceiptStatus} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
@@ -461,9 +460,7 @@ export default function ReceiptsAdminPage() {
                           >
                             <Download className="w-4 h-4" />
                           </Button>
-                          {/* Botón de reversar - solo para recibos con pagos (PAGADO o PARCIAL) */}
-                          {(recibo.estatus === ReceiptStatus.PAGADO ||
-                            recibo.estatus === ReceiptStatus.PARCIAL) && (
+                          {isPaidOrPartial(recibo.estatus) && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -477,10 +474,7 @@ export default function ReceiptsAdminPage() {
                               <RotateCcw className="w-4 h-4" />
                             </Button>
                           )}
-                          {/* Botón de cancelar - solo para recibos pendientes sin pagos */}
-                          {recibo.estatus !== ReceiptStatus.CANCELADO &&
-                            recibo.estatus !== ReceiptStatus.PAGADO &&
-                            recibo.estatus !== ReceiptStatus.PARCIAL && (
+                          {!isCanceledOrPaid(recibo.estatus) && !isPaidOrPartial(recibo.estatus) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -504,15 +498,11 @@ export default function ReceiptsAdminPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Modal de Detalles */}
       <ReceiptDetailsModal
         receipt={selectedReceipt}
         open={!!selectedReceipt && !cancelModalOpen}
         onClose={() => setSelectedReceipt(null)}
       />
-
-      {/* Modal de Cancelación */}
       <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -554,7 +544,6 @@ export default function ReceiptsAdminPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Reversión */}
       <Dialog open={reverseModalOpen} onOpenChange={setReverseModalOpen}>
         <DialogContent>
           <DialogHeader>

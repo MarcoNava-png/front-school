@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-import { Receipt, DollarSign, Calendar, FileText, Plus, FileSpreadsheet, Trash2 } from "lucide-react";
+import { Receipt, DollarSign, Calendar, FileText, Plus, FileSpreadsheet, Trash2, AlertTriangle, HandCoins } from "lucide-react";
 import { toast } from "sonner";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,8 +20,26 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getApplicantReceipts, generateApplicantReceipt, deleteApplicantReceipt, repairReceiptsWithoutDetails } from "@/services/applicants-service";
-import { Applicant, ReciboDto, EstatusRecibo } from "@/types/applicant";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  getApplicantReceipts,
+  generateApplicantReceipt,
+  generateApplicantReceiptByConcepto,
+  deleteApplicantReceipt,
+  repairReceiptsWithoutDetails,
+  buscarPlantillaParaAspirante,
+  generarRecibosDesdeePlantilla,
+} from "@/services/applicants-service";
+import { listarConceptosPago } from "@/services/conceptos-pago-service";
+import { Applicant, ReciboDto, EstatusRecibo, PlantillaCobroAspirante } from "@/types/applicant";
+import { ConceptoPago } from "@/types/receipt";
 
 import { PaymentRegistrationModal } from "./payment-registration-modal";
 
@@ -36,20 +55,58 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
   const [loading, setLoading] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
-  const [showGenerateForm, setShowGenerateForm] = useState(false);
   const [receiptAmount, setReceiptAmount] = useState<string>("600");
-  const [receiptConcept, setReceiptConcept] = useState<string>("Cuota de Inscripción");
+  const [receiptConcept, setReceiptConcept] = useState<string>("Cuota de Inscripcion");
   const [deletingReceipt, setDeletingReceipt] = useState<number | null>(null);
   const [repairing, setRepairing] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [receiptToDelete, setReceiptToDelete] = useState<number | null>(null);
   const [confirmRepairOpen, setConfirmRepairOpen] = useState(false);
 
+  // Nuevos estados para ConceptoPago
+  const [conceptos, setConceptos] = useState<ConceptoPago[]>([]);
+  const [selectedConcepto, setSelectedConcepto] = useState<string>("");
+
+  // Nuevos estados para Plantilla
+  const [plantilla, setPlantilla] = useState<PlantillaCobroAspirante | null>(null);
+  const [loadingPlantilla, setLoadingPlantilla] = useState(false);
+  const [generatingFromPlantilla, setGeneratingFromPlantilla] = useState(false);
+
   useEffect(() => {
     if (open && applicant) {
-      loadReceipts();
+      loadAll();
     }
   }, [open, applicant]);
+
+  const loadAll = async () => {
+    if (!applicant) return;
+
+    setLoading(true);
+    try {
+      const [recibosData, conceptosData] = await Promise.all([
+        getApplicantReceipts(applicant.idAspirante),
+        listarConceptosPago({ soloActivos: true }),
+      ]);
+      setReceipts(recibosData);
+      setConceptos(conceptosData);
+    } catch (error) {
+      toast.error("Error al cargar datos");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+
+    // Cargar plantilla en paralelo (no bloquea)
+    setLoadingPlantilla(true);
+    try {
+      const plantillaData = await buscarPlantillaParaAspirante(applicant.idAspirante);
+      setPlantilla(plantillaData);
+    } catch {
+      setPlantilla(null);
+    } finally {
+      setLoadingPlantilla(false);
+    }
+  };
 
   const loadReceipts = async () => {
     if (!applicant) return;
@@ -66,6 +123,50 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
     }
   };
 
+  // Generar recibo desde ConceptoPago
+  const handleGenerateByConcepto = async () => {
+    if (!applicant || !selectedConcepto) return;
+
+    setGeneratingReceipt(true);
+    try {
+      await generateApplicantReceiptByConcepto(applicant.idAspirante, parseInt(selectedConcepto), 7);
+      toast.success("Recibo generado exitosamente");
+      setSelectedConcepto("");
+      loadReceipts();
+      onPaymentRegistered?.();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { Error?: string } }; message?: string };
+      toast.error(err?.response?.data?.Error ?? "Error al generar recibo");
+      console.error(error);
+    } finally {
+      setGeneratingReceipt(false);
+    }
+  };
+
+  // Generar recibos desde Plantilla
+  const handleGenerateFromPlantilla = async () => {
+    if (!applicant || !plantilla) return;
+
+    setGeneratingFromPlantilla(true);
+    try {
+      const recibos = await generarRecibosDesdeePlantilla(
+        applicant.idAspirante,
+        plantilla.idPlantillaCobro,
+        false
+      );
+      toast.success(`Se generaron ${recibos.length} recibo(s) desde la plantilla`);
+      loadReceipts();
+      onPaymentRegistered?.();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { Error?: string } }; message?: string };
+      toast.error(err?.response?.data?.Error ?? "Error al generar recibos desde plantilla");
+      console.error(error);
+    } finally {
+      setGeneratingFromPlantilla(false);
+    }
+  };
+
+  // Generar recibo manual
   const handleGenerateReceipt = async () => {
     if (!applicant) return;
 
@@ -84,8 +185,8 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
     try {
       await generateApplicantReceipt(applicant.idAspirante, amount, receiptConcept, 7);
       toast.success("Recibo generado exitosamente");
-      setShowGenerateForm(false);
       loadReceipts();
+      onPaymentRegistered?.();
     } catch (error) {
       toast.error("Error al generar el recibo");
       console.error(error);
@@ -108,9 +209,7 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
       await deleteApplicantReceipt(receiptToDelete);
       toast.success("Recibo eliminado exitosamente");
       loadReceipts();
-      if (onPaymentRegistered) {
-        onPaymentRegistered();
-      }
+      onPaymentRegistered?.();
     } catch (error: unknown) {
       const err = error as {response?: {data?: {Error?: string}}, message?: string};
       const errorMessage = err?.response?.data?.Error ?? err?.message ?? "Error al eliminar el recibo";
@@ -128,11 +227,8 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
     try {
       const result = await repairReceiptsWithoutDetails();
       toast.success(result.mensaje);
-      console.log("Recibos reparados:", result);
       loadReceipts();
-      if (onPaymentRegistered) {
-        onPaymentRegistered();
-      }
+      onPaymentRegistered?.();
     } catch (error: unknown) {
       const err = error as {response?: {data?: {Error?: string}}, message?: string};
       const errorMessage = err?.response?.data?.Error ?? err?.message ?? "Error al reparar recibos";
@@ -200,8 +296,9 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
     const total = receipts.reduce((sum, r) => sum + r.total, 0);
     const pagado = receipts.reduce((sum, r) => sum + (r.total - r.saldo), 0);
     const pendiente = receipts.reduce((sum, r) => sum + r.saldo, 0);
+    const descuentoTotal = receipts.reduce((sum, r) => sum + r.descuento, 0);
 
-    return { total, pagado, pendiente };
+    return { total, pagado, pendiente, descuentoTotal };
   };
 
   if (!applicant) return null;
@@ -221,7 +318,7 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
           <div className="py-8 text-center">Cargando recibos...</div>
         ) : (
           <div className="space-y-6">
-            {/* Resumen de Pagos */}
+            {/* Estadisticas */}
             <div className="grid grid-cols-3 gap-4">
               <div className="rounded-lg border bg-blue-50 p-4">
                 <div className="flex items-center gap-2">
@@ -248,73 +345,165 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
               </div>
             </div>
 
-            {/* Formulario de generación de recibo */}
-            {showGenerateForm ? (
-              <div className="rounded-lg border bg-gray-50 p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <FileSpreadsheet className="h-5 w-5" />
-                    Generar Nuevo Recibo
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowGenerateForm(false)}
-                    disabled={generatingReceipt}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="receiptAmount">Monto</Label>
-                    <Input
-                      id="receiptAmount"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={receiptAmount}
-                      onChange={(e) => setReceiptAmount(e.target.value)}
-                      placeholder="600.00"
-                      disabled={generatingReceipt}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="receiptConcept">Concepto</Label>
-                    <Input
-                      id="receiptConcept"
-                      type="text"
-                      value={receiptConcept}
-                      onChange={(e) => setReceiptConcept(e.target.value)}
-                      placeholder="Cuota de Inscripción"
-                      disabled={generatingReceipt}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button
-                    onClick={handleGenerateReceipt}
-                    disabled={generatingReceipt}
-                  >
-                    {generatingReceipt ? "Generando..." : "Generar Recibo"}
-                  </Button>
+            {/* Panel de descuentos de convenio */}
+            {stats.descuentoTotal > 0 && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-green-700">
+                  <HandCoins className="h-4 w-4" />
+                  Descuento por convenio aplicado: {formatCurrency(stats.descuentoTotal)}
                 </div>
               </div>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => setShowGenerateForm(true)}
-                className="w-full"
-              >
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                Generar Nuevo Recibo
-              </Button>
             )}
 
-            {/* Lista de Recibos */}
+            {/* Seccion de generacion con Tabs */}
+            <div className="rounded-lg border bg-gray-50 p-4">
+              <h3 className="font-semibold flex items-center gap-2 mb-4">
+                <FileSpreadsheet className="h-5 w-5" />
+                Generar Nuevo Recibo
+              </h3>
+
+              <Tabs defaultValue="concepto" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="concepto">Por Concepto</TabsTrigger>
+                  <TabsTrigger value="plantilla">Desde Plantilla</TabsTrigger>
+                  <TabsTrigger value="manual">Manual</TabsTrigger>
+                </TabsList>
+
+                {/* Tab: Por Concepto */}
+                <TabsContent value="concepto" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label>Concepto de Pago</Label>
+                    <Select value={selectedConcepto} onValueChange={setSelectedConcepto}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un concepto de pago" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {conceptos.map((c) => (
+                          <SelectItem key={c.idConceptoPago} value={c.idConceptoPago.toString()}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{c.nombre}</span>
+                              <span className="text-xs text-muted-foreground">{c.clave}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleGenerateByConcepto}
+                      disabled={!selectedConcepto || generatingReceipt}
+                    >
+                      {generatingReceipt ? "Generando..." : "Generar Recibo"}
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                {/* Tab: Desde Plantilla */}
+                <TabsContent value="plantilla" className="space-y-4 mt-4">
+                  {loadingPlantilla ? (
+                    <div className="text-center py-4 text-sm text-muted-foreground">
+                      Buscando plantilla disponible...
+                    </div>
+                  ) : plantilla ? (
+                    <div className="space-y-3">
+                      <div className="rounded-lg border p-4 bg-white">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-sm">{plantilla.nombrePlantilla}</h4>
+                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                            v{plantilla.version}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          {plantilla.nombrePlanEstudios && (
+                            <p>Plan: {plantilla.nombrePlanEstudios}</p>
+                          )}
+                          <p>Cuatrimestre: {plantilla.numeroCuatrimestre}</p>
+                          <p>Recibos: {plantilla.numeroRecibos} | Vencimiento dia: {plantilla.diaVencimiento}</p>
+                        </div>
+
+                        {plantilla.detalles && plantilla.detalles.length > 0 && (
+                          <div className="mt-3 border-t pt-2">
+                            <p className="text-xs font-medium mb-1">Conceptos:</p>
+                            {plantilla.detalles.map((d) => (
+                              <div key={d.idPlantillaDetalle} className="flex justify-between text-xs">
+                                <span>{d.descripcion || d.nombreConcepto}</span>
+                                <span className="font-medium">{formatCurrency(d.precioUnitario * d.cantidad)}</span>
+                              </div>
+                            ))}
+                            {plantilla.totalConceptos != null && (
+                              <div className="flex justify-between text-xs font-semibold mt-1 pt-1 border-t">
+                                <span>Total</span>
+                                <span>{formatCurrency(plantilla.totalConceptos)}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleGenerateFromPlantilla}
+                          disabled={generatingFromPlantilla}
+                        >
+                          {generatingFromPlantilla ? "Generando..." : "Generar Recibos desde Plantilla"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Alert className="border-yellow-300 bg-yellow-50">
+                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                      <AlertDescription className="text-yellow-700">
+                        No se encontro plantilla de cobro para el plan de estudios y cuatrimestre de este aspirante.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </TabsContent>
+
+                {/* Tab: Manual */}
+                <TabsContent value="manual" className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="receiptAmount">Monto</Label>
+                      <Input
+                        id="receiptAmount"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={receiptAmount}
+                        onChange={(e) => setReceiptAmount(e.target.value)}
+                        placeholder="600.00"
+                        disabled={generatingReceipt}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="receiptConcept">Concepto</Label>
+                      <Input
+                        id="receiptConcept"
+                        type="text"
+                        value={receiptConcept}
+                        onChange={(e) => setReceiptConcept(e.target.value)}
+                        placeholder="Cuota de Inscripcion"
+                        disabled={generatingReceipt}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleGenerateReceipt}
+                      disabled={generatingReceipt}
+                    >
+                      {generatingReceipt ? "Generando..." : "Generar Recibo"}
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Lista de recibos */}
             <div className="space-y-3">
               <h3 className="font-semibold">Recibos ({receipts.length})</h3>
 
@@ -323,7 +512,7 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
                   <FileText className="mx-auto h-12 w-12 text-gray-400" />
                   <p className="mt-2 text-sm text-gray-500">No hay recibos generados para este aspirante</p>
                   <p className="mt-1 text-xs text-gray-400">
-                    Haz clic en &ldquo;Generar Nuevo Recibo&rdquo; para crear uno
+                    Usa las opciones de arriba para generar un recibo
                   </p>
                 </div>
               ) : (
@@ -343,8 +532,6 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
                             </p>
                           </div>
                         </div>
-
-                        {/* Detalles del Recibo */}
                         <div className="mt-3 space-y-1">
                           {recibo.detalles.map((detalle) => (
                             <div
@@ -358,8 +545,6 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
                             </div>
                           ))}
                         </div>
-
-                        {/* Totales */}
                         <div className="mt-3 space-y-1 border-t pt-2">
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-600">Subtotal:</span>
@@ -367,7 +552,7 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
                           </div>
                           {recibo.descuento > 0 && (
                             <div className="flex justify-between text-sm text-green-600">
-                              <span>Descuento (Beca):</span>
+                              <span>Descuento (Convenio):</span>
                               <span>-{formatCurrency(recibo.descuento)}</span>
                             </div>
                           )}
@@ -402,8 +587,6 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
                         >
                           {getStatusText(recibo.estatus)}
                         </span>
-
-                        {/* Botón de eliminar (solo si el recibo está pendiente y no tiene pagos) */}
                         {recibo.saldo === recibo.total && (
                           <Button
                             variant="ghost"
@@ -449,27 +632,22 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
           </Button>
         </div>
       </DialogContent>
-
-      {/* Modal de registro de pago */}
       <PaymentRegistrationModal
         open={paymentModalOpen}
         applicant={applicant}
         onClose={() => setPaymentModalOpen(false)}
         onPaymentRegistered={() => {
           loadReceipts();
-          if (onPaymentRegistered) {
-            onPaymentRegistered();
-          }
+          onPaymentRegistered?.();
         }}
       />
 
-      {/* Modal de confirmación para eliminar recibo */}
       <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Eliminar Recibo</AlertDialogTitle>
             <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar este recibo? Esta acción no se puede deshacer.
+              ¿Estas seguro de que deseas eliminar este recibo? Esta accion no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -486,13 +664,12 @@ export function ReceiptsManagementModal({ open, applicant, onClose, onPaymentReg
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Modal de confirmación para reparar recibos */}
       <AlertDialog open={confirmRepairOpen} onOpenChange={setConfirmRepairOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reparar Recibos</AlertDialogTitle>
             <AlertDialogDescription>
-              ¿Deseas reparar todos los recibos sin detalles? Esto agregará líneas de detalle a los recibos que no las tienen.
+              ¿Deseas reparar todos los recibos sin detalles? Esto agregara lineas de detalle a los recibos que no las tienen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

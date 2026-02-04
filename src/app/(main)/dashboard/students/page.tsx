@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import Link from "next/link";
+
 import { BookOpen, Building2, ExternalLink, GraduationCap, Mail, Phone, Search, Users } from "lucide-react";
 import { toast } from "sonner";
-
-import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,19 +47,16 @@ export default function StudentsPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  // Filtrar planes por campus seleccionado
   const filteredPlans = useMemo(() => {
     if (selectedCampusId === "all") return studyPlans;
     return studyPlans.filter((plan) => plan.idCampus?.toString() === selectedCampusId);
   }, [studyPlans, selectedCampusId]);
 
-  // Filtrar grupos por plan seleccionado
   const filteredGrupos = useMemo(() => {
     if (!selectedPlanId) return grupos;
     return grupos.filter((g) => g.idPlanEstudios?.toString() === selectedPlanId);
   }, [grupos, selectedPlanId]);
 
-  // Filtrar estudiantes por búsqueda
   const filteredStudents = useMemo(() => {
     if (!searchTerm) return students;
     const term = searchTerm.toLowerCase();
@@ -75,7 +72,6 @@ export default function StudentsPage() {
     loadInitialData();
   }, []);
 
-  // Cuando cambia el campus, seleccionar el primer plan disponible
   useEffect(() => {
     if (filteredPlans.length > 0) {
       const currentPlanExists = filteredPlans.some((p) => p.idPlanEstudios.toString() === selectedPlanId);
@@ -100,7 +96,6 @@ export default function StudentsPage() {
       setStudyPlans(plansData);
       setAcademicPeriods(periodsData);
 
-      // Seleccionar el periodo actual por defecto
       const periodoActual = periodsData.find((p) => p.esPeriodoActual);
       if (periodoActual) {
         setSelectedPeriodId(periodoActual.idPeriodoAcademico.toString());
@@ -135,7 +130,6 @@ export default function StudentsPage() {
     try {
       const idGrupo = parseInt(selectedGrupoId);
 
-      // Cargar de ambas fuentes en paralelo (como hace el modal)
       const [directos, porMaterias] = await Promise.allSettled([
         getEstudiantesDelGrupoDirecto(idGrupo),
         getStudentsInGroup(idGrupo),
@@ -144,7 +138,6 @@ export default function StudentsPage() {
       const allStudents: StudentDisplay[] = [];
       const seenIds = new Set<number>();
 
-      // Procesar estudiantes inscritos directamente al grupo
       if (directos.status === 'fulfilled' && directos.value.estudiantes) {
         for (const est of directos.value.estudiantes) {
           if (!seenIds.has(est.idEstudiante)) {
@@ -164,7 +157,6 @@ export default function StudentsPage() {
         }
       }
 
-      // Procesar estudiantes inscritos por materias
       if (porMaterias.status === 'fulfilled' && porMaterias.value.estudiantes) {
         for (const est of porMaterias.value.estudiantes) {
           if (!seenIds.has(est.idEstudiante)) {
@@ -185,7 +177,6 @@ export default function StudentsPage() {
         }
       }
 
-      // Ordenar por nombre
       allStudents.sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto));
       setStudents(allStudents);
     } catch (error) {
@@ -197,14 +188,12 @@ export default function StudentsPage() {
     }
   }, [selectedGrupoId]);
 
-  // Cargar grupos cuando cambia el periodo
   useEffect(() => {
     if (selectedPeriodId) {
       loadGrupos();
     }
   }, [selectedPeriodId]);
 
-  // Cargar estudiantes cuando cambia el grupo
   useEffect(() => {
     if (selectedGrupoId) {
       loadStudents();
@@ -213,7 +202,6 @@ export default function StudentsPage() {
     }
   }, [selectedGrupoId, loadStudents]);
 
-  // Resetear grupo cuando cambia el plan
   useEffect(() => {
     setSelectedGrupoId("");
     setStudents([]);
@@ -237,7 +225,6 @@ export default function StudentsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -255,9 +242,7 @@ export default function StudentsPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-white rounded-lg border shadow-sm">
-        {/* Filtro de Campus */}
         <div className="space-y-2">
           <Label htmlFor="campus" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
             <Building2 className="w-4 h-4" style={{ color: "#14356F" }} />
@@ -286,8 +271,6 @@ export default function StudentsPage() {
             </SelectContent>
           </Select>
         </div>
-
-        {/* Filtro de Licenciatura */}
         <div className="space-y-2">
           <Label htmlFor="plan" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
             <GraduationCap className="w-4 h-4" style={{ color: "#14356F" }} />
@@ -326,7 +309,6 @@ export default function StudentsPage() {
           </Select>
         </div>
 
-        {/* Filtro de Periodo Académico */}
         <div className="space-y-2">
           <Label htmlFor="period" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
             <BookOpen className="w-4 h-4" style={{ color: "#14356F" }} />
@@ -359,8 +341,6 @@ export default function StudentsPage() {
             </SelectContent>
           </Select>
         </div>
-
-        {/* Filtro de Grupo */}
         <div className="space-y-2">
           <Label htmlFor="grupo" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
             <Users className="w-4 h-4" style={{ color: "#14356F" }} />
@@ -396,8 +376,6 @@ export default function StudentsPage() {
           </Select>
         </div>
       </div>
-
-      {/* Selected Group Info */}
       {selectedGrupo && (
         <div
           className="rounded-lg p-4 border-2"
@@ -419,7 +397,6 @@ export default function StudentsPage() {
                 </p>
               </div>
             </div>
-            {/* Search */}
             <div className="relative w-72">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -432,8 +409,6 @@ export default function StudentsPage() {
           </div>
         </div>
       )}
-
-      {/* Students List */}
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[300px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" style={{ borderColor: "#14356F" }}></div>
@@ -517,8 +492,6 @@ export default function StudentsPage() {
                     )}
                   </div>
                 </div>
-
-                {/* Botón Ver Panel */}
                 <div className="flex-shrink-0 ml-4">
                   <Button
                     asChild

@@ -29,7 +29,6 @@ describe('Input Component', () => {
     it('debe renderizar como textbox por defecto', () => {
       render(<Input />)
 
-      // El input sin type especificado se comporta como text
       const input = screen.getByRole('textbox')
       expect(input).toBeInTheDocument()
     })

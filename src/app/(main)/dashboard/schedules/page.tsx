@@ -52,7 +52,6 @@ export default function SchedulesPage() {
       setStudyPlans(plansData || []);
       setPeriods(periodsData as any || []);
 
-      // Seleccionar periodo activo por defecto
       const activePeriod = periodsData?.find((p: any) => p.esPeriodoActual);
       if (activePeriod) {
         setSelectedPeriod(activePeriod.idPeriodoAcademico);
@@ -84,7 +83,6 @@ export default function SchedulesPage() {
   const handleGroupSelect = async (idGrupo: number) => {
     setSelectedGroup(idGrupo);
 
-    // Encontrar el grupo seleccionado
     const grupo = academicData?.gruposPorCuatrimestre
       .flatMap((c) => c.grupos)
       .find((g) => g.idGrupo === idGrupo);
@@ -111,7 +109,6 @@ export default function SchedulesPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -123,11 +120,8 @@ export default function SchedulesPage() {
           </p>
         </div>
       </div>
-
-      {/* Filters */}
       <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
         <div className="flex flex-col gap-4">
-          {/* Primera fila: Plan y Periodo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="plan" className="text-sm font-medium text-gray-900">
@@ -185,8 +179,6 @@ export default function SchedulesPage() {
               </Select>
             </div>
           </div>
-
-          {/* Segunda fila: Grupo (ancho completo) */}
           <div className="space-y-2">
             <Label htmlFor="group" className="text-sm font-medium text-gray-900">
               Grupo
@@ -224,8 +216,6 @@ export default function SchedulesPage() {
           </div>
         </div>
       </Card>
-
-      {/* Schedule View */}
       {loading && (
         <Card className="p-12 text-center">
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3 animate-pulse" />

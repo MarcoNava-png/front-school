@@ -13,14 +13,11 @@ interface Props {
 }
 
 export function VistaPreviaModal({ plantilla, open, onClose }: Props) {
-  // Calcular vista previa de recibos
   const generarVistaPreviaRecibos = () => {
     const recibos = [];
 
-    // Obtener fecha base del periodo o usar fecha actual
     let fechaBase: Date;
     if (plantilla.fechaVigenciaInicio) {
-      // Parsear fecha evitando problemas de timezone
       const fechaParte = plantilla.fechaVigenciaInicio.split("T")[0];
       const [year, month, day] = fechaParte.split("-").map(Number);
       fechaBase = new Date(year, month - 1, day);
@@ -29,22 +26,15 @@ export function VistaPreviaModal({ plantilla, open, onClose }: Props) {
     }
 
     for (let i = 0; i < plantilla.numeroRecibos; i++) {
-      // Calcular fecha de vencimiento para este recibo
       const mes = new Date(fechaBase.getFullYear(), fechaBase.getMonth() + i, plantilla.diaVencimiento);
 
-      // Filtrar conceptos que aplican a este recibo
-      // aplicaEnRecibo: null = todos, 1 = primero, -1 = último, N = recibo específico
       const numeroRecibo = i + 1;
       const conceptos = plantilla.detalles
         ?.filter((detalle) => {
           const aplicaEn = detalle.aplicaEnRecibo;
-          // null o undefined = aplica a todos los recibos
           if (aplicaEn === null || aplicaEn === undefined) return true;
-          // 1 = primer recibo
           if (aplicaEn === 1 && numeroRecibo === 1) return true;
-          // -1 = último recibo
           if (aplicaEn === -1 && numeroRecibo === plantilla.numeroRecibos) return true;
-          // Número específico
           if (aplicaEn === numeroRecibo) return true;
           return false;
         })
@@ -78,7 +68,6 @@ export function VistaPreviaModal({ plantilla, open, onClose }: Props) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Resumen */}
           <Card>
             <CardContent className="pt-6">
               <div className="grid grid-cols-3 gap-4 text-center">
@@ -101,8 +90,6 @@ export function VistaPreviaModal({ plantilla, open, onClose }: Props) {
               </div>
             </CardContent>
           </Card>
-
-          {/* Lista de Recibos */}
           <div className="space-y-3">
             {recibos.map((recibo) => (
               <Card key={recibo.numero}>
@@ -143,7 +130,6 @@ export function VistaPreviaModal({ plantilla, open, onClose }: Props) {
             ))}
           </div>
 
-          {/* Total Final */}
           <Card className="border-primary">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">

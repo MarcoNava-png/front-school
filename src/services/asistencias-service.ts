@@ -8,22 +8,9 @@ import type {
 } from "@/types/asistencia";
 import type { DiaSemana } from "@/types/group";
 
-// ============================================================================
-// VALIDACIÓN DE DÍAS DE CLASE
-// ============================================================================
-
-/**
- * Obtiene los días de clase de una materia según su horario
- * TODO: Habilitar llamada al backend cuando el endpoint esté implementado
- */
 export async function getDiasClaseMateria(idGrupoMateria: number): Promise<DiasClaseMateria> {
-  // TODO: Habilitar cuando el backend tenga los endpoints implementados
-  // Por ahora usar mock directamente para evitar errores 404
-
-  // Simular delay de red
   await new Promise((resolve) => setTimeout(resolve, 200));
 
-  // Mock: días de clase por defecto
   return {
     idGrupoMateria,
     nombreMateria: "Materia",
@@ -36,14 +23,11 @@ export async function getDiasClaseMateria(idGrupoMateria: number): Promise<DiasC
   };
 }
 
-/**
- * Valida si una fecha es un día válido de clase para una materia
- */
 export function validarFechaClase(
   fecha: string,
   diasClase: string[]
 ): ValidacionFechaClase {
-  const fechaObj = new Date(fecha + "T00:00:00"); // Evitar problemas de timezone
+  const fechaObj = new Date(fecha + "T00:00:00");
   const diasSemana: DiaSemana[] = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
   const diaSemanaNombre = diasSemana[fechaObj.getDay()];
 
@@ -59,43 +43,19 @@ export function validarFechaClase(
   };
 }
 
-// ============================================================================
-// REGISTRO DE ASISTENCIAS
-// ============================================================================
-
-/**
- * Registra o actualiza asistencias para una fecha específica
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function registrarAsistencias(request: RegistrarAsistenciaRequest): Promise<void> {
-  // Mock: simular éxito
   console.log("[Mock] Registrando asistencias:", request);
   await new Promise(resolve => setTimeout(resolve, 500));
 }
 
-/**
- * Obtiene asistencias de un grupo-materia para una fecha específica
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function getAsistenciasPorFecha(
   idGrupoMateria: number,
   fecha: string
 ): Promise<AsistenciaEstudiante[]> {
-  // Usar mock mientras el backend no tenga el endpoint
-  // Descomentar cuando esté implementado:
-  // const { data } = await apiClient.get<AsistenciaEstudiante[]>(
-  //   `/asistencias/grupo-materia/${idGrupoMateria}/fecha/${fecha}`
-  // );
-  // return data;
   return getAsistenciasPorFechaMock(idGrupoMateria, fecha);
 }
 
-/**
- * Obtiene todas las fechas con asistencias registradas para un grupo-materia
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function getFechasConAsistencias(_idGrupoMateria: number): Promise<string[]> {
-  // Mock: devolver algunas fechas de ejemplo
   return [
     "2025-11-18",
     "2025-11-20",
@@ -103,28 +63,14 @@ export async function getFechasConAsistencias(_idGrupoMateria: number): Promise<
   ];
 }
 
-// ============================================================================
-// RESÚMENES Y ESTADÍSTICAS
-// ============================================================================
-
-/**
- * Obtiene el resumen de asistencias de todos los estudiantes de un grupo-materia
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function getResumenAsistencias(idGrupoMateria: number): Promise<ResumenAsistencias[]> {
-  // Usar mock mientras el backend no tenga el endpoint
   return getResumenAsistenciasMock(idGrupoMateria);
 }
 
-/**
- * Obtiene el resumen de asistencias de un estudiante específico
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function getResumenAsistenciasEstudiante(
   idEstudiante: number,
   _idGrupoMateria?: number
 ): Promise<ResumenAsistencias[]> {
-  // Mock: devolver datos de ejemplo para el estudiante
   return [
     {
       idEstudiante,
@@ -141,12 +87,7 @@ export async function getResumenAsistenciasEstudiante(
   ];
 }
 
-/**
- * Obtiene el resumen de un grupo-materia (estadísticas generales)
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function getResumenGrupoMateria(idGrupoMateria: number): Promise<ResumenGrupoMateriaAsistencias> {
-  // Mock: devolver estadísticas de ejemplo
   return {
     idGrupoMateria,
     nombreMateria: "Materia de ejemplo",
@@ -159,49 +100,25 @@ export async function getResumenGrupoMateria(idGrupoMateria: number): Promise<Re
   };
 }
 
-// ============================================================================
-// JUSTIFICACIONES
-// ============================================================================
-
-/**
- * Justifica una falta específica
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function justificarFalta(
   idAsistencia: number,
   motivo: string
 ): Promise<void> {
-  // Mock: simular éxito
   console.log(`[Mock] Justificando falta ${idAsistencia}: ${motivo}`);
   await new Promise(resolve => setTimeout(resolve, 300));
 }
 
-/**
- * Obtiene estudiantes con alertas de asistencia (>20% faltas)
- * TODO: Habilitar cuando el backend tenga el endpoint implementado
- */
 export async function getEstudiantesConAlerta(idGrupoMateria: number): Promise<ResumenAsistencias[]> {
-  // Mock: usar la función mock y filtrar los que tienen alerta
   const resumen = await getResumenAsistenciasMock(idGrupoMateria);
   return resumen.filter(r => r.alerta);
 }
 
-// ============================================================================
-// MOCK DATA (mientras se implementa el backend)
-// ============================================================================
-
-/**
- * Función mock para obtener asistencias por fecha
- * TODO: Reemplazar con API real cuando esté disponible
- */
 export async function getAsistenciasPorFechaMock(
   _idGrupoMateria: number,
   _fecha: string
 ): Promise<AsistenciaEstudiante[]> {
-  // Simular delay de red
   await new Promise((resolve) => setTimeout(resolve, 500));
 
-  // Datos mock
   return [
     {
       idInscripcion: 1,
@@ -236,7 +153,7 @@ export async function getAsistenciasPorFechaMock(
       idEstudiante: 4,
       matricula: "2024004",
       nombreCompleto: "Ana Martínez Silva",
-      presente: null, // No registrado aún
+      presente: null,
       justificada: false,
     },
     {
@@ -251,10 +168,6 @@ export async function getAsistenciasPorFechaMock(
   ];
 }
 
-/**
- * Función mock para obtener resumen de asistencias
- * TODO: Reemplazar con API real cuando esté disponible
- */
 export async function getResumenAsistenciasMock(_idGrupoMateria: number): Promise<ResumenAsistencias[]> {
   await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -293,7 +206,7 @@ export async function getResumenAsistenciasMock(_idGrupoMateria: number): Promis
       faltasJustificadas: 2,
       faltasInjustificadas: 4,
       porcentajeAsistencia: 70,
-      alerta: true, // >20% de faltas
+      alerta: true,
     },
     {
       idEstudiante: 4,
@@ -317,7 +230,7 @@ export async function getResumenAsistenciasMock(_idGrupoMateria: number): Promis
       faltasJustificadas: 1,
       faltasInjustificadas: 7,
       porcentajeAsistencia: 60,
-      alerta: true, // >20% de faltas
+      alerta: true,
     },
   ];
 }

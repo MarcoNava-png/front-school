@@ -55,7 +55,6 @@ import {
   type RoleWithPermissions,
 } from "@/types/permissions"
 
-// Iconos de módulos
 const ModuleIcons: Record<string, React.ReactNode> = {
   Dashboard: <LayoutDashboard className="h-5 w-5" />,
   Admisiones: <UserPlus className="h-5 w-5" />,
@@ -77,7 +76,6 @@ export default function RolesPermissionsPage() {
   const [pendingChanges, setPendingChanges] = useState<Record<number, PermissionAssignment>>({})
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Cargar datos iniciales
   const loadData = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -86,7 +84,6 @@ export default function RolesPermissionsPage() {
         permissionsService.getPermissionsByModule(),
       ])
 
-      // Ordenar roles por jerarquía
       const roleOrder = ['superadmin', 'admin', 'director', 'coordinador', 'controlescolar', 'finanzas', 'admisiones', 'docente', 'alumno']
       const sortedRoles = rolesData.sort((a, b) => {
         const aIndex = roleOrder.indexOf(a.roleName.toLowerCase())
@@ -112,17 +109,14 @@ export default function RolesPermissionsPage() {
     loadData()
   }, [])
 
-  // Rol actualmente seleccionado
   const currentRole = useMemo(() => {
     return roles.find((r) => r.roleId === selectedRole)
   }, [roles, selectedRole])
 
-  // Obtener permisos del rol seleccionado
   const getCurrentRolePermissions = useCallback(() => {
     return currentRole?.permissions || []
   }, [currentRole])
 
-  // Verificar si un permiso está asignado al rol
   const getPermissionState = useCallback(
     (permissionId: number, action: "canView" | "canCreate" | "canEdit" | "canDelete") => {
       if (pendingChanges[permissionId]) {
@@ -135,7 +129,6 @@ export default function RolesPermissionsPage() {
     [pendingChanges, getCurrentRolePermissions]
   )
 
-  // Cambiar estado de permiso
   const togglePermission = (permissionId: number, action: "canView" | "canCreate" | "canEdit" | "canDelete") => {
     setPendingChanges((prev) => {
       const current = prev[permissionId] || {
@@ -156,7 +149,6 @@ export default function RolesPermissionsPage() {
     })
   }
 
-  // Toggle todos los permisos de una fila
   const toggleRowAll = (permissionId: number) => {
     const allEnabled =
       getPermissionState(permissionId, "canView") &&
@@ -176,7 +168,6 @@ export default function RolesPermissionsPage() {
     }))
   }
 
-  // Guardar cambios
   const saveChanges = async () => {
     if (!selectedRole || Object.keys(pendingChanges).length === 0) return
 
@@ -220,13 +211,11 @@ export default function RolesPermissionsPage() {
     }
   }
 
-  // Descartar cambios
   const discardChanges = () => {
     setPendingChanges({})
     toast.info("Cambios descartados")
   }
 
-  // Toggle expandir módulo
   const toggleModule = (module: string) => {
     setExpandedModules((prev) => {
       const next = new Set(prev)
@@ -239,7 +228,6 @@ export default function RolesPermissionsPage() {
     })
   }
 
-  // Expandir/Colapsar todos
   const toggleAllModules = (expand: boolean) => {
     if (expand) {
       setExpandedModules(new Set(permissions.map(p => p.module)))
@@ -248,7 +236,6 @@ export default function RolesPermissionsPage() {
     }
   }
 
-  // Seleccionar/deseleccionar todos los permisos de un módulo
   const toggleModulePermissions = (module: string, checked: boolean) => {
     const modulePerms = permissions.find((p) => p.module === module)?.permissions || []
 
@@ -267,7 +254,6 @@ export default function RolesPermissionsPage() {
     })
   }
 
-  // Filtrar permisos por búsqueda
   const filteredPermissions = useMemo(() => {
     if (!searchTerm.trim()) return permissions
 
@@ -284,11 +270,10 @@ export default function RolesPermissionsPage() {
       .filter(module => module.permissions.length > 0)
   }, [permissions, searchTerm])
 
-  // Contar permisos habilitados por módulo
   const getModulePermissionCount = useCallback((module: string) => {
     const modulePerms = permissions.find((p) => p.module === module)?.permissions || []
     let enabled = 0
-    const total = modulePerms.length * 4 // 4 acciones por permiso
+    const total = modulePerms.length * 4
 
     for (const perm of modulePerms) {
       if (getPermissionState(perm.idPermission, "canView")) enabled++
@@ -300,7 +285,6 @@ export default function RolesPermissionsPage() {
     return { enabled, total }
   }, [permissions, getPermissionState])
 
-  // Verificar si hay cambios pendientes
   const hasChanges = Object.keys(pendingChanges).length > 0
   const changesCount = Object.keys(pendingChanges).length
 
@@ -317,7 +301,6 @@ export default function RolesPermissionsPage() {
   return (
     <TooltipProvider>
       <div className="container mx-auto py-6 space-y-6">
-        {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -345,7 +328,6 @@ export default function RolesPermissionsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Panel de Roles */}
           <Card className="lg:col-span-1">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Roles del Sistema</CardTitle>
@@ -396,7 +378,6 @@ export default function RolesPermissionsPage() {
             </CardContent>
           </Card>
 
-          {/* Panel de Permisos */}
           <Card className="lg:col-span-3">
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -443,8 +424,6 @@ export default function RolesPermissionsPage() {
                   </div>
                 )}
               </div>
-
-              {/* Barra de búsqueda y acciones */}
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -506,7 +485,6 @@ export default function RolesPermissionsPage() {
                               </div>
 
                               <div className="flex items-center gap-3">
-                                {/* Barra de progreso visual */}
                                 <div className="hidden sm:flex items-center gap-2">
                                   <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                                     <div
@@ -523,7 +501,6 @@ export default function RolesPermissionsPage() {
                                   </span>
                                 </div>
 
-                                {/* Botones de acción rápida */}
                                 <div className="flex gap-1">
                                   <Tooltip>
                                     <TooltipTrigger asChild>
@@ -710,7 +687,6 @@ export default function RolesPermissionsPage() {
           </Card>
         </div>
 
-        {/* Leyenda */}
         <Card>
           <CardContent className="py-4">
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm">

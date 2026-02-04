@@ -43,12 +43,10 @@ export default function BecaCatalogoPage() {
   const [becas, setBecas] = useState<BecaCatalogo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filtros
   const [busqueda, setBusqueda] = useState("");
   const [tipoFiltro, setTipoFiltro] = useState<string>("TODOS");
   const [soloActivos, setSoloActivos] = useState(true);
 
-  // Modales
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editingBeca, setEditingBeca] = useState<BecaCatalogo | null>(null);
 
@@ -97,7 +95,6 @@ export default function BecaCatalogoPage() {
     }
   }
 
-  // Filtrar localmente
   const becasFiltradas = becas.filter((b) => {
     const matchBusqueda =
       !busqueda ||
@@ -119,7 +116,6 @@ export default function BecaCatalogoPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -137,7 +133,6 @@ export default function BecaCatalogoPage() {
         </Button>
       </div>
 
-      {/* Filtros */}
       <Card>
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
@@ -192,7 +187,6 @@ export default function BecaCatalogoPage() {
         </CardContent>
       </Card>
 
-      {/* Tabla de Becas */}
       <Card>
         <CardHeader>
           <CardTitle>Becas Registradas ({becasFiltradas.length})</CardTitle>
@@ -297,8 +291,6 @@ export default function BecaCatalogoPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Modal */}
       <CreateBecaCatalogoModal
         open={createModalOpen}
         onClose={handleCloseModal}

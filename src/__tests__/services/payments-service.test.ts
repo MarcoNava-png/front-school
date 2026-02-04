@@ -1,7 +1,6 @@
 import apiClient from '@/services/api-client'
 import { registrarPago, aplicarPago, obtenerPago } from '@/services/payments-service'
 
-// Mock del api-client
 jest.mock('@/services/api-client')
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>
 

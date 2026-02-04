@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import { DollarSign, Calendar, AlertTriangle, CheckCircle, Clock, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -22,10 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-
 import { obtenerRecibosEstudiante } from "@/services/estudiante-panel-service";
 import type { ResumenRecibosDto, ReciboPanelResumenDto } from "@/types/estudiante-panel";
+// eslint-disable-next-line no-duplicate-imports
 import { formatCurrency, formatDate, ESTATUS_RECIBO_COLORS } from "@/types/estudiante-panel";
 
 interface RecibosTabProps {
@@ -90,7 +91,6 @@ export function RecibosTab({ idEstudiante, resumenRecibos }: RecibosTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Resumen de pagos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className={resumenRecibos.totalAdeudo > 0 ? "border-red-200" : "border-green-200"}>
           <CardContent className="pt-4">
@@ -164,7 +164,6 @@ export function RecibosTab({ idEstudiante, resumenRecibos }: RecibosTabProps) {
         </Card>
       </div>
 
-      {/* Próximo vencimiento */}
       {resumenRecibos.proximoVencimiento && (
         <Card className="border-yellow-200 bg-yellow-50/50">
           <CardContent className="py-4">
@@ -196,7 +195,6 @@ export function RecibosTab({ idEstudiante, resumenRecibos }: RecibosTabProps) {
         </Card>
       )}
 
-      {/* Tabla de recibos */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">

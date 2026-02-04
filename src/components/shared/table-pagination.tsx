@@ -33,7 +33,6 @@ export function TablePagination({
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
-  // Generar números de página visibles
   const getVisiblePages = () => {
     const pages: (number | "ellipsis")[] = [];
     const maxVisible = 5;
@@ -70,7 +69,6 @@ export function TablePagination({
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4 border-t bg-muted/20">
-      {/* Info y selector de tamaño */}
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
         <span>
           Mostrando <span className="font-medium text-foreground">{startItem}</span> a{" "}
@@ -97,9 +95,7 @@ export function TablePagination({
         </div>
       </div>
 
-      {/* Controles de paginación */}
       <div className="flex items-center gap-1">
-        {/* Primera página */}
         <Button
           variant="outline"
           size="icon"
@@ -110,7 +106,6 @@ export function TablePagination({
           <ChevronsLeft className="h-4 w-4" />
         </Button>
 
-        {/* Página anterior */}
         <Button
           variant="outline"
           size="icon"
@@ -121,7 +116,6 @@ export function TablePagination({
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        {/* Números de página */}
         <div className="flex items-center gap-1">
           {getVisiblePages().map((page, index) =>
             page === "ellipsis" ? (
@@ -147,7 +141,6 @@ export function TablePagination({
           )}
         </div>
 
-        {/* Página siguiente */}
         <Button
           variant="outline"
           size="icon"
@@ -158,7 +151,6 @@ export function TablePagination({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {/* Última página */}
         <Button
           variant="outline"
           size="icon"

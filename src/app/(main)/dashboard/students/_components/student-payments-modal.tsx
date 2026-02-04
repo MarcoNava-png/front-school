@@ -116,7 +116,6 @@ export function StudentPaymentsModal({
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Resumen de pagos */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="pb-3">
@@ -164,8 +163,6 @@ export function StudentPaymentsModal({
                 </CardContent>
               </Card>
             </div>
-
-            {/* Estado general */}
             {isPaidUp && (
               <Card className="border-green-200 bg-green-50">
                 <CardContent className="pt-6">
@@ -246,7 +243,7 @@ export function StudentPaymentsModal({
                               </span>
                             </TableCell>
                             <TableCell className="text-center">
-                              {getStatusBadge(receipt.estatus)}
+                              {getStatusBadge(receipt.estatus as ReceiptStatus)}
                             </TableCell>
                           </TableRow>
                         ))}

@@ -116,5 +116,4 @@ export interface Grupo {
   estudiantesInscritos?: number;
 }
 
-// Alias for Schedule (Turno)
 export type Turno = Schedule;

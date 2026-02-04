@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 
-import { Check, ChevronDown, ChevronRight, DollarSign, Edit2, FileText, Printer, Search, Trash2, X } from "lucide-react";
+import { Ban, Check, ChevronDown, ChevronRight, DollarSign, Edit2, FileText, Printer, RotateCcw, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -38,36 +38,33 @@ import {
   formatCurrency,
   formatReceiptStatus,
   getReceiptStatusVariant,
+  isPaidOrPartial,
+  isCanceledOrPaid,
 } from "@/lib/payment-utils";
-import { buscarRecibosParaCobro, descargarComprobantePago, imprimirReciboPdf, modificarDetalleRecibo, modificarRecargoRecibo, obtenerMediosPago, quitarRecargoRecibo, registrarPagoCaja } from "@/services/payments-service";
+import { buscarRecibosParaCobro, buscarTodosLosRecibos, descargarComprobantePago, imprimirReciboPdf, modificarDetalleRecibo, modificarRecargoRecibo, obtenerMediosPago, quitarRecargoRecibo, registrarPagoCaja } from "@/services/payments-service";
+import { cancelarRecibo, reversarRecibo } from "@/services/receipts-service";
 import type { MedioPago, RecibosParaCobro } from "@/types/payment";
 import type { Receipt } from "@/types/receipt";
 
 export default function CashierPage() {
-  // Estado de búsqueda
   const [criterio, setCriterio] = useState("");
   const [buscando, setBuscando] = useState(false);
+  const [mostrarTodos, setMostrarTodos] = useState(false);
 
-  // Estado de resultados
   const [resultado, setResultado] = useState<RecibosParaCobro | null>(null);
 
-  // Estado de selección de recibos
   const [recibosSeleccionados, setRecibosSeleccionados] = useState<Set<number>>(new Set());
 
-  // Estado del formulario de pago
   const [mediosPago, setMediosPago] = useState<MedioPago[]>([]);
   const [medioPago, setMedioPago] = useState<number>(1);
   const [monto, setMonto] = useState<string>("");
   const [referencia, setReferencia] = useState("");
   const [notas, setNotas] = useState("");
 
-  // Estado de procesamiento
   const [procesando, setProcesando] = useState(false);
 
-  // Estado para recibos expandidos (mostrar desglose)
   const [recibosExpandidos, setRecibosExpandidos] = useState<Set<number>>(new Set());
 
-  // Estado para edición de detalles
   const [editingDetail, setEditingDetail] = useState<{
     idRecibo: number;
     idReciboDetalle: number;
@@ -78,7 +75,6 @@ export default function CashierPage() {
   const [motivoDetalle, setMotivoDetalle] = useState<string>("");
   const [guardandoDetalle, setGuardandoDetalle] = useState(false);
 
-  // Estado para edición de recargo
   const [editingRecargo, setEditingRecargo] = useState<{
     idRecibo: number;
     folio: string;
@@ -88,14 +84,18 @@ export default function CashierPage() {
   const [motivoRecargo, setMotivoRecargo] = useState<string>("");
   const [guardandoRecargo, setGuardandoRecargo] = useState(false);
 
-  // Estado para confirmación de quitar recargo
   const [confirmQuitarRecargo, setConfirmQuitarRecargo] = useState<{
     idRecibo: number;
     folio: string;
   } | null>(null);
   const [motivoQuitarRecargo, setMotivoQuitarRecargo] = useState<string>("");
 
-  // Cargar medios de pago al montar
+  const [confirmCancelar, setConfirmCancelar] = useState<{ idRecibo: number; folio: string } | null>(null);
+  const [motivoCancelar, setMotivoCancelar] = useState<string>("");
+  const [confirmReversar, setConfirmReversar] = useState<{ idRecibo: number; folio: string; estatus: string } | null>(null);
+  const [motivoReversar, setMotivoReversar] = useState<string>("");
+  const [procesandoAccion, setProcesandoAccion] = useState(false);
+
   useEffect(() => {
     cargarMediosPago();
   }, []);
@@ -117,18 +117,20 @@ export default function CashierPage() {
 
     setBuscando(true);
     try {
-      const data = await buscarRecibosParaCobro(criterio.trim());
+      const data = mostrarTodos
+        ? await buscarTodosLosRecibos(criterio.trim())
+        : await buscarRecibosParaCobro(criterio.trim());
 
       if (data.multiple && data.estudiantes) {
         toast.error("Se encontraron múltiples estudiantes. Sé más específico en la búsqueda.");
         setResultado(null);
       } else if (data.recibos.length === 0) {
-        toast.info("No se encontraron recibos pendientes");
+        toast.info(mostrarTodos ? "No se encontraron recibos" : "No se encontraron recibos pendientes");
         setResultado(null);
       } else {
         setResultado(data);
         setRecibosSeleccionados(new Set());
-        toast.success(`Se encontraron ${data.recibos.length} recibo(s) pendiente(s)`);
+        toast.success(`Se encontraron ${data.recibos.length} recibo(s)`);
       }
     } catch (error: unknown) {
       const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -194,7 +196,6 @@ export default function CashierPage() {
       const resultado = await quitarRecargoRecibo(confirmQuitarRecargo.idRecibo, motivoQuitarRecargo);
       toast.success(resultado.message);
       setConfirmQuitarRecargo(null);
-      // Recargar los recibos para reflejar el cambio
       if (criterio) {
         await buscar();
       }
@@ -205,6 +206,46 @@ export default function CashierPage() {
       } else {
         toast.error(err.response?.data?.message || "Error al quitar el recargo");
       }
+    }
+  }
+
+  async function handleConfirmCancelar() {
+    if (!confirmCancelar || !motivoCancelar.trim()) {
+      toast.error("Debe proporcionar un motivo para cancelar");
+      return;
+    }
+    setProcesandoAccion(true);
+    try {
+      await cancelarRecibo(confirmCancelar.idRecibo, motivoCancelar);
+      toast.success(`Recibo ${confirmCancelar.folio} cancelado exitosamente`);
+      setConfirmCancelar(null);
+      setMotivoCancelar("");
+      if (criterio) await buscar();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Error al cancelar el recibo");
+    } finally {
+      setProcesandoAccion(false);
+    }
+  }
+
+  async function handleConfirmReversar() {
+    if (!confirmReversar || !motivoReversar.trim()) {
+      toast.error("Debe proporcionar un motivo para reversar");
+      return;
+    }
+    setProcesandoAccion(true);
+    try {
+      await reversarRecibo(confirmReversar.idRecibo, motivoReversar);
+      toast.success(`Recibo ${confirmReversar.folio} reversado exitosamente`);
+      setConfirmReversar(null);
+      setMotivoReversar("");
+      if (criterio) await buscar();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Error al reversar el recibo");
+    } finally {
+      setProcesandoAccion(false);
     }
   }
 
@@ -240,7 +281,6 @@ export default function CashierPage() {
       if (resultado.exitoso) {
         toast.success(resultado.mensaje);
         setEditingDetail(null);
-        // Recargar los recibos
         if (criterio) {
           await buscar();
         }
@@ -290,7 +330,6 @@ export default function CashierPage() {
       if (resultado.exitoso) {
         toast.success(resultado.mensaje);
         setEditingRecargo(null);
-        // Recargar los recibos
         if (criterio) {
           await buscar();
         }
@@ -315,14 +354,10 @@ export default function CashierPage() {
     return resultado.recibos
       .filter((r) => recibosSeleccionados.has(r.idRecibo))
       .reduce((sum, r) => {
-        // Calcular recargo dinámicamente
         const recargoCalculado = calcularRecargo(r.fechaVencimiento, r.saldo);
-
-        // Si fue modificado manualmente, usar valor de BD; sino calcular
         const fueModificado = r.notas?.includes("RECARGO CONDONADO") ||
                               r.notas?.includes("RECARGO MODIFICADO");
         const recargo = fueModificado ? (r.recargos ?? 0) : recargoCalculado;
-
         const total = r.saldo + recargo;
         return sum + total;
       }, 0);
@@ -342,7 +377,6 @@ export default function CashierPage() {
       return { valido: false, montoIngresado, totalSeleccionado };
     }
 
-    // Permitir pagos parciales (monto menor o igual al total)
     if (montoIngresado > totalSeleccionado + 0.01) {
       toast.error(
         `El monto ingresado (${formatCurrency(montoIngresado)}) excede el total seleccionado (${formatCurrency(totalSeleccionado)})`
@@ -359,7 +393,6 @@ export default function CashierPage() {
 
     setProcesando(true);
     try {
-      // Calcular totales por recibo
       const recibosConTotales = resultado!.recibos
         .filter((r) => recibosSeleccionados.has(r.idRecibo))
         .map((r) => {
@@ -371,7 +404,6 @@ export default function CashierPage() {
           return { idRecibo: r.idRecibo, total };
         });
 
-      // Distribuir el monto entre los recibos (pago parcial o completo)
       let montoRestante = montoIngresado;
       const recibosParaPago = recibosConTotales
         .map((r) => {
@@ -380,12 +412,11 @@ export default function CashierPage() {
           montoRestante -= montoAplicar;
           return {
             idRecibo: r.idRecibo,
-            montoAplicar: Math.round(montoAplicar * 100) / 100, // Redondear a 2 decimales
+            montoAplicar: Math.round(montoAplicar * 100) / 100,
           };
         })
         .filter((r): r is { idRecibo: number; montoAplicar: number } => r !== null && r.montoAplicar > 0);
 
-      // Mostrar info si es pago parcial
       const esPagoParcial = montoIngresado < totalSeleccionado - 0.01;
       if (esPagoParcial) {
         const recibosAfectados = recibosParaPago.length;
@@ -446,7 +477,6 @@ export default function CashierPage() {
         </div>
       </div>
 
-      {/* Búsqueda */}
       <Card className="border-2" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
         <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
           <CardTitle style={{ color: '#14356F' }}>Buscar Alumno o Recibo</CardTitle>
@@ -475,13 +505,24 @@ export default function CashierPage() {
               {buscando ? "Buscando..." : "Buscar"}
             </Button>
           </div>
+          <div className="flex items-center space-x-2 mt-4">
+            <Checkbox
+              id="mostrarTodos"
+              checked={mostrarTodos}
+              onCheckedChange={(checked) => setMostrarTodos(checked as boolean)}
+            />
+            <label
+              htmlFor="mostrarTodos"
+              className="text-sm font-medium leading-none cursor-pointer"
+            >
+              Mostrar todos los recibos (incluidos pagados) - Para reversar pagos
+            </label>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Resultados */}
       {resultado && resultado.estudiante && (
         <>
-          {/* Datos del Estudiante */}
           <Card className="border-2" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
             <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
               <CardTitle style={{ color: '#14356F' }}>Estudiante</CardTitle>
@@ -510,7 +551,6 @@ export default function CashierPage() {
             </CardContent>
           </Card>
 
-          {/* Recibos Pendientes */}
           <Card className="border-2 overflow-hidden" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
             <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
               <div className="flex items-center justify-between">
@@ -546,19 +586,14 @@ export default function CashierPage() {
                     <TableHead className="text-right text-white font-semibold">Recargo</TableHead>
                     <TableHead className="text-right text-white font-semibold">Total a Pagar</TableHead>
                     <TableHead className="text-white font-semibold">Estado</TableHead>
-                    <TableHead className="text-white font-semibold w-12">PDF</TableHead>
+                    <TableHead className="text-white font-semibold text-center">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {resultado.recibos.map((recibo) => {
-                    // Calcular recargo dinámicamente
                     const recargoCalculado = calcularRecargo(recibo.fechaVencimiento, recibo.saldo);
-
-                    // Determinar si el recargo fue modificado/condonado manualmente
                     const fueModificadoManualmente = recibo.notas?.includes("RECARGO CONDONADO") ||
                                                       recibo.notas?.includes("RECARGO MODIFICADO");
-
-                    // Si fue modificado manualmente, usar el valor de BD; sino calcular dinámicamente
                     const recargo = fueModificadoManualmente
                       ? (recibo.recargos ?? 0)
                       : recargoCalculado;
@@ -623,25 +658,48 @@ export default function CashierPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="p-0 h-6 w-6"
-                              onClick={async () => {
-                                try {
-                                  await imprimirReciboPdf(recibo.idRecibo, recibo.folio ?? undefined);
-                                } catch (error) {
-                                  toast.error("Error al generar el PDF del recibo");
-                                  console.error(error);
-                                }
-                              }}
-                              title="Imprimir Recibo"
-                            >
-                              <Printer className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="p-0 h-6 w-6"
+                                onClick={async () => {
+                                  try {
+                                    await imprimirReciboPdf(recibo.idRecibo, recibo.folio ?? undefined);
+                                  } catch (error) {
+                                    toast.error("Error al generar el PDF del recibo");
+                                    console.error(error);
+                                  }
+                                }}
+                                title="Imprimir Recibo"
+                              >
+                                <Printer className="h-4 w-4" />
+                              </Button>
+                              {isPaidOrPartial(recibo.estatus) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-0 h-6 w-6 text-orange-600 hover:text-orange-800 hover:bg-orange-50"
+                                  onClick={() => setConfirmReversar({ idRecibo: recibo.idRecibo, folio: recibo.folio || "", estatus: formatReceiptStatus(recibo.estatus) })}
+                                  title="Reversar pago"
+                                >
+                                  <RotateCcw className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {!isCanceledOrPaid(recibo.estatus) && !isPaidOrPartial(recibo.estatus) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-0 h-6 w-6 text-red-600 hover:text-red-800 hover:bg-red-50"
+                                  onClick={() => setConfirmCancelar({ idRecibo: recibo.idRecibo, folio: recibo.folio || "" })}
+                                  title="Cancelar recibo"
+                                >
+                                  <Ban className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
-                        {/* Fila de desglose expandible */}
                         {isExpandido && (
                           <TableRow className="bg-slate-50 hover:bg-slate-50">
                             <TableCell colSpan={10} className="py-0">
@@ -690,7 +748,6 @@ export default function CashierPage() {
                                         </TableCell>
                                       </TableRow>
                                     )}
-                                    {/* Fila de totales */}
                                     <TableRow className="bg-slate-100 font-semibold">
                                       <TableCell colSpan={4} className="text-right text-xs">Subtotal:</TableCell>
                                       <TableCell className="text-right text-xs">{formatCurrency(recibo.subtotal)}</TableCell>
@@ -701,7 +758,6 @@ export default function CashierPage() {
                                         <TableCell className="text-right text-xs">-{formatCurrency(recibo.descuento)}</TableCell>
                                       </TableRow>
                                     )}
-                                    {/* Siempre mostrar fila de recargos */}
                                     <TableRow className={recargo > 0 ? "text-red-600" : "text-gray-500"}>
                                       <TableCell colSpan={2} className="text-right text-xs">Recargo por mora:</TableCell>
                                       <TableCell className="text-right text-xs">
@@ -753,7 +809,6 @@ export default function CashierPage() {
             </CardContent>
           </Card>
 
-          {/* Formulario de Pago */}
           {recibosSeleccionados.size > 0 && (
             <Card className="border-2" style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}>
               <CardHeader style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.03), rgba(30, 74, 143, 0.05))' }}>
@@ -869,8 +924,6 @@ export default function CashierPage() {
           )}
         </>
       )}
-
-      {/* Modal para modificar detalle (colegiatura, inscripción, etc.) */}
       <AlertDialog open={editingDetail !== null} onOpenChange={(open) => !open && setEditingDetail(null)}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
@@ -930,8 +983,6 @@ export default function CashierPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Modal para agregar/modificar recargo */}
       <AlertDialog open={editingRecargo !== null} onOpenChange={(open) => !open && setEditingRecargo(null)}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
@@ -998,8 +1049,6 @@ export default function CashierPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Modal para confirmar quitar recargo */}
       <AlertDialog open={confirmQuitarRecargo !== null} onOpenChange={(open) => !open && setConfirmQuitarRecargo(null)}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
@@ -1037,6 +1086,95 @@ export default function CashierPage() {
               className="bg-red-600 hover:bg-red-700"
             >
               Condonar Recargo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal para cancelar recibo */}
+      <AlertDialog open={confirmCancelar !== null} onOpenChange={(open) => !open && setConfirmCancelar(null)}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-700">
+              <Ban className="h-5 w-5" />
+              Cancelar Recibo
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-2">
+                <p className="text-gray-700">
+                  ¿Está seguro que desea cancelar el recibo <strong>{confirmCancelar?.folio}</strong>?
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="motivoCancelar" className="text-gray-900">Motivo de la cancelación *</Label>
+                  <Input
+                    id="motivoCancelar"
+                    placeholder="Ej: Error en la generación del recibo"
+                    value={motivoCancelar}
+                    onChange={(e) => setMotivoCancelar(e.target.value)}
+                  />
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-xs text-red-800">
+                    Esta acción marcará el recibo como CANCELADO. Solo se puede cancelar si no tiene pagos aplicados.
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel disabled={procesandoAccion}>Cerrar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmCancelar}
+              disabled={!motivoCancelar.trim() || procesandoAccion}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {procesandoAccion ? "Cancelando..." : "Cancelar Recibo"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={confirmReversar !== null} onOpenChange={(open) => !open && setConfirmReversar(null)}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-orange-700">
+              <RotateCcw className="h-5 w-5" />
+              Reversar Recibo
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-2">
+                <p className="text-gray-700">
+                  ¿Está seguro que desea reversar el recibo <strong>{confirmReversar?.folio}</strong>?
+                </p>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 space-y-1">
+                  <p className="text-sm text-orange-800">
+                    <span className="font-medium">Estado actual:</span> {confirmReversar?.estatus}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="motivoReversar" className="text-gray-900">Motivo de la reversión *</Label>
+                  <Input
+                    id="motivoReversar"
+                    placeholder="Ej: Pago duplicado, error de captura"
+                    value={motivoReversar}
+                    onChange={(e) => setMotivoReversar(e.target.value)}
+                  />
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <p className="text-xs text-amber-800">
+                    Esta acción eliminará los pagos aplicados y regresará el recibo a estado PENDIENTE.
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel disabled={procesandoAccion}>Cerrar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmReversar}
+              disabled={!motivoReversar.trim() || procesandoAccion}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {procesandoAccion ? "Reversando..." : "Reversar Recibo"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

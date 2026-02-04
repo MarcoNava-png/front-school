@@ -54,7 +54,6 @@ export default function GroupsPage() {
 
   return (
     <div className="@container/main flex flex-col gap-4 md:gap-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -72,8 +71,6 @@ export default function GroupsPage() {
         </div>
         <CreateGroupDialog open={open} studyPlans={studyPlans} academicPeriods={academicPeriods} setOpen={setOpen} />
       </div>
-
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card
           className="border-2"

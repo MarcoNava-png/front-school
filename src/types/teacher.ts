@@ -36,10 +36,6 @@ export interface PayloadUpdateTeacher extends PayloadCreateTeacher {
 
 export type TeachersResponse = PaginatedResponse<Teacher>;
 
-// ============================================================================
-// VALIDACIÓN DE HORARIOS
-// ============================================================================
-
 export interface TeacherScheduleConflict {
   tieneConflicto: boolean;
   conflictos: ScheduleConflictDetail[];

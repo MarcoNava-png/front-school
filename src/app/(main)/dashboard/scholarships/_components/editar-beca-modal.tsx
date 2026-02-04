@@ -41,7 +41,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
   const [loadingPeriodos, setLoadingPeriodos] = useState(false);
   const [periodos, setPeriodos] = useState<AcademicPeriod[]>([]);
 
-  // Form state
   const [usarPeriodo, setUsarPeriodo] = useState(false);
   const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("");
   const [vigenciaDesde, setVigenciaDesde] = useState("");
@@ -49,7 +48,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
   const [observaciones, setObservaciones] = useState("");
   const [activo, setActivo] = useState(true);
 
-  // Período seleccionado
   const periodoSeleccionado = periodos.find(
     (p) => p.idPeriodoAcademico.toString() === idPeriodoAcademico
   );
@@ -60,10 +58,8 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
     }
   }, [open]);
 
-  // Inicializar formulario cuando se abre con una beca
   useEffect(() => {
     if (open && beca) {
-      // Determinar si la beca está asociada a un período
       if (beca.idPeriodoAcademico) {
         setUsarPeriodo(true);
         setIdPeriodoAcademico(beca.idPeriodoAcademico.toString());
@@ -72,7 +68,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
         setIdPeriodoAcademico("");
       }
 
-      // Formatear fechas para input type="date"
       setVigenciaDesde(formatDateForInput(beca.vigenciaDesde));
       setVigenciaHasta(beca.vigenciaHasta ? formatDateForInput(beca.vigenciaHasta) : "");
       setObservaciones(beca.observaciones || "");
@@ -80,7 +75,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
     }
   }, [open, beca]);
 
-  // Cuando se selecciona un período, actualizar las fechas de vigencia
   useEffect(() => {
     if (periodoSeleccionado && usarPeriodo) {
       setVigenciaDesde(formatDateForInput(periodoSeleccionado.fechaInicio));
@@ -90,9 +84,7 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
 
   function formatDateForInput(dateStr: string): string {
     if (!dateStr) return "";
-    // Si ya está en formato YYYY-MM-DD, retornar
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-    // Si es ISO string, extraer solo la fecha
     return dateStr.split("T")[0];
   }
 
@@ -124,7 +116,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
 
     if (!beca) return;
 
-    // Validaciones
     if (usarPeriodo && !idPeriodoAcademico) {
       toast.error("Selecciona un período académico");
       return;
@@ -175,8 +166,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
             Modifica la vigencia y observaciones de la beca asignada
           </DialogDescription>
         </DialogHeader>
-
-        {/* Información de la beca (no editable) */}
         <div className="rounded-lg bg-muted p-4 space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-medium">
@@ -207,7 +196,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Estado activo/inactivo */}
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <Label htmlFor="activo" className="font-medium">Estado de la beca</Label>
@@ -222,7 +210,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
             />
           </div>
 
-          {/* Selector de vigencia: por período o manual */}
           <div className="space-y-3">
             <Label>Vigencia de la Beca</Label>
             <div className="flex gap-2">
@@ -246,7 +233,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
           </div>
 
           {usarPeriodo ? (
-            /* Selector de Período Académico */
             <div className="space-y-2">
               <Label htmlFor="periodo">Período Académico</Label>
               {loadingPeriodos ? (
@@ -283,7 +269,6 @@ export function EditarBecaModal({ open, onClose, beca }: Props) {
               )}
             </div>
           ) : (
-            /* Fechas manuales */
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="vigenciaDesde">Fecha de Inicio</Label>

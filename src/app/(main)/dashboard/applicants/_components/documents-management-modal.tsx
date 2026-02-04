@@ -263,7 +263,7 @@ export function DocumentsManagementModal({ open, applicant, onClose }: Documents
       toast.success("Documento cargado exitosamente");
       setSelectedFile(null);
       setNotas("");
-      loadData(); // Recargar lista
+      loadData();
     } catch (error) {
       toast.error("Error al cargar documento");
       console.error(error);

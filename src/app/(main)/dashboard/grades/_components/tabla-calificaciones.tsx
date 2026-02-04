@@ -45,7 +45,6 @@ export function TablaCalificaciones({ grupoMateriaId, parcialId }: TablaCalifica
   const loadData = async () => {
     setLoading(true);
     try {
-      // 1. Verificar/crear el acta de calificaciones para este grupo-materia-parcial
       let actaId: number | null = null;
       try {
         const actas = await getCalificacionesPorGrupo(grupoMateriaId, parcialId);
@@ -57,20 +56,16 @@ export function TablaCalificaciones({ grupoMateriaId, parcialId }: TablaCalifica
         console.log("No existe acta, se creará al guardar la primera calificación");
       }
 
-      // 2. Obtener estudiantes inscritos en la materia
       const estudiantesInscritos = await getStudentsByGroupSubject(grupoMateriaId);
 
-      // 3. Obtener calificaciones existentes del parcial
       let calificaciones: { inscripcionId: number; aporteParcial: number }[] = [];
       try {
         const concentrado = await getConcentradoGrupoParcial(grupoMateriaId, parcialId);
         calificaciones = concentrado.calificaciones;
       } catch {
-        // Si no hay calificaciones aún, está OK
         console.log("No hay calificaciones registradas aún");
       }
 
-      // 4. Combinar datos
       const estudiantesConCalif: EstudianteConCalificacion[] = estudiantesInscritos.map((est) => {
         const calif = calificaciones.find((c) => c.inscripcionId === est.idInscripcion);
         return {
@@ -109,7 +104,6 @@ export function TablaCalificaciones({ grupoMateriaId, parcialId }: TablaCalifica
   const handleSave = async (estudiante: EstudianteConCalificacion) => {
     const calificacion = parseFloat(estudiante.calificacionTemp || "0");
 
-    // Validar rango (0-100)
     if (calificacion < 0 || calificacion > 100) {
       toast.error("La calificación debe estar entre 0 y 100");
       return;
@@ -122,30 +116,25 @@ export function TablaCalificaciones({ grupoMateriaId, parcialId }: TablaCalifica
 
     setSaving(estudiante.idEstudiante);
     try {
-      // 1. Si no existe el acta de calificaciones, crearla
       let actaId = calificacionParcialId;
       if (!actaId) {
-        // Crear el acta - necesitamos obtener el profesorId del usuario actual
-        // Por ahora usaremos un ID temporal (esto debería venir del contexto de autenticación)
         const nuevaActa = await abrirParcial({
           grupoMateriaId,
           parcialId,
-          profesorId: 1, // TODO: Obtener del contexto de usuario autenticado
+          profesorId: 1,
           fechaApertura: new Date().toISOString(),
         });
         actaId = nuevaActa.id;
         setCalificacionParcialId(actaId);
       }
 
-      // 2. Guardar la calificación como un detalle de evaluación
-      // Usamos TipoEvaluacion.Examen y peso 100% para representar la calificación total del parcial
       await upsertCalificacion({
         calificacionParcialId: actaId,
         grupoMateriaId,
         inscripcionId: estudiante.idInscripcion,
         tipoEvaluacionEnum: TipoEvaluacion.Examen,
         nombre: "Calificación del Parcial",
-        pesoEvaluacion: 100, // 100% del peso
+        pesoEvaluacion: 100,
         maxPuntos: 100,
         puntos: calificacion,
         fechaAplicacion: new Date().toISOString(),

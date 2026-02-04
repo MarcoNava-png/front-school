@@ -41,7 +41,6 @@ export default function KardexPage() {
   const [loading, setLoading] = useState(true);
   const [kardexData, setKardexData] = useState<KardexData | null>(null);
 
-  // Filtros
   const [selectedPeriodo, setSelectedPeriodo] = useState<string>("todos");
   const [selectedGrupo, setSelectedGrupo] = useState<string>("todos");
   const [vistaAgrupada, setVistaAgrupada] = useState(false);
@@ -65,7 +64,6 @@ export default function KardexPage() {
 
   const generatePDF = () => {
     toast.info("Generación de PDF en desarrollo");
-    // TODO: Implementar generación de PDF
   };
 
   const getColorByGrade = (grade: number | null) => {
@@ -77,7 +75,6 @@ export default function KardexPage() {
     return "text-red-600";
   };
 
-  // Obtener listas únicas de periodos y grupos
   const periodos = useMemo(() => {
     if (!kardexData) return [];
     const uniquePeriodos = [...new Set(kardexData.materias.map(m => m.periodoAcademico).filter(Boolean))];
@@ -90,7 +87,6 @@ export default function KardexPage() {
     return uniqueGrupos.sort();
   }, [kardexData]);
 
-  // Filtrar materias según selección
   const materiasFiltradas = useMemo(() => {
     if (!kardexData) return [];
 
@@ -101,7 +97,6 @@ export default function KardexPage() {
     });
   }, [kardexData, selectedPeriodo, selectedGrupo]);
 
-  // Agrupar materias por periodo
   const materiasPorPeriodo = useMemo(() => {
     const grupos: { [key: string]: MateriaKardex[] } = {};
 
@@ -144,7 +139,6 @@ export default function KardexPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
@@ -166,9 +160,7 @@ export default function KardexPage() {
         </Button>
       </div>
 
-      {/* Tarjetas de Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Promedio General */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -184,7 +176,6 @@ export default function KardexPage() {
           </CardContent>
         </Card>
 
-        {/* Créditos */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -213,7 +204,6 @@ export default function KardexPage() {
           </CardContent>
         </Card>
 
-        {/* Materias Aprobadas */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -230,8 +220,6 @@ export default function KardexPage() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Materias Reprobadas */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -249,8 +237,6 @@ export default function KardexPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Estado de Reinscripción */}
       {!kardexData.puedeReinscribirse && (
         <Card className="border-red-200 bg-red-50">
           <CardHeader>
@@ -268,8 +254,6 @@ export default function KardexPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Filtros */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -296,8 +280,6 @@ export default function KardexPage() {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Filtro de Grupo */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Grupo</label>
               <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
@@ -315,8 +297,6 @@ export default function KardexPage() {
               </Select>
             </div>
           </div>
-
-          {/* Contador de resultados filtrados y toggle de vista */}
           <div className="mt-4 flex items-center justify-between">
             <div className="text-sm text-gray-600">
               Mostrando <span className="font-semibold">{materiasFiltradas.length}</span> de{" "}
@@ -335,8 +315,6 @@ export default function KardexPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Historial de Materias */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -371,7 +349,6 @@ export default function KardexPage() {
             {["todas", "aprobadas", "reprobadas", "cursando"].map((tab) => (
               <TabsContent key={tab} value={tab} className="mt-4">
                 {vistaAgrupada ? (
-                  // Vista Agrupada por Periodo
                   <div className="space-y-4">
                     {Object.entries(materiasPorPeriodo)
                       .filter(([, materiasDelPeriodo]) => {
@@ -474,7 +451,6 @@ export default function KardexPage() {
                       })}
                   </div>
                 ) : (
-                  // Vista Lista Normal
                   <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>

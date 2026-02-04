@@ -14,18 +14,14 @@ import {
 
 import apiClient from "./api-client";
 
-// ============================================================================
-// TIPOS (mantener compatibilidad con backend)
-// ============================================================================
-
 export interface RegistrarPagoDto {
-  fechaPagoUtc: string; // ISO string
+  fechaPagoUtc: string;
   idMedioPago: number;
   monto: number;
-  moneda: string; // "MXN"
+  moneda: string;
   referencia?: string;
   notas?: string;
-  estatus: number; // 0 = CONFIRMADO
+  estatus: number;
 }
 
 export interface AplicacionLineaDto {
@@ -47,7 +43,6 @@ export interface PagoDto {
   referencia?: string | null;
   notas?: string | null;
   estatus: number;
-  // Información del estudiante/aspirante asociado
   idEstudiante?: number | null;
   matricula?: string | null;
   nombreEstudiante?: string | null;
@@ -60,47 +55,21 @@ export interface PagoConEstudiante extends PagoDto {
   matricula?: string;
 }
 
-// ============================================================================
-// SERVICIOS - LEGACY (mantener compatibilidad)
-// ============================================================================
-
-/**
- * Registra un nuevo pago en el sistema (versión legacy)
- * @param payload Datos del pago a registrar
- * @returns ID del pago creado
- */
 export async function registrarPago(payload: RegistrarPagoDto): Promise<number> {
   const { data } = await apiClient.post<number>(`/Pagos`, payload);
   return data;
 }
 
-/**
- * Aplica un pago registrado a uno o varios recibos
- * @param payload Datos de aplicación del pago
- * @returns IDs de las aplicaciones creadas
- */
 export async function aplicarPago(payload: AplicarPagoDto): Promise<number[]> {
   const { data } = await apiClient.post<number[]>(`/Pagos/aplicar`, payload);
   return data;
 }
 
-/**
- * Obtiene la información de un pago específico
- * @param id ID del pago
- * @returns Datos del pago
- */
 export async function obtenerPago(id: number): Promise<PagoDto> {
   const { data } = await apiClient.get<PagoDto>(`/Pagos/${id}`);
   return data;
 }
 
-/**
- * Obtiene los pagos realizados en un rango de fechas (Corte de caja - legacy)
- * @param fechaInicio Fecha inicio del corte
- * @param fechaFin Fecha fin del corte
- * @param usuarioId ID del usuario (opcional)
- * @returns Lista de pagos
- */
 export async function corteCaja(
   fechaInicio: string,
   fechaFin: string,
@@ -117,15 +86,6 @@ export async function corteCaja(
   return data;
 }
 
-// ============================================================================
-// SERVICIOS - MÓDULO DE CAJA (NUEVO)
-// ============================================================================
-
-/**
- * Busca recibos pendientes para cobro
- * @param criterio Matrícula, folio de recibo, o nombre del estudiante
- * @returns Información del estudiante y sus recibos pendientes
- */
 export async function buscarRecibosParaCobro(
   criterio: string
 ): Promise<RecibosParaCobro> {
@@ -135,11 +95,15 @@ export async function buscarRecibosParaCobro(
   return data;
 }
 
-/**
- * Registra un pago completo (nuevo flujo de caja)
- * @param payload Datos del pago con recibos seleccionados
- * @returns Información del pago registrado
- */
+export async function buscarTodosLosRecibos(
+  criterio: string
+): Promise<RecibosParaCobro> {
+  const { data } = await apiClient.get<RecibosParaCobro>(
+    `/caja/recibos-todos?criterio=${encodeURIComponent(criterio)}`
+  );
+  return data;
+}
+
 export async function registrarPagoCaja(
   payload: RegistrarPagoRequest
 ): Promise<PagoRegistrado> {
@@ -147,10 +111,6 @@ export async function registrarPagoCaja(
   return data;
 }
 
-/**
- * Cancela un pago registrado
- * @param payload Datos de la cancelación
- */
 export async function cancelarPago(payload: CancelarPagoRequest): Promise<void> {
   await apiClient.post(`/caja/pago/${payload.idPago}/cancelar`, {
     motivo: payload.motivo,
@@ -158,13 +118,6 @@ export async function cancelarPago(payload: CancelarPagoRequest): Promise<void> 
   });
 }
 
-/**
- * Obtiene el resumen del corte de caja actual
- * @param fechaInicio Fecha inicio (opcional)
- * @param fechaFin Fecha fin (opcional)
- * @param usuarioId ID del usuario (opcional)
- * @returns Resumen del corte con pagos y totales
- */
 export async function obtenerResumenCorteCaja(
   fechaInicio?: string,
   fechaFin?: string,
@@ -187,23 +140,11 @@ export async function obtenerResumenCorteCaja(
   return data;
 }
 
-/**
- * Cierra el corte de caja actual
- * @param payload Datos del cierre
- * @returns Corte de caja cerrado
- */
 export async function cerrarCorteCaja(payload: CerrarCorteRequest): Promise<CorteCaja> {
   const { data } = await apiClient.post<CorteCaja>("/caja/corte/cerrar", payload);
   return data;
 }
 
-/**
- * Obtiene todos los cortes de caja
- * @param usuarioId Filtrar por usuario (opcional)
- * @param fechaInicio Filtrar desde fecha (opcional)
- * @param fechaFin Filtrar hasta fecha (opcional)
- * @returns Lista de cortes de caja
- */
 export async function obtenerCortesCaja(
   usuarioId?: string,
   fechaInicio?: string,
@@ -226,21 +167,11 @@ export async function obtenerCortesCaja(
   return data;
 }
 
-/**
- * Obtiene un corte de caja específico por ID
- * @param id ID del corte
- * @returns Corte de caja con detalles
- */
 export async function obtenerCorteCajaPorId(id: number): Promise<CorteCaja> {
   const { data } = await apiClient.get<CorteCaja>(`/caja/cortes/${id}`);
   return data;
 }
 
-/**
- * Descarga el PDF de un corte de caja
- * @param id ID del corte
- * @returns Blob del PDF
- */
 export async function descargarCorteCajaPDF(id: number): Promise<Blob> {
   const response = await apiClient.get(`/caja/cortes/${id}/pdf`, {
     responseType: "blob",
@@ -248,24 +179,11 @@ export async function descargarCorteCajaPDF(id: number): Promise<Blob> {
   return response.data;
 }
 
-// ============================================================================
-// SERVICIOS - MEDIOS DE PAGO
-// ============================================================================
-
-/**
- * Obtiene todos los medios de pago activos
- * @returns Lista de medios de pago
- */
 export async function obtenerMediosPago(): Promise<MedioPago[]> {
   const { data } = await apiClient.get<MedioPago[]>("/catalogos/medios-pago");
   return data;
 }
 
-/**
- * Descarga comprobante de pago en PDF
- * @param idPago ID del pago
- * @returns Blob del PDF
- */
 export async function descargarComprobantePago(idPago: number): Promise<Blob> {
   const response = await apiClient.get(`/pagos/${idPago}/comprobante`, {
     responseType: "blob",
@@ -273,11 +191,6 @@ export async function descargarComprobantePago(idPago: number): Promise<Blob> {
   return response.data;
 }
 
-/**
- * Descarga el PDF del recibo
- * @param idRecibo ID del recibo
- * @returns Blob del PDF
- */
 export async function descargarReciboPdf(idRecibo: number): Promise<Blob> {
   const response = await apiClient.get(`/recibos/${idRecibo}/pdf`, {
     responseType: "blob",
@@ -285,48 +198,30 @@ export async function descargarReciboPdf(idRecibo: number): Promise<Blob> {
   return response.data;
 }
 
-/**
- * Abre el PDF del recibo en una nueva pestaña
- * @param idRecibo ID del recibo
- * @param folio Folio del recibo para el nombre del archivo
- */
 export async function imprimirReciboPdf(idRecibo: number, folio?: string): Promise<void> {
   const blob = await descargarReciboPdf(idRecibo);
   const url = window.URL.createObjectURL(blob);
   const nombreArchivo = `Recibo_${folio || idRecibo}_${new Date().toISOString().split('T')[0]}.pdf`;
 
-  // Crear un enlace temporal para descargar
   const link = document.createElement('a');
   link.href = url;
   link.download = nombreArchivo;
 
-  // Abrir en nueva pestaña para impresión
   const newWindow = window.open(url, '_blank');
   if (newWindow) {
     newWindow.focus();
   }
 
-  // Limpiar el URL después de un tiempo
   setTimeout(() => {
     window.URL.revokeObjectURL(url);
   }, 1000);
 }
 
-/**
- * Quita/condona el recargo de un recibo
- * Solo disponible para roles autorizados (ADMIN, DIRECTOR, FINANZAS)
- * @param idRecibo ID del recibo
- * @param motivo Motivo de la condonación
- * @returns Resultado de la operación
- */
 export async function quitarRecargoRecibo(idRecibo: number, motivo: string): Promise<{ message: string; recargoCondonado: number }> {
   const { data } = await apiClient.post(`/caja/recibos/${idRecibo}/quitar-recargo`, { motivo });
   return data;
 }
 
-/**
- * Resultado de modificar un detalle de recibo
- */
 export interface ModificarDetalleResultado {
   exitoso: boolean;
   mensaje: string;
@@ -336,9 +231,6 @@ export interface ModificarDetalleResultado {
   nuevoSaldo: number;
 }
 
-/**
- * Resultado de modificar un recargo
- */
 export interface ModificarRecargoResultado {
   exitoso: boolean;
   mensaje: string;
@@ -347,15 +239,6 @@ export interface ModificarRecargoResultado {
   nuevoTotal: number;
 }
 
-/**
- * Modifica el monto de un detalle de recibo (colegiatura, inscripción, etc.)
- * Solo disponible para roles autorizados (ADMIN, DIRECTOR, FINANZAS)
- * @param idRecibo ID del recibo
- * @param idReciboDetalle ID del detalle a modificar
- * @param nuevoMonto Nuevo monto
- * @param motivo Motivo de la modificación
- * @returns Resultado de la operación
- */
 export async function modificarDetalleRecibo(
   idRecibo: number,
   idReciboDetalle: number,
@@ -369,14 +252,6 @@ export async function modificarDetalleRecibo(
   return data;
 }
 
-/**
- * Modifica el recargo de un recibo
- * Solo disponible para roles autorizados (ADMIN, DIRECTOR, FINANZAS)
- * @param idRecibo ID del recibo
- * @param nuevoRecargo Nuevo monto de recargo
- * @param motivo Motivo de la modificación
- * @returns Resultado de la operación
- */
 export async function modificarRecargoRecibo(
   idRecibo: number,
   nuevoRecargo: number,
@@ -389,19 +264,15 @@ export async function modificarRecargoRecibo(
   return data;
 }
 
-// ============================================================================
-// NUEVO ENDPOINT - REGISTRAR Y APLICAR EN UNA SOLA OPERACIÓN
-// ============================================================================
-
 export interface RegistrarYAplicarPagoDto {
   idRecibo: number;
-  fechaPagoUtc?: string; // ISO string, opcional (usa fecha actual si no se proporciona)
+  fechaPagoUtc?: string;
   idMedioPago: number;
   monto: number;
-  moneda?: string; // "MXN" por defecto
+  moneda?: string;
   referencia?: string;
   notas?: string;
-  estatus?: number; // 0 = CONFIRMADO por defecto
+  estatus?: number;
 }
 
 export interface RegistrarYAplicarPagoResultDto {
@@ -415,42 +286,21 @@ export interface RegistrarYAplicarPagoResultDto {
   reciboPagadoCompletamente: boolean;
 }
 
-/**
- * Registra un pago y lo aplica automáticamente a un recibo en una sola operación atómica.
- * Este endpoint crea automáticamente el detalle del recibo si no existe.
- * ES EL MÉTODO RECOMENDADO PARA PAGOS.
- *
- * @param payload Datos del pago con el ID del recibo
- * @returns Resultado del pago con estatus actualizado
- */
 export async function registrarYAplicarPago(payload: RegistrarYAplicarPagoDto): Promise<RegistrarYAplicarPagoResultDto> {
   const { data } = await apiClient.post<RegistrarYAplicarPagoResultDto>(`/Pagos/registrar-y-aplicar`, {
     ...payload,
     fechaPagoUtc: payload.fechaPagoUtc ?? new Date().toISOString(),
     moneda: payload.moneda ?? "MXN",
-    estatus: payload.estatus ?? 0, // CONFIRMADO
+    estatus: payload.estatus ?? 0,
   });
   return data;
 }
 
-// ============================================================================
-// CORTE DE CAJA DETALLADO
-// ============================================================================
-
-/**
- * Obtiene la lista de usuarios que han realizado cobros (cajeros)
- * @returns Lista de cajeros con estadísticas
- */
 export async function obtenerCajeros(): Promise<UsuarioCajero[]> {
   const { data } = await apiClient.get<UsuarioCajero[]>("/caja/cajeros");
   return data;
 }
 
-/**
- * Genera un corte de caja detallado con información completa de pagos
- * @param request Parámetros del corte (usuario opcional, fechas)
- * @returns Resumen detallado del corte de caja
- */
 export async function generarCorteCajaDetallado(
   request: GenerarCorteCajaRequest
 ): Promise<ResumenCorteCajaDetallado> {
@@ -461,11 +311,6 @@ export async function generarCorteCajaDetallado(
   return data;
 }
 
-/**
- * Genera y descarga el PDF del corte de caja
- * @param request Parámetros del corte
- * @returns Blob del PDF
- */
 export async function generarPdfCorteCaja(
   request: GenerarCorteCajaRequest
 ): Promise<Blob> {

@@ -39,7 +39,6 @@ export function AccountSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Botón de Notificaciones */}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -48,10 +47,6 @@ export function AccountSwitcher() {
             className="relative h-9 w-9 rounded-lg hover:bg-muted"
           >
             <Bell className="h-5 w-5 text-muted-foreground" />
-            {/* Badge de notificaciones (descomentar cuando haya notificaciones) */}
-            {/* <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
-              3
-            </span> */}
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -73,7 +68,6 @@ export function AccountSwitcher() {
         </PopoverContent>
       </Popover>
 
-      {/* Menú de Usuario */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors cursor-pointer focus:outline-none">

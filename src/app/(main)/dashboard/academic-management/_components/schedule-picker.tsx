@@ -59,7 +59,6 @@ export function SchedulePicker({ value, onChange, aulaDefault = "" }: SchedulePi
       aula: aula || aulaDefault,
     };
 
-    // Validar el nuevo horario
     const validation = validateNewSchedule(newHorario, value);
     if (!validation.valid) {
       setValidationError(validation.error || "Error de validación");
@@ -69,7 +68,6 @@ export function SchedulePicker({ value, onChange, aulaDefault = "" }: SchedulePi
     onChange([...value, newHorario]);
     setValidationError(null);
 
-    // Reset para agregar otro
     setHoraInicio("08:00");
     setHoraFin("10:00");
   };
@@ -79,18 +77,15 @@ export function SchedulePicker({ value, onChange, aulaDefault = "" }: SchedulePi
     onChange(updated);
   };
 
-  // Agrupar horarios por día para visualización
   const horariosPorDia = DIAS_SEMANA.map((dia) => ({
     dia,
     horarios: value.filter((h) => h.dia === dia),
   }));
 
-  // Calcular horas semanales
   const horasSemanales = calculateWeeklyHours(value);
 
   return (
     <div className="space-y-4">
-      {/* Error de validación */}
       {validationError && (
         <Alert variant="destructive" className="bg-red-50 border-red-200">
           <AlertCircle className="h-4 w-4" />
@@ -98,7 +93,6 @@ export function SchedulePicker({ value, onChange, aulaDefault = "" }: SchedulePi
         </Alert>
       )}
 
-      {/* Formulario para agregar horario */}
       <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
         <div className="flex items-center gap-2 mb-3">
           <Clock className="h-4 w-4 text-blue-600" />
@@ -185,7 +179,6 @@ export function SchedulePicker({ value, onChange, aulaDefault = "" }: SchedulePi
         </div>
       </Card>
 
-      {/* Vista de horarios por día */}
       <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-900">
           Horarios Configurados ({value.length})
@@ -253,7 +246,6 @@ export function SchedulePicker({ value, onChange, aulaDefault = "" }: SchedulePi
         )}
       </div>
 
-      {/* Resumen visual en formato tabla */}
       {value.length > 0 && (
         <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between mb-3">

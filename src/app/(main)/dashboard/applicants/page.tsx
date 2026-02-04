@@ -69,7 +69,6 @@ const columns: ColumnDef<Applicant>[] = withDndColumn([
   },
 ]);
 
-// Helper functions extracted to reduce complexity
 const getStatusBadgeClass = (estatus: string) => {
   if (estatus === "Inscrito") return "bg-green-100 text-green-700";
   if (estatus === "Aceptado") return "bg-blue-100 text-blue-700";
@@ -149,7 +148,7 @@ function Page() {
           getGenresList(),
           getCivilStatus(),
           getCampusList(),
-          getStudyPlansList(1, 1000), // Cargar todos los planes para el filtro por campus
+          getStudyPlansList(),
           getContactMethods(),
           getSchedules(),
           getApplicantStatus(),
@@ -196,7 +195,6 @@ function Page() {
 
   return (
     <div className="@container/main flex flex-col gap-4 space-y-4 md:gap-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -230,7 +228,6 @@ function Page() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card
           className="border-2"

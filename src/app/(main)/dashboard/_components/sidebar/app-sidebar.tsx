@@ -5,17 +5,11 @@ import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Sparkles } from "lucide-react";
-
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { APP_CONFIG } from "@/config/app-config";
 import { usePermissions } from "@/hooks/use-permissions";
 import { sidebarItems, filterSidebarByModules } from "@/navigation/sidebar/sidebar-items";
 
@@ -24,13 +18,9 @@ import { NavMain } from "./nav-main";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { accessibleModules, isLoading, isAdmin } = usePermissions();
 
-  // Filtrar items del sidebar segun los modulos accesibles
   const filteredItems = useMemo(() => {
-    // Si es admin, mostrar todo
     if (isAdmin) return sidebarItems;
-    // Si aun esta cargando, mostrar solo dashboard
     if (isLoading) return filterSidebarByModules(["Dashboard"]);
-    // Filtrar segun modulos accesibles
     return filterSidebarByModules(accessibleModules);
   }, [accessibleModules, isLoading, isAdmin]);
 
@@ -42,42 +32,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         background: 'linear-gradient(to bottom, #14356F, #0f2850)',
       }}
     >
-      <SidebarHeader
-        className="border-b border-white/10"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
-        }}
-      >
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              size="lg"
-              className="data-[slot=sidebar-menu-button]:!p-3 hover:bg-white/10 transition-all duration-300 group/logo"
-            >
-              <Link href="/dashboard/default" className="flex items-center gap-3">
-                <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-lg ring-2 ring-white/20 group-hover/logo:ring-white/40 transition-all duration-300 group-hover/logo:scale-105">
-                  <Image
-                    src="/Logousag.png"
-                    alt="Logo USAG"
-                    width={36}
-                    height={36}
-                    className="object-contain rounded-lg"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-base font-bold whitespace-nowrap text-white">
-                    {APP_CONFIG.name}
-                  </span>
-                  <span className="text-xs text-white/70 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3 text-[#5a8fd4]" />
-                    Sistema Académico
-                  </span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="border-b border-white/10 p-4">
+        <Link
+          href="/dashboard/default"
+          className="block w-full rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]"
+          style={{ background: 'linear-gradient(135deg, #14356F, #1e4a8f)' }}
+        >
+          <div className="p-4 flex items-center justify-center">
+            <Image
+              src="/Logousag.png"
+              alt="USAG"
+              width={180}
+              height={70}
+              className="object-contain w-full h-auto"
+              priority
+              unoptimized
+            />
+          </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent className="px-2 py-4">
         <NavMain items={filteredItems} />

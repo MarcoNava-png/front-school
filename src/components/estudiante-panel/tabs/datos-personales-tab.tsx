@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Pencil, Save, X, User, Phone, Mail, MapPin, Users } from "lucide-react";
-import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Pencil, Save, X, User, Phone, Mail, MapPin, Users } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -19,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Textarea } from "@/components/ui/textarea";
 import { actualizarDatosEstudiante } from "@/services/estudiante-panel-service";
 import type { EstudiantePanelDto, ActualizarDatosEstudianteRequest } from "@/types/estudiante-panel";
 
@@ -56,7 +56,6 @@ export function DatosPersonalesTab({ panel, onUpdate }: DatosPersonalesTabProps)
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Extraer nombre y apellidos del nombre completo
   const nombreParts = panel.nombreCompleto.split(" ");
   const apellidoPaterno = nombreParts.length > 1 ? nombreParts[nombreParts.length - 2] : "";
   const apellidoMaterno = nombreParts.length > 2 ? nombreParts[nombreParts.length - 1] : "";
@@ -123,7 +122,6 @@ export function DatosPersonalesTab({ panel, onUpdate }: DatosPersonalesTabProps)
 
   return (
     <div className="space-y-6">
-      {/* Información Personal */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -144,7 +142,6 @@ export function DatosPersonalesTab({ panel, onUpdate }: DatosPersonalesTabProps)
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Datos personales */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -238,7 +235,6 @@ export function DatosPersonalesTab({ panel, onUpdate }: DatosPersonalesTabProps)
                 />
               </div>
 
-              {/* Separador - Contacto */}
               <div className="border-t pt-6">
                 <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
                   <Mail className="w-4 h-4" style={{ color: "#14356F" }} />
@@ -303,7 +299,6 @@ export function DatosPersonalesTab({ panel, onUpdate }: DatosPersonalesTabProps)
                 </div>
               </div>
 
-              {/* Separador - Contacto de Emergencia */}
               <div className="border-t pt-6">
                 <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
                   <Users className="w-4 h-4" style={{ color: "#14356F" }} />
@@ -376,7 +371,6 @@ export function DatosPersonalesTab({ panel, onUpdate }: DatosPersonalesTabProps)
                 </div>
               </div>
 
-              {/* Botones de acción */}
               {isEditing && (
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button
@@ -403,7 +397,6 @@ export function DatosPersonalesTab({ panel, onUpdate }: DatosPersonalesTabProps)
         </CardContent>
       </Card>
 
-      {/* Información de solo lectura */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Información del Sistema</CardTitle>

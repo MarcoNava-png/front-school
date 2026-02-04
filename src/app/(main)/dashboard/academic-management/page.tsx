@@ -30,7 +30,6 @@ export default function AcademicManagementPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Filtrar planes por campus seleccionado
   const filteredPlans = useMemo(() => {
     if (selectedCampusId === "all") return studyPlans;
     return studyPlans.filter(plan =>
@@ -42,7 +41,6 @@ export default function AcademicManagementPage() {
     loadInitialData();
   }, []);
 
-  // Cuando cambia el campus, seleccionar el primer plan disponible
   useEffect(() => {
     if (filteredPlans.length > 0) {
       const currentPlanExists = filteredPlans.some(p => p.idPlanEstudios.toString() === selectedPlanId);
@@ -73,12 +71,10 @@ export default function AcademicManagementPage() {
       setStudyPlans(plansData);
       setAcademicPeriods(periodsData);
 
-      // Seleccionar el periodo actual por defecto
       const periodoActual = periodsData.find(p => p.esPeriodoActual);
       if (periodoActual) {
         setSelectedPeriodId(periodoActual.idPeriodoAcademico.toString());
       } else if (periodsData.length > 0) {
-        // Si no hay periodo actual, seleccionar el más reciente
         setSelectedPeriodId(periodsData[0].idPeriodoAcademico.toString());
       }
 
@@ -125,7 +121,6 @@ export default function AcademicManagementPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -152,9 +147,7 @@ export default function AcademicManagementPage() {
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border shadow-sm">
-        {/* Filtro de Campus */}
         <div className="space-y-2">
           <Label htmlFor="campus" className="text-sm font-medium !text-gray-900 flex items-center gap-2">
             <Building2 className="w-4 h-4" style={{ color: '#14356F' }} />
@@ -184,7 +177,6 @@ export default function AcademicManagementPage() {
           </Select>
         </div>
 
-        {/* Filtro de Licenciatura */}
         <div className="space-y-2">
           <Label htmlFor="plan" className="text-sm font-medium !text-gray-900">
             Licenciatura
@@ -218,7 +210,6 @@ export default function AcademicManagementPage() {
           </Select>
         </div>
 
-        {/* Filtro de Periodo Académico */}
         <div className="space-y-2">
           <Label htmlFor="period" className="text-sm font-medium !text-gray-900">
             Periodo Académico
@@ -255,7 +246,6 @@ export default function AcademicManagementPage() {
         </div>
       </div>
 
-      {/* Academic Data */}
       {loading ? (
         <div className="flex flex-col items-center justify-center min-h-[300px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" style={{ borderColor: '#14356F' }}></div>
@@ -310,7 +300,6 @@ export default function AcademicManagementPage() {
         </div>
       )}
 
-      {/* Create Group Modal */}
       <CreateGroupModal
         open={showCreateModal}
         onOpenChange={setShowCreateModal}

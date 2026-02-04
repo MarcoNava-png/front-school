@@ -7,7 +7,6 @@ export interface MatterPlan {
   cuatrimestre: number;
   esOptativa: boolean;
 
-  // Campos adicionales que vienen del backend
   claveMateria?: string;
   nombreMateria?: string;
   creditos?: number;
@@ -19,7 +18,6 @@ export interface PayloadMatterPlan {
   idMateria: number;
   cuatrimestre: number;
   esOptativa: boolean;
-  // Campos opcionales para crear (no requeridos para actualizar)
   nombrePlanEstudios?: string;
   materia?: string;
 }

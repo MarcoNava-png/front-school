@@ -41,13 +41,10 @@ export function EnrollmentResultModal({ open, onOpenChange, result }: Enrollment
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Student Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="font-semibold text-blue-900">{result.nombreEstudiante}</p>
             <p className="text-sm text-blue-700">Matrícula: {result.matriculaEstudiante}</p>
           </div>
-
-          {/* Summary */}
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-gray-50 border rounded-lg p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">{result.totalMaterias}</p>
@@ -64,8 +61,6 @@ export function EnrollmentResultModal({ open, onOpenChange, result }: Enrollment
               </div>
             )}
           </div>
-
-          {/* Validations */}
           {result.validaciones.advertencias.length > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <p className="font-semibold text-yellow-900 mb-2">Advertencias:</p>
@@ -76,8 +71,6 @@ export function EnrollmentResultModal({ open, onOpenChange, result }: Enrollment
               </ul>
             </div>
           )}
-
-          {/* Subjects Detail */}
           <div className="space-y-2">
             <p className="font-semibold">Detalle de Materias:</p>
             <div className="max-h-[300px] overflow-y-auto space-y-2">

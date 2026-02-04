@@ -1,20 +1,13 @@
 "use client";
 
 import { useState } from "react";
+
 import { Award, Calendar, CheckCircle, XCircle, Plus, Percent, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +16,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { BecaAsignadaDto } from "@/types/estudiante-panel";
+// eslint-disable-next-line no-duplicate-imports
 import { formatCurrency, formatDate } from "@/types/estudiante-panel";
 
 interface BecasTabProps {
@@ -59,7 +60,6 @@ export function BecasTab({ idEstudiante, becas, onUpdate }: BecasTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Resumen de becas activas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
           <CardContent className="pt-4">
@@ -108,7 +108,6 @@ export function BecasTab({ idEstudiante, becas, onUpdate }: BecasTabProps) {
         </Card>
       </div>
 
-      {/* Becas activas */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -149,7 +148,6 @@ export function BecasTab({ idEstudiante, becas, onUpdate }: BecasTabProps) {
         </CardContent>
       </Card>
 
-      {/* Historial de becas */}
       {becasInactivas.length > 0 && (
         <Card>
           <CardHeader>
@@ -195,7 +193,6 @@ export function BecasTab({ idEstudiante, becas, onUpdate }: BecasTabProps) {
         </Card>
       )}
 
-      {/* Modal para asignar beca (placeholder) */}
       <Dialog open={showAsignarModal} onOpenChange={setShowAsignarModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -222,7 +219,6 @@ export function BecasTab({ idEstudiante, becas, onUpdate }: BecasTabProps) {
   );
 }
 
-// Componente de tarjeta de beca
 interface BecaCardProps {
   beca: BecaAsignadaDto;
 }

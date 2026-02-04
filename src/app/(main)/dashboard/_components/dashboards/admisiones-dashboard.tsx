@@ -27,7 +27,6 @@ interface AdmisionesDashboardProps {
 }
 
 export function AdmisionesDashboard({ data }: AdmisionesDashboardProps) {
-  // Calculate funnel percentages
   const maxFunnel = Math.max(
     data.funnel.nuevo,
     data.funnel.contactado,
@@ -49,7 +48,6 @@ export function AdmisionesDashboard({ data }: AdmisionesDashboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -66,7 +64,6 @@ export function AdmisionesDashboard({ data }: AdmisionesDashboardProps) {
         <Separator />
       </div>
 
-      {/* Prospectos Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Users className="h-5 w-5 text-indigo-600" />
@@ -97,7 +94,6 @@ export function AdmisionesDashboard({ data }: AdmisionesDashboardProps) {
         </StatGrid>
       </div>
 
-      {/* Funnel de Conversion */}
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -144,7 +140,6 @@ export function AdmisionesDashboard({ data }: AdmisionesDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Citas y Documentos */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Calendar className="h-5 w-5 text-purple-600" />
@@ -174,7 +169,6 @@ export function AdmisionesDashboard({ data }: AdmisionesDashboardProps) {
         </StatGrid>
       </div>
 
-      {/* Metricas de Conversion */}
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -230,7 +224,6 @@ export function AdmisionesDashboard({ data }: AdmisionesDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Alertas y Acciones */}
       <div className="grid gap-6 md:grid-cols-2">
         <AlertCard
           alerts={data.alertas}

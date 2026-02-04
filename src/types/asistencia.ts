@@ -1,14 +1,10 @@
-// ============================================================================
-// ASISTENCIAS - Control de Asistencia por Profesor
-// ============================================================================
-
 export interface AsistenciaEstudiante {
-  idAsistencia?: number; // ID de la asistencia registrada (si existe)
+  idAsistencia?: number;
   idInscripcion: number;
   idEstudiante: number;
   matricula: string;
   nombreCompleto: string;
-  presente: boolean | null; // null = no registrado, true = presente, false = ausente
+  presente: boolean | null;
   justificada: boolean;
   motivoJustificacion?: string;
   horaRegistro?: string;
@@ -36,7 +32,7 @@ export interface ResumenAsistencias {
   faltasJustificadas: number;
   faltasInjustificadas: number;
   porcentajeAsistencia: number;
-  alerta: boolean; // true si rebasa el límite (ej: >20% faltas)
+  alerta: boolean;
 }
 
 export interface AsistenciaPorFecha {
@@ -52,15 +48,14 @@ export interface ConfiguracionAsistencia {
   idGrupoMateria: number;
   nombreMateria: string;
   grupo: string;
-  limitePorcentajeFaltas: number; // Ej: 20 para 20%
+  limitePorcentajeFaltas: number;
   totalClasesEsperadas: number;
   clasesRegistradas: number;
 }
 
-// Request para registrar/actualizar asistencia
 export interface RegistrarAsistenciaRequest {
   idGrupoMateria: number;
-  fecha: string; // ISO format: "2024-11-22"
+  fecha: string;
   asistencias: {
     idInscripcion: number;
     presente: boolean;
@@ -69,7 +64,6 @@ export interface RegistrarAsistenciaRequest {
   }[];
 }
 
-// Response del resumen de un grupo-materia
 export interface ResumenGrupoMateriaAsistencias {
   idGrupoMateria: number;
   nombreMateria: string;
@@ -82,7 +76,6 @@ export interface ResumenGrupoMateriaAsistencias {
   ultimaClase?: string;
 }
 
-// Validación de fechas de clase
 export interface ValidacionFechaClase {
   esFechaValida: boolean;
   esDiaDeClase: boolean;
@@ -90,11 +83,10 @@ export interface ValidacionFechaClase {
   diaSemanaNombre: string;
 }
 
-// Información de días de clase de una materia
 export interface DiasClaseMateria {
   idGrupoMateria: number;
   nombreMateria: string;
-  diasSemana: string[]; // ['Lunes', 'Miércoles', 'Viernes']
+  diasSemana: string[];
   horarios: Array<{
     dia: string;
     horaInicio: string;

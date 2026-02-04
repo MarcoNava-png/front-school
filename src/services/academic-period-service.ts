@@ -17,22 +17,15 @@ export async function updateAcademicPeriod(payload: AcademicPeriod): Promise<Aca
   return data;
 }
 
-/**
- * Obtiene el periodo académico actual
- */
 export async function getCurrentAcademicPeriod(): Promise<AcademicPeriod | null> {
   try {
     const { data } = await apiClient.get<AcademicPeriod>(`/PeriodoAcademico/actual`);
     return data;
   } catch {
-    // Si no hay periodo actual, retorna null
     return null;
   }
 }
 
-/**
- * Marca un periodo como actual
- */
 export async function setCurrentAcademicPeriod(idPeriodoAcademico: number): Promise<{ mensaje: string; periodo: AcademicPeriod }> {
   const { data } = await apiClient.post<{ mensaje: string; periodo: AcademicPeriod }>(
     `/PeriodoAcademico/${idPeriodoAcademico}/marcar-actual`
@@ -40,17 +33,11 @@ export async function setCurrentAcademicPeriod(idPeriodoAcademico: number): Prom
   return data;
 }
 
-/**
- * Obtiene un periodo académico por ID
- */
 export async function getAcademicPeriodById(id: number): Promise<AcademicPeriod> {
   const { data } = await apiClient.get<AcademicPeriod>(`/PeriodoAcademico/${id}`);
   return data;
 }
 
-/**
- * Elimina un periodo académico (soft delete)
- */
 export async function deleteAcademicPeriod(id: number): Promise<{ mensaje: string }> {
   const { data } = await apiClient.delete<{ mensaje: string }>(`/PeriodoAcademico/${id}`);
   return data;

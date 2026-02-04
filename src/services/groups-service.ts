@@ -16,13 +16,6 @@ import {
 
 import apiClient from "./api-client";
 
-// ============================================================================
-// GRUPOS
-// ============================================================================
-
-/**
- * Obtiene lista paginada de grupos
- */
 export async function getGroups(
   page = 1,
   pageSize = 20,
@@ -39,17 +32,11 @@ export async function getGroups(
   return data;
 }
 
-/**
- * Busca grupos por codigo (ej: "111", "122", "512")
- */
 export async function getGroupByCode(codigoGrupo: string): Promise<Group> {
   const { data } = await apiClient.get<Group>(`/grupos/codigo/${codigoGrupo}`);
   return data;
 }
 
-/**
- * Busca grupos por criterios
- */
 export async function searchGroups(filters: {
   numeroCuatrimestre?: number;
   idTurno?: number;
@@ -66,13 +53,6 @@ export async function searchGroups(filters: {
   return data;
 }
 
-// ============================================================================
-// INSCRIPCION A GRUPO
-// ============================================================================
-
-/**
- * Inscribe un estudiante a TODAS las materias de un grupo
- */
 export async function enrollStudentInGroup(
   idGrupo: number,
   request: EnrollStudentInGroupRequest,
@@ -84,34 +64,16 @@ export async function enrollStudentInGroup(
   return data;
 }
 
-// ============================================================================
-// ESTUDIANTES EN GRUPO
-// ============================================================================
-
-/**
- * Obtiene todos los estudiantes inscritos en un grupo
- */
 export async function getStudentsInGroup(idGrupo: number): Promise<StudentsInGroup> {
   const { data } = await apiClient.get<StudentsInGroup>(`/grupos/${idGrupo}/estudiantes`);
   return data;
 }
 
-/**
- * Obtiene estudiantes inscritos en un grupo-materia especifico
- */
 export async function getStudentsByGroupSubject(idGrupoMateria: number): Promise<StudentInGroup[]> {
   const { data } = await apiClient.get<StudentInGroup[]>(`/grupos/gruposmaterias/${idGrupoMateria}/estudiantes`);
   return data;
 }
 
-// ============================================================================
-// GESTIÓN ACADÉMICA DE GRUPOS
-// ============================================================================
-
-/**
- * Obtiene la gestión académica de un plan de estudios
- * Muestra todos los grupos organizados por cuatrimestre
- */
 export async function getAcademicManagement(
   idPlanEstudios: number,
   idPeriodoAcademico?: number,
@@ -127,9 +89,6 @@ export async function getAcademicManagement(
   return data;
 }
 
-/**
- * Crea un grupo con materias automáticas
- */
 export async function createGroupWithSubjects(
   request: CreateGroupWithSubjectsRequest,
 ): Promise<CreateGroupWithSubjectsResponse> {
@@ -137,48 +96,29 @@ export async function createGroupWithSubjects(
   return data;
 }
 
-/**
- * Obtiene las materias de un grupo
- */
 export async function getGroupSubjects(idGrupo: number): Promise<GrupoMateria[]> {
   const { data } = await apiClient.get<GrupoMateria[]>(`/grupos/${idGrupo}/materias`);
   return data;
 }
 
-/**
- * Agrega una materia a un grupo
- */
 export async function addSubjectToGroup(idGrupo: number, request: AddSubjectToGroupRequest): Promise<GrupoMateria> {
   const { data } = await apiClient.post<GrupoMateria>(`/grupos/${idGrupo}/materias`, request);
   return data;
 }
 
-/**
- * Obtiene los detalles de una materia específica de un grupo (incluyendo horario)
- */
 export async function getGrupoMateriaById(idGrupoMateria: number): Promise<GrupoMateria> {
   const { data } = await apiClient.get<GrupoMateria>(`/grupos/materias/${idGrupoMateria}`);
   return data;
 }
 
-/**
- * Elimina una materia de un grupo
- */
 export async function removeSubjectFromGroup(idGrupoMateria: number): Promise<void> {
   await apiClient.delete(`/grupos/materias/${idGrupoMateria}`);
 }
 
-/**
- * Promueve estudiantes al siguiente cuatrimestre
- */
 export async function promoteStudents(request: PromocionRequest): Promise<PromocionResponse> {
   const { data } = await apiClient.post<PromocionResponse>("/grupos/promocion", request);
   return data;
 }
-
-// ============================================================================
-// PROMOCIÓN / REINSCRIPCIÓN
-// ============================================================================
 
 export interface PreviewPromocionRequest {
   idGrupoActual: number;
@@ -219,10 +159,6 @@ export interface PreviewPromocionResult {
   estudiantes: EstudiantePreview[];
 }
 
-/**
- * Obtiene un preview de la promoción sin ejecutarla
- * Muestra estudiantes elegibles, pagos pendientes, etc.
- */
 export async function previewPromocion(request: PreviewPromocionRequest): Promise<PreviewPromocionResult> {
   const { data } = await apiClient.post<PreviewPromocionResult>("/grupos/promocion/preview", request);
   return data;
@@ -264,31 +200,19 @@ export interface EstudiantePromocionResultado {
   recibosPendientes: number;
 }
 
-/**
- * Ejecuta la promoción de estudiantes al siguiente cuatrimestre
- */
 export async function executePromocion(request: ExecutePromocionRequest): Promise<PromocionResultado> {
   const { data } = await apiClient.post<PromocionResultado>("/grupos/promocion", request);
   return data;
 }
 
-/**
- * Elimina un grupo
- */
 export async function deleteGroup(idGrupo: number): Promise<void> {
   await apiClient.delete(`/grupos/${idGrupo}`);
 }
 
-/**
- * Actualiza los horarios de una materia en un grupo
- */
 export async function updateSubjectSchedule(idGrupoMateria: number, horarioJson: import("@/types/group").HorarioMateria[]): Promise<void> {
   await apiClient.put(`/grupos/materias/${idGrupoMateria}/horarios`, { horarioJson });
 }
 
-/**
- * Asigna o actualiza el profesor de una materia en un grupo
- */
 export async function assignTeacherToSubject(
   idGrupoMateria: number,
   idProfesor: number | null
@@ -299,11 +223,6 @@ export async function assignTeacherToSubject(
   );
   return data;
 }
-
-// ============================================================================
-// INSCRIPCIÓN DIRECTA A GRUPOS (SIN MATERIAS)
-// Para gestión administrativa/financiera
-// ============================================================================
 
 export interface EstudianteGrupoResult {
   idEstudianteGrupo: number;
@@ -352,10 +271,6 @@ export interface EstudiantesDelGrupoResponse {
   estudiantes: EstudianteEnGrupo[];
 }
 
-/**
- * Inscribe un estudiante directamente a un grupo (sin necesidad de materias)
- * Útil para gestión administrativa y financiera
- */
 export async function inscribirEstudianteDirecto(
   idGrupo: number,
   idEstudiante: number,
@@ -368,9 +283,6 @@ export async function inscribirEstudianteDirecto(
   return data;
 }
 
-/**
- * Inscribe múltiples estudiantes a un grupo de forma masiva (sin necesidad de materias)
- */
 export async function inscribirEstudiantesMasivo(
   idGrupo: number,
   idsEstudiantes: number[],
@@ -383,9 +295,6 @@ export async function inscribirEstudiantesMasivo(
   return data;
 }
 
-/**
- * Obtiene los estudiantes inscritos directamente en un grupo (tabla EstudianteGrupo)
- */
 export async function getEstudiantesDelGrupoDirecto(
   idGrupo: number
 ): Promise<EstudiantesDelGrupoResponse> {
@@ -395,18 +304,11 @@ export async function getEstudiantesDelGrupoDirecto(
   return data;
 }
 
-/**
- * Elimina la inscripción de un estudiante del grupo
- */
 export async function eliminarEstudianteDeGrupo(
   idEstudianteGrupo: number
 ): Promise<void> {
   await apiClient.delete(`/grupos/estudiante-grupo/${idEstudianteGrupo}`);
 }
-
-// ============================================================================
-// IMPORTACIÓN COMPLETA DE ESTUDIANTES (Persona + Estudiante + Inscripción)
-// ============================================================================
 
 export interface EstudianteImportar {
   nombre: string;
@@ -447,10 +349,6 @@ export interface ImportarEstudiantesGrupoResponse {
   resultados: EstudianteImportadoResult[];
 }
 
-/**
- * Importa estudiantes desde Excel creando Persona, Estudiante e inscribiéndolos al grupo.
- * Flujo completo: Persona → Estudiante (con matrícula autogenerada) → EstudianteGrupo
- */
 export async function importarEstudiantesCompleto(
   idGrupo: number,
   estudiantes: EstudianteImportar[],

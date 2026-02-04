@@ -40,7 +40,6 @@ interface FinanzasDashboardProps {
 export function FinanzasDashboard({ data }: FinanzasDashboardProps) {
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -57,7 +56,6 @@ export function FinanzasDashboard({ data }: FinanzasDashboardProps) {
         <Separator />
       </div>
 
-      {/* Ingresos Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-emerald-600" />
@@ -95,8 +93,6 @@ export function FinanzasDashboard({ data }: FinanzasDashboardProps) {
           />
         </StatGrid>
       </div>
-
-      {/* Deudas Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-amber-600" />
@@ -126,8 +122,6 @@ export function FinanzasDashboard({ data }: FinanzasDashboardProps) {
           />
         </StatGrid>
       </div>
-
-      {/* Estado de Recibos */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Receipt className="h-5 w-5 text-blue-600" />
@@ -158,7 +152,6 @@ export function FinanzasDashboard({ data }: FinanzasDashboardProps) {
         </StatGrid>
       </div>
 
-      {/* Top Morosos */}
       {data.topMorosos.length > 0 && (
         <Card className="border-2 border-red-200 dark:border-red-800">
           <CardHeader>
@@ -210,7 +203,6 @@ export function FinanzasDashboard({ data }: FinanzasDashboardProps) {
         </Card>
       )}
 
-      {/* Alertas y Acciones */}
       <div className="grid gap-6 md:grid-cols-2">
         <AlertCard
           alerts={data.alertas}

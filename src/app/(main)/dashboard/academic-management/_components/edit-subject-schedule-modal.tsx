@@ -29,7 +29,6 @@ export function EditSubjectScheduleModal({
 
   useEffect(() => {
     if (open && subject) {
-      // Cargar horarios existentes si hay
       setHorarios(subject.horarioJson || []);
     }
     if (!open) {
@@ -49,8 +48,6 @@ export function EditSubjectScheduleModal({
 
     setLoading(true);
     try {
-      // Por ahora solo actualizamos localmente
-      // TODO: Implementar servicio de actualización en el backend
       const { updateSubjectSchedule } = await import("@/services/groups-service");
       await updateSubjectSchedule(subject.idGrupoMateria, horarios);
 

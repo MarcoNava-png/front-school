@@ -1,10 +1,5 @@
-/**
- * Tests para api-client
- * Verifica el manejo de tokens y sesiones
- */
 
 describe('API Client Utils', () => {
-  // Funcion auxiliar para crear un token JWT mock
   const createMockToken = (expirationTime: number): string => {
     const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
     const payload = btoa(JSON.stringify({ exp: expirationTime, sub: 'user123' }))
@@ -12,7 +7,6 @@ describe('API Client Utils', () => {
     return `${header}.${payload}.${signature}`
   }
 
-  // Funcion para verificar si un token ha expirado (replica de la logica en api-client)
   const isTokenExpired = (token: string): boolean => {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
@@ -25,7 +19,6 @@ describe('API Client Utils', () => {
 
   describe('isTokenExpired', () => {
     it('debe retornar false para un token valido no expirado', () => {
-      // Token que expira en 1 hora
       const futureExp = Math.floor(Date.now() / 1000) + 3600
       const token = createMockToken(futureExp)
 
@@ -33,7 +26,6 @@ describe('API Client Utils', () => {
     })
 
     it('debe retornar true para un token expirado', () => {
-      // Token que expiro hace 1 hora
       const pastExp = Math.floor(Date.now() / 1000) - 3600
       const token = createMockToken(pastExp)
 

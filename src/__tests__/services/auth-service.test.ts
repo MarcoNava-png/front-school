@@ -1,11 +1,9 @@
 import apiClient from '@/services/api-client'
 import { login, logout, register, forgotPassword } from '@/services/auth-service'
 
-// Mock del api-client
 jest.mock('@/services/api-client')
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>
 
-// Mock de localStorage
 const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
@@ -14,7 +12,6 @@ const localStorageMock = {
 }
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
 
-// Mock de document.cookie
 Object.defineProperty(document, 'cookie', {
   writable: true,
   value: '',

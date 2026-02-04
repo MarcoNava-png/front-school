@@ -2,10 +2,24 @@ import { PayloadCreateStudyPlan, PayloadUpdateStudyPlan, StudyPlan, StudyPlansRe
 
 import apiClient from "./api-client";
 
-export async function getStudyPlansList(page?: number, pageSize?: number): Promise<StudyPlansResponse> {
-  const { data } = await apiClient.get<StudyPlansResponse>(
-    `/PlanEstudios?page=${page ?? 1}&pageSize=${pageSize ?? 20}`,
-  );
+export interface StudyPlanFilters {
+  page?: number;
+  pageSize?: number;
+  idCampus?: number;
+  incluirInactivos?: boolean;
+}
+
+export async function getStudyPlansList(filters?: StudyPlanFilters): Promise<StudyPlansResponse> {
+  const params = new URLSearchParams();
+  params.append("page", (filters?.page ?? 1).toString());
+  params.append("pageSize", (filters?.pageSize ?? 1000).toString());
+  if (filters?.idCampus) {
+    params.append("idCampus", filters.idCampus.toString());
+  }
+  if (filters?.incluirInactivos) {
+    params.append("incluirInactivos", "true");
+  }
+  const { data } = await apiClient.get<StudyPlansResponse>(`/PlanEstudios?${params.toString()}`);
   return data;
 }
 
@@ -26,5 +40,10 @@ export async function deleteStudyPlan(id: number): Promise<{ message: string }> 
 
 export async function getStudyPlanById(id: number): Promise<StudyPlan> {
   const { data } = await apiClient.get<StudyPlan>(`/PlanEstudios/${id}`);
+  return data;
+}
+
+export async function toggleStudyPlanStatus(id: number): Promise<StudyPlan> {
+  const { data } = await apiClient.put<StudyPlan>(`/PlanEstudios/${id}/toggle`);
   return data;
 }

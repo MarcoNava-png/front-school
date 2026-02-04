@@ -61,7 +61,6 @@ export function StudentDocumentsModal({
   const [submitting, setSubmitting] = useState(false)
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
 
-  // Form para nueva solicitud
   const [showForm, setShowForm] = useState(false)
   const [idTipoDocumento, setIdTipoDocumento] = useState<number | null>(null)
   const [variante, setVariante] = useState<VarianteDocumento>('COMPLETO')
@@ -170,15 +169,12 @@ export function StudentDocumentsModal({
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Boton para nueva solicitud */}
             {!showForm && (
               <Button onClick={() => setShowForm(true)} className="w-full">
                 <Plus className="mr-2 h-4 w-4" />
                 Nueva Solicitud de Documento
               </Button>
             )}
-
-            {/* Formulario de nueva solicitud */}
             {showForm && (
               <div className="space-y-4 rounded-lg border bg-muted/40 p-4">
                 <h4 className="font-semibold">Nueva Solicitud</h4>
@@ -250,8 +246,6 @@ export function StudentDocumentsModal({
             )}
 
             <Separator />
-
-            {/* Lista de solicitudes */}
             <div>
               <h4 className="mb-2 font-semibold">Historial de Solicitudes</h4>
               {solicitudes.length === 0 ? (

@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+
 import { Download, ChevronDown, ChevronRight, BookOpen, Award, AlertCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -14,11 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -27,8 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-
 import { obtenerSeguimientoAcademico } from "@/services/estudiante-panel-service";
 import type {
   ResumenKardexDto,
@@ -36,6 +36,7 @@ import type {
   PeriodoAcademicoDetalleDto,
   MateriaDetalleDto,
 } from "@/types/estudiante-panel";
+// eslint-disable-next-line no-duplicate-imports
 import { ESTATUS_COLORS, getCalificacionColor } from "@/types/estudiante-panel";
 
 interface SeguimientoAcademicoTabProps {
@@ -62,14 +63,12 @@ export function SeguimientoAcademicoTab({
       const data = await obtenerSeguimientoAcademico(idEstudiante);
       setSeguimiento(data);
 
-      // Abrir el período actual por defecto
       const periodoActual = data.periodos.find((p) => p.esActual);
       if (periodoActual) {
         setPeriodosAbiertos(new Set([periodoActual.idPeriodoAcademico]));
       }
     } catch (error) {
       console.error("Error al cargar seguimiento:", error);
-      // Si falla, usar datos del resumen
       toast.error("No se pudo cargar el seguimiento detallado");
     } finally {
       setLoading(false);
@@ -127,7 +126,6 @@ export function SeguimientoAcademicoTab({
 
   return (
     <div className="space-y-6">
-      {/* Resumen rápido */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -177,7 +175,6 @@ export function SeguimientoAcademicoTab({
         </CardContent>
       </Card>
 
-      {/* Filtros */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Select value={filtroEstatus} onValueChange={setFiltroEstatus}>
@@ -195,7 +192,6 @@ export function SeguimientoAcademicoTab({
         </div>
       </div>
 
-      {/* Lista de períodos */}
       {seguimiento?.periodos.length ? (
         <div className="space-y-4">
           {seguimiento.periodos.map((periodo) => (
@@ -211,7 +207,6 @@ export function SeguimientoAcademicoTab({
           ))}
         </div>
       ) : (
-        // Mostrar datos del resumen si no hay seguimiento detallado
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Últimas Materias</CardTitle>
@@ -250,7 +245,6 @@ export function SeguimientoAcademicoTab({
   );
 }
 
-// Componente para cada período
 interface PeriodoCardProps {
   periodo: PeriodoAcademicoDetalleDto;
   isOpen: boolean;

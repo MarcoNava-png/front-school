@@ -48,7 +48,6 @@ export function useDashboard(): UseDashboardReturn {
   };
 }
 
-// Type guards for each dashboard type
 export function isAdminDashboard(dashboard: DashboardData, rol: RoleDashboard | null): dashboard is import("@/types/dashboard").AdminDashboard {
   return rol === "admin";
 }

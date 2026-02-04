@@ -42,35 +42,28 @@ import {
 import { AcademicPeriod, Grupo, StudyPlan } from "@/types/catalog";
 
 export default function PromotionsPage() {
-  // Catalogs
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
   const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
   const [grupos, setGrupos] = useState<Grupo[]>([]);
 
-  // Selections
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [selectedPeriodId, setSelectedPeriodId] = useState<string>("");
 
-  // Preview data
   const [previewData, setPreviewData] = useState<PreviewPromocionResult | null>(null);
   const [selectedStudents, setSelectedStudents] = useState<Set<number>>(new Set());
 
-  // Loading states
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [executing, setExecuting] = useState(false);
 
-  // Options
   const [validarPagos, setValidarPagos] = useState(true);
 
-  // Load initial catalogs
   useEffect(() => {
     loadInitialData();
   }, []);
 
-  // Load groups when study plan changes
   useEffect(() => {
     if (selectedPlanId) {
       loadGroups();
@@ -80,7 +73,6 @@ export default function PromotionsPage() {
     }
   }, [selectedPlanId]);
 
-  // Reset preview when selections change
   useEffect(() => {
     setPreviewData(null);
     setSelectedStudents(new Set());
@@ -107,7 +99,6 @@ export default function PromotionsPage() {
     setLoadingGroups(true);
     try {
       const allGroups = await getGrupos();
-      // Filter by selected study plan
       const filteredGroups = allGroups.filter(
         (g) => g.idPlanEstudios.toString() === selectedPlanId
       );
@@ -133,7 +124,6 @@ export default function PromotionsPage() {
         idPeriodoAcademicoDestino: parseInt(selectedPeriodId),
       });
       setPreviewData(result);
-      // Select all eligible students by default
       const eligibleIds = result.estudiantes
         .filter((e) => e.esElegible)
         .map((e) => e.idEstudiante);
@@ -154,7 +144,6 @@ export default function PromotionsPage() {
 
     setExecuting(true);
     try {
-      // Calculate excluded students (those not selected)
       const allStudentIds = previewData.estudiantes.map((e) => e.idEstudiante);
       const excludedIds = allStudentIds.filter((id) => !selectedStudents.has(id));
 
@@ -172,7 +161,6 @@ export default function PromotionsPage() {
         `Promoción completada: ${result.totalEstudiantesPromovidos} estudiantes promovidos al grupo ${result.grupoDestino}`
       );
 
-      // Reset state
       setPreviewData(null);
       setSelectedStudents(new Set());
       setSelectedGroupId("");
@@ -234,7 +222,6 @@ export default function PromotionsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -254,8 +241,6 @@ export default function PromotionsPage() {
           </p>
         </div>
       </div>
-
-      {/* Selection Filters */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -285,7 +270,6 @@ export default function PromotionsPage() {
               </Select>
             </div>
 
-            {/* Source Group */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Grupo Origen</Label>
               <Select
@@ -309,8 +293,6 @@ export default function PromotionsPage() {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Destination Period */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Periodo Destino</Label>
               <Select value={selectedPeriodId} onValueChange={setSelectedPeriodId}>
@@ -330,8 +312,6 @@ export default function PromotionsPage() {
               </Select>
             </div>
           </div>
-
-          {/* Options */}
           <div className="mt-4 flex items-center gap-4">
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -344,8 +324,6 @@ export default function PromotionsPage() {
               </Label>
             </div>
           </div>
-
-          {/* Preview Button */}
           <div className="mt-6 flex justify-end">
             <Button
               onClick={handlePreview}
@@ -363,11 +341,8 @@ export default function PromotionsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Preview Results */}
       {previewData && (
         <>
-          {/* Promotion Path */}
           <Card
             className="border-2"
             style={{
@@ -378,7 +353,6 @@ export default function PromotionsPage() {
           >
             <CardContent className="py-6">
               <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                {/* Origin */}
                 <div className="text-center">
                   <p className="text-sm text-gray-500 mb-1">Grupo Origen</p>
                   <div
@@ -394,14 +368,10 @@ export default function PromotionsPage() {
                     Cuatrimestre {previewData.cuatrimestreOrigen}
                   </p>
                 </div>
-
-                {/* Arrow */}
                 <div className="flex items-center">
                   <ChevronRight className="w-8 h-8 text-gray-400 hidden md:block" />
                   <ArrowRight className="w-8 h-8 text-gray-400 md:hidden" />
                 </div>
-
-                {/* Destination */}
                 <div className="text-center">
                   <p className="text-sm text-gray-500 mb-1">Grupo Destino</p>
                   <div
@@ -423,8 +393,6 @@ export default function PromotionsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Statistics Cards */}
           <div className="grid gap-4 md:grid-cols-4">
             <Card
               className="border-2"
@@ -481,8 +449,6 @@ export default function PromotionsPage() {
               </CardHeader>
             </Card>
           </div>
-
-          {/* Students Table */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -538,8 +504,6 @@ export default function PromotionsPage() {
                   </TableBody>
                 </Table>
               </div>
-
-              {/* Execute Button */}
               <div className="mt-6 flex justify-end gap-4">
                 <Button
                   variant="outline"
@@ -569,7 +533,6 @@ export default function PromotionsPage() {
         </>
       )}
 
-      {/* Empty State */}
       {!previewData && selectedGroupId && selectedPeriodId && !loadingPreview && (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
@@ -587,7 +550,6 @@ export default function PromotionsPage() {
   );
 }
 
-// Student Row Component
 function StudentRow({
   student,
   isSelected,

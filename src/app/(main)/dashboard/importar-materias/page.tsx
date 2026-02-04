@@ -47,7 +47,6 @@ import importacionService, {
 } from '@/services/importacion-service'
 import { StudyPlan } from '@/types/catalog'
 
-// Mapeo de columnas del Excel a propiedades del DTO
 const COLUMN_MAPPING: Record<string, keyof ImportarMateriaDto> = {
   clave: 'clave',
   código: 'clave',
@@ -97,7 +96,6 @@ export default function ImportarMateriasPage() {
   const [planes, setPlanes] = useState<StudyPlan[]>([])
   const [selectedPlanId, setSelectedPlanId] = useState<string>('')
 
-  // Opciones de importacion
   const [actualizarExistentes, setActualizarExistentes] = useState(false)
   const [crearRelacion, setCrearRelacion] = useState(true)
 
@@ -144,15 +142,12 @@ export default function ImportarMateriasPage() {
         return
       }
 
-      // Primera fila son los headers
       const headers = (jsonData[0] as string[]).map((h) => String(h).toLowerCase().trim())
       const rows = jsonData.slice(1) as unknown[][]
 
-      // Mapear datos
       const mapped: ImportarMateriaDto[] = []
 
       for (const row of rows) {
-        // Saltar filas vacías
         if (!row || row.every((cell) => !cell)) continue
 
         const materia: Partial<ImportarMateriaDto> = {}
@@ -170,7 +165,6 @@ export default function ImportarMateriasPage() {
           }
         })
 
-        // Solo agregar si tiene clave y nombre
         if (materia.clave && materia.nombre) {
           mapped.push(materia as ImportarMateriaDto)
         }
@@ -261,7 +255,6 @@ export default function ImportarMateriasPage() {
       toast.success('Plantilla descargada')
     } catch (error) {
       console.error('Error al descargar plantilla:', error)
-      // Fallback: crear plantilla local
       downloadLocalTemplate()
     } finally {
       setLoading(false)
@@ -281,7 +274,6 @@ export default function ImportarMateriasPage() {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Materias')
 
-    // Hoja de instrucciones
     const instrucciones = [
       ['INSTRUCCIONES PARA IMPORTACIÓN DE MATERIAS'],
       [''],
@@ -313,7 +305,6 @@ export default function ImportarMateriasPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
@@ -358,8 +349,6 @@ export default function ImportarMateriasPage() {
           </Button>
         </div>
       </div>
-
-      {/* Progress Steps */}
       <div className="flex items-center justify-center gap-2">
         {['upload', 'preview', 'validate', 'import', 'results'].map((s, i) => (
           <div key={s} className="flex items-center">
@@ -383,8 +372,6 @@ export default function ImportarMateriasPage() {
           </div>
         ))}
       </div>
-
-      {/* Step: Upload */}
       {step === 'upload' && (
         <Card>
           <CardHeader>
@@ -423,8 +410,6 @@ export default function ImportarMateriasPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Step: Preview */}
       {step === 'preview' && (
         <Card>
           <CardHeader>
@@ -494,11 +479,8 @@ export default function ImportarMateriasPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Step: Validate */}
       {step === 'validate' && validacion && (
         <div className="space-y-6">
-          {/* Resumen de validación */}
           <div className="grid gap-4 md:grid-cols-4">
             <Card
               className={
@@ -543,8 +525,6 @@ export default function ImportarMateriasPage() {
               </CardHeader>
             </Card>
           </div>
-
-          {/* Alertas */}
           {validacion.planesNoEncontrados.length > 0 && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
@@ -577,8 +557,6 @@ export default function ImportarMateriasPage() {
               </AlertDescription>
             </Alert>
           )}
-
-          {/* Opciones de importación */}
           <Card>
             <CardHeader>
               <CardTitle>Opciones de Importación</CardTitle>
@@ -606,8 +584,6 @@ export default function ImportarMateriasPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Detalle de validación */}
           <Card>
             <CardHeader>
               <CardTitle>Detalle de Validación</CardTitle>
@@ -705,10 +681,8 @@ export default function ImportarMateriasPage() {
         </div>
       )}
 
-      {/* Step: Results */}
       {step === 'results' && resultado && (
         <div className="space-y-6">
-          {/* Resumen */}
           <div className="grid gap-4 md:grid-cols-5">
             <Card>
               <CardHeader className="pb-2">
@@ -741,8 +715,6 @@ export default function ImportarMateriasPage() {
               </CardHeader>
             </Card>
           </div>
-
-          {/* Alerta de éxito o error */}
           {resultado.fallidos === 0 ? (
             <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -760,8 +732,6 @@ export default function ImportarMateriasPage() {
               </AlertDescription>
             </Alert>
           )}
-
-          {/* Detalle de resultados */}
           <Card>
             <CardHeader>
               <CardTitle>Detalle de Resultados</CardTitle>

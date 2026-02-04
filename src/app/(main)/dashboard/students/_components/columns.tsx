@@ -165,8 +165,6 @@ export function getStudentsColumns(onRefresh: () => void, currentPeriodId?: numb
       accessorKey: "grupo",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Grupo" />,
       cell: () => {
-        // TODO: Agregar campo 'grupo' al tipo Student desde el backend
-        // Por ahora mostrar un placeholder
         return <div className="text-center">
           <Badge variant="outline">-</Badge>
         </div>;

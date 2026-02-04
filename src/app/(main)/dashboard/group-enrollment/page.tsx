@@ -54,7 +54,6 @@ export default function GroupEnrollmentPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -68,8 +67,6 @@ export default function GroupEnrollmentPage() {
           </p>
         </div>
       </div>
-
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
           <CardHeader className="pb-2">
@@ -104,8 +101,6 @@ export default function GroupEnrollmentPage() {
           </CardHeader>
         </Card>
       </div>
-
-      {/* Filters */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -128,12 +123,9 @@ export default function GroupEnrollmentPage() {
           />
         </div>
       </Card>
-
-      {/* Selected Student Info */}
       <SelectedStudentBanner selectedStudent={selectedStudent} onClearSelection={() => setSelectedStudentId(null)} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Students List */}
         <div className="lg:col-span-1">
           <Card className="h-full">
             <CardHeader className="border-b bg-muted/40">
@@ -155,8 +147,6 @@ export default function GroupEnrollmentPage() {
             </div>
           </Card>
         </div>
-
-        {/* Available Groups */}
         <div className="lg:col-span-2">
           <Card className="h-full">
             <CardHeader className="border-b bg-muted/40">
@@ -188,8 +178,6 @@ export default function GroupEnrollmentPage() {
           </Card>
         </div>
       </div>
-
-      {/* Result Modal */}
       {enrollmentResult && (
         <EnrollmentResultModal
           open={showResultModal}
@@ -197,8 +185,6 @@ export default function GroupEnrollmentPage() {
           result={enrollmentResult}
         />
       )}
-
-      {/* Force Enroll Dialog */}
       <ForceEnrollDialog
         open={showForceEnrollDialog}
         onConfirm={handleForceEnrollConfirm}
@@ -206,8 +192,6 @@ export default function GroupEnrollmentPage() {
         studentName={selectedStudent?.nombreCompleto}
         groupCode={pendingEnrollment?.codigoGrupo}
       />
-
-      {/* Already In Group Modal */}
       <AlreadyInGroupModal
         open={showAlreadyInGroupModal}
         onOpenChange={setShowAlreadyInGroupModal}

@@ -29,7 +29,6 @@ interface AdminDashboardProps {
 export function AdminDashboard({ data }: AdminDashboardProps) {
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -46,7 +45,6 @@ export function AdminDashboard({ data }: AdminDashboardProps) {
         <Separator />
       </div>
 
-      {/* Finanzas Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-emerald-600" />
@@ -85,7 +83,6 @@ export function AdminDashboard({ data }: AdminDashboardProps) {
         </StatGrid>
       </div>
 
-      {/* Admisiones Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <UserCheck className="h-5 w-5 text-indigo-600" />
@@ -127,7 +124,6 @@ export function AdminDashboard({ data }: AdminDashboardProps) {
         </StatGrid>
       </div>
 
-      {/* Academico Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <GraduationCap className="h-5 w-5 text-blue-600" />
@@ -165,7 +161,6 @@ export function AdminDashboard({ data }: AdminDashboardProps) {
         </StatGrid>
       </div>
 
-      {/* Sistema Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <School className="h-5 w-5 text-slate-600" />
@@ -196,13 +191,11 @@ export function AdminDashboard({ data }: AdminDashboardProps) {
         </StatGrid>
       </div>
 
-      {/* Alertas y Acciones */}
       <div className="grid gap-6 md:grid-cols-2">
         <AlertCard alerts={data.alertas} title="Alertas del Sistema" description="Situaciones que requieren atencion" />
         <QuickActions actions={data.accionesRapidas} />
       </div>
 
-      {/* Progress Indicators */}
       <Card className="border-2">
         <CardHeader>
           <CardTitle>Indicadores Clave</CardTitle>

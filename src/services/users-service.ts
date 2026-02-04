@@ -2,48 +2,30 @@ import type { User, CreateUserRequest, UpdateUserRequest, UsersResponse, UserRes
 
 import apiClient from "./api-client";
 
-/**
- * Obtener todos los usuarios
- */
 export async function getAllUsers(): Promise<User[]> {
   const { data } = await apiClient.get<UsersResponse>("/auth/users");
   return data.data || [];
 }
 
-/**
- * Obtener un usuario por ID
- */
 export async function getUserById(id: string): Promise<User> {
   const { data } = await apiClient.get<UserResponse>(`/auth/users/${id}`);
   return data.data;
 }
 
-/**
- * Crear un nuevo usuario
- */
 export async function createUser(userData: CreateUserRequest): Promise<User> {
   const { data } = await apiClient.post<UserResponse>("/auth/create-user", userData);
   return data.data;
 }
 
-/**
- * Actualizar un usuario existente
- */
 export async function updateUser(id: string, userData: UpdateUserRequest): Promise<User> {
   const { data } = await apiClient.put<UserResponse>(`/auth/users/${id}`, userData);
   return data.data;
 }
 
-/**
- * Eliminar un usuario
- */
 export async function deleteUser(id: string): Promise<void> {
   await apiClient.delete(`/auth/users/${id}`);
 }
 
-/**
- * Restablecer contraseña de un usuario (solo admin)
- */
 export async function adminResetPassword(userId: string, newPassword: string): Promise<void> {
   await apiClient.post("/auth/admin-reset-password", {
     userId,
@@ -51,17 +33,11 @@ export async function adminResetPassword(userId: string, newPassword: string): P
   });
 }
 
-/**
- * Obtener el perfil del usuario actual (autenticado)
- */
 export async function getCurrentUserProfile(): Promise<User> {
   const { data } = await apiClient.get<UserResponse>("/auth/profile");
   return data.data;
 }
 
-/**
- * Actualizar perfil del usuario actual
- */
 export async function updateUserProfile(
   userData: UpdateUserRequest,
   photoFile?: File | null

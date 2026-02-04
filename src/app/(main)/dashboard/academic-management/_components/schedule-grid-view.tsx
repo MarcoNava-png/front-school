@@ -22,7 +22,6 @@ const DIAS_SEMANA: DiaSemana[] = [
 ];
 
 export function ScheduleGridView({ materias, nombreGrupo }: ScheduleGridViewProps) {
-  // Construir estructura de horarios
   const horariosPorDiaYHora: Record<DiaSemana, Array<{
     hora: string;
     materias: Array<{
@@ -42,7 +41,6 @@ export function ScheduleGridView({ materias, nombreGrupo }: ScheduleGridViewProp
     Domingo: [],
   };
 
-  // Procesar cada materia y sus horarios
   materias.forEach((materia) => {
     if (!materia.horarioJson || materia.horarioJson.length === 0) return;
 
@@ -50,16 +48,14 @@ export function ScheduleGridView({ materias, nombreGrupo }: ScheduleGridViewProp
       const minutosInicio = timeToMinutes(horario.horaInicio);
       const minutosFin = timeToMinutes(horario.horaFin);
       const duracionMinutos = minutosFin - minutosInicio;
-      const duracionSlots = duracionMinutos / 60; // Slots de 1 hora
+      const duracionSlots = duracionMinutos / 60;
 
-      // Encontrar la hora de inicio más cercana
       const horaSlot = `${Math.floor(minutosInicio / 60).toString().padStart(2, "0")}:00`;
 
       if (!horariosPorDiaYHora[horario.dia]) {
         horariosPorDiaYHora[horario.dia] = [];
       }
 
-      // Agregar a la estructura
       const existingSlot = horariosPorDiaYHora[horario.dia].find(
         (slot) => slot.hora === horaSlot
       );
@@ -100,7 +96,6 @@ export function ScheduleGridView({ materias, nombreGrupo }: ScheduleGridViewProp
         </div>
       )}
 
-      {/* Vista de Tabla por Día */}
       <div className="space-y-3">
         {DIAS_SEMANA.map((dia) => {
           const sesionesDelDia = materias.flatMap((materia) =>
@@ -111,7 +106,6 @@ export function ScheduleGridView({ materias, nombreGrupo }: ScheduleGridViewProp
 
           if (sesionesDelDia.length === 0) return null;
 
-          // Ordenar por hora de inicio
           sesionesDelDia.sort((a, b) =>
             timeToMinutes(a.horaInicio) - timeToMinutes(b.horaInicio)
           );
@@ -188,7 +182,6 @@ export function ScheduleGridView({ materias, nombreGrupo }: ScheduleGridViewProp
         })}
       </div>
 
-      {/* Mensaje si no hay horarios */}
       {materias.every((m) => !m.horarioJson || m.horarioJson.length === 0) && (
         <Card className="p-8 text-center bg-gray-50 border-dashed">
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />

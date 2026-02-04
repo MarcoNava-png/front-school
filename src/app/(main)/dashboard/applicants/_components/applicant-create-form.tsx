@@ -100,7 +100,6 @@ export function ApplicantCreateForm({
   useEffect(() => {
     if (watchedStateId) {
       getMunicipalities(watchedStateId).then(setMunicipalities);
-      // Solo resetear si hay un cambio real de estado
       form.setValue("municipalityId", "", { shouldValidate: false });
       form.setValue("codigoPostalId", 0, { shouldValidate: false });
     } else {
@@ -112,7 +111,6 @@ export function ApplicantCreateForm({
   useEffect(() => {
     if (watchedMunicipalityId) {
       getTownships(watchedMunicipalityId).then(setTownships);
-      // Solo resetear si hay un cambio real de municipio
       form.setValue("codigoPostalId", 0, { shouldValidate: false });
     } else {
       setTownships([]);
@@ -120,21 +118,17 @@ export function ApplicantCreateForm({
 
   }, [watchedMunicipalityId]);
 
-  // Filtrar colonias basado en municipio seleccionado
   const filteredTownships = useMemo(() => {
     return townships.filter((t) => t.municipioId === watchedMunicipalityId);
   }, [townships, watchedMunicipalityId]);
 
-  // Filtrar planes de estudio basado en campus seleccionado
   const filteredStudyPlans = useMemo(() => {
     if (!watchedCampusId || watchedCampusId === 0) return studyPlans;
     return studyPlans.filter((plan) => plan.idCampus === watchedCampusId);
   }, [studyPlans, watchedCampusId]);
 
-  // Resetear plan de estudios cuando cambie el campus
   useEffect(() => {
     if (watchedCampusId) {
-      // Solo resetear si el plan actual no pertenece al campus seleccionado
       const currentPlan = studyPlans.find((p) => p.idPlanEstudios === form.getValues("planEstudiosId"));
       if (currentPlan && currentPlan.idCampus !== watchedCampusId) {
         form.setValue("planEstudiosId", 0, { shouldValidate: false });
@@ -142,7 +136,6 @@ export function ApplicantCreateForm({
     }
   }, [watchedCampusId, studyPlans, form]);
 
-  // Buscar colonias filtradas
   const searchedTownships = useMemo(() => {
     if (!coloniaSearch) return filteredTownships;
     return filteredTownships.filter((t) =>
@@ -150,7 +143,6 @@ export function ApplicantCreateForm({
     );
   }, [filteredTownships, coloniaSearch]);
 
-  // Obtener nombre de la colonia seleccionada
   const selectedColoniaName = useMemo(() => {
     const found = townships.find((t) => t.id === watchedCodigoPostalId);
     return found?.asentamiento || "";
@@ -159,7 +151,6 @@ export function ApplicantCreateForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Sección: Datos Personales */}
         <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4">
           <div className="mb-4 flex items-center gap-2">
             <User className="h-5 w-5 text-blue-600" />
@@ -299,7 +290,6 @@ export function ApplicantCreateForm({
           </div>
         </div>
 
-        {/* Sección: Contacto */}
         <div className="rounded-lg border border-green-200 bg-green-50/50 p-4">
           <div className="mb-4 flex items-center gap-2">
             <Phone className="h-5 w-5 text-green-600" />
@@ -364,7 +354,6 @@ export function ApplicantCreateForm({
           </div>
         </div>
 
-        {/* Sección: Dirección */}
         <div className="rounded-lg border border-orange-200 bg-orange-50/50 p-4">
           <div className="mb-4 flex items-center gap-2">
             <MapPin className="h-5 w-5 text-orange-600" />
@@ -469,7 +458,6 @@ export function ApplicantCreateForm({
               )}
             />
 
-            {/* Buscador de Colonia */}
             <FormField
               control={form.control}
               name="codigoPostalId"
@@ -544,7 +532,6 @@ export function ApplicantCreateForm({
           </div>
         </div>
 
-        {/* Sección: Información Académica */}
         <div className="rounded-lg border border-purple-200 bg-purple-50/50 p-4">
           <div className="mb-4 flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-purple-600" />
@@ -713,7 +700,6 @@ export function ApplicantCreateForm({
           </div>
         </div>
 
-        {/* Botones de acción */}
         <div className="flex justify-end gap-3 border-t pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar

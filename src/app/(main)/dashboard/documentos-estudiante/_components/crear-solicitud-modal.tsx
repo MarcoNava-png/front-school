@@ -41,7 +41,6 @@ interface CrearSolicitudModalProps {
   onSuccess: () => void
 }
 
-// Componente para buscar estudiantes
 function BuscarEstudianteStep({
   onSelectStudent,
 }: {
@@ -124,7 +123,6 @@ function BuscarEstudianteStep({
   )
 }
 
-// Componente para crear la solicitud
 function CrearSolicitudStep({
   student,
   tiposDocumento,

@@ -1,4 +1,3 @@
-// Tipos de documento disponibles
 export interface TipoDocumento {
   idTipoDocumento: number
   clave: string
@@ -10,7 +9,6 @@ export interface TipoDocumento {
   activo: boolean
 }
 
-// Estados de solicitud
 export type EstatusSolicitud =
   | 'PENDIENTE_PAGO'
   | 'PAGADO'
@@ -18,10 +16,8 @@ export type EstatusSolicitud =
   | 'VENCIDO'
   | 'CANCELADO'
 
-// Variantes de documento
 export type VarianteDocumento = 'COMPLETO' | 'PERIODO_ACTUAL' | 'BASICO'
 
-// Solicitud de documento
 export interface SolicitudDocumento {
   idSolicitud: number
   folioSolicitud: string
@@ -47,7 +43,6 @@ export interface SolicitudDocumento {
   puedeGenerar: boolean
 }
 
-// Request para crear solicitud
 export interface CrearSolicitudRequest {
   idEstudiante: number
   idTipoDocumento: number
@@ -55,7 +50,6 @@ export interface CrearSolicitudRequest {
   notas?: string
 }
 
-// Filtros para buscar solicitudes
 export interface SolicitudesFiltro {
   idEstudiante?: number
   idTipoDocumento?: number
@@ -67,7 +61,6 @@ export interface SolicitudesFiltro {
   tamanoPagina?: number
 }
 
-// Respuesta paginada
 export interface SolicitudesListResponse {
   solicitudes: SolicitudDocumento[]
   totalRegistros: number
@@ -76,7 +69,6 @@ export interface SolicitudesListResponse {
   totalPaginas: number
 }
 
-// Verificación de documento (para QR)
 export interface VerificacionDocumento {
   esValido: boolean
   estaVigente: boolean
@@ -90,7 +82,6 @@ export interface VerificacionDocumento {
   folioDocumento?: string
 }
 
-// Kardex del estudiante
 export interface KardexEstudiante {
   idEstudiante: number
   matricula: string
@@ -124,7 +115,6 @@ export interface KardexMateria {
   tipoAcreditacion?: string
 }
 
-// Constancia de estudios
 export interface ConstanciaEstudios {
   idEstudiante: number
   matricula: string
@@ -153,7 +143,6 @@ export interface ConstanciaMateria {
   horario: string
 }
 
-// Labels para estatus
 export const ESTATUS_LABELS: Record<EstatusSolicitud, string> = {
   PENDIENTE_PAGO: 'Pendiente de Pago',
   PAGADO: 'Pagado',
@@ -162,7 +151,6 @@ export const ESTATUS_LABELS: Record<EstatusSolicitud, string> = {
   CANCELADO: 'Cancelado',
 }
 
-// Colores para estatus
 export const ESTATUS_COLORS: Record<EstatusSolicitud, { bg: string; text: string }> = {
   PENDIENTE_PAGO: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
   PAGADO: { bg: 'bg-blue-100', text: 'text-blue-800' },
@@ -171,7 +159,6 @@ export const ESTATUS_COLORS: Record<EstatusSolicitud, { bg: string; text: string
   CANCELADO: { bg: 'bg-gray-100', text: 'text-gray-800' },
 }
 
-// Labels para variantes
 export const VARIANTE_LABELS: Record<VarianteDocumento, string> = {
   COMPLETO: 'Completo / Histórico',
   PERIODO_ACTUAL: 'Período Actual',

@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, calcularRecargo, calcularDiasVencido } from "@/lib/payment-utils";
-import { Receipt } from "@/types/receipt";
+import { Receipt, ReceiptStatus } from "@/types/receipt";
 
 import { ReceiptStatusBadge } from "./receipt-status-badge";
 
@@ -34,7 +34,7 @@ export function ReceiptDetailsModal({ receipt, open, onClose }: ReceiptDetailsMo
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Detalle del Recibo</span>
-            <ReceiptStatusBadge status={receipt.estatus} />
+            <ReceiptStatusBadge status={receipt.estatus as ReceiptStatus} />
           </DialogTitle>
           <DialogDescription>
             Folio: <span className="font-mono font-semibold">{receipt.folio}</span>
@@ -42,7 +42,6 @@ export function ReceiptDetailsModal({ receipt, open, onClose }: ReceiptDetailsMo
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Información General */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Periodo Académico</p>
@@ -73,7 +72,6 @@ export function ReceiptDetailsModal({ receipt, open, onClose }: ReceiptDetailsMo
 
           <Separator />
 
-          {/* Líneas de Detalle */}
           <div>
             <h4 className="font-semibold mb-4">Conceptos</h4>
             <Table>
@@ -116,7 +114,6 @@ export function ReceiptDetailsModal({ receipt, open, onClose }: ReceiptDetailsMo
 
           <Separator />
 
-          {/* Totales */}
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal:</span>
@@ -164,7 +161,6 @@ export function ReceiptDetailsModal({ receipt, open, onClose }: ReceiptDetailsMo
             )}
           </div>
 
-          {/* Notas */}
           {receipt.notas && (
             <>
               <Separator />
@@ -175,7 +171,6 @@ export function ReceiptDetailsModal({ receipt, open, onClose }: ReceiptDetailsMo
             </>
           )}
 
-          {/* Información de Creación */}
           <Separator />
           <div className="text-xs text-muted-foreground space-y-1">
             <p>

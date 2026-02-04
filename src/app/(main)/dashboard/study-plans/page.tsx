@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { Award, Calendar, Edit, GraduationCap, Layers, Search, Trash2, Upload } from "lucide-react";
+import { Award, Calendar, Edit, GraduationCap, Layers, Search, Trash2, Upload, Power, Building2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
@@ -10,7 +10,16 @@ import { TablePagination } from "@/components/shared/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -19,10 +28,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteStudyPlan, getStudyPlansList } from "@/services/study-plans-service";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { getCampusList } from "@/services/campus-service";
+import { deleteStudyPlan, getStudyPlansList, toggleStudyPlanStatus, StudyPlanFilters } from "@/services/study-plans-service";
+import { Campus } from "@/types/campus";
 import { StudyPlan } from "@/types/study-plan";
 
 import { CreateStudyPlanDialog } from "./_components/create-study-plan-dialog";
+import { EditStudyPlanDialog } from "./_components/edit-study-plan-dialog";
 import { ImportStudyPlansModal } from "./_components/import-study-plans-modal";
 
 export default function StudyPlansPage() {
@@ -38,14 +56,33 @@ export default function StudyPlansPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
 
+  const [campusList, setCampusList] = useState<Campus[]>([]);
+  const [selectedCampus, setSelectedCampus] = useState<string>("all");
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [planToEdit, setPlanToEdit] = useState<StudyPlan | null>(null);
+
+  useEffect(() => {
+    getCampusList()
+      .then((res) => setCampusList(res.items))
+      .catch(() => toast.error("Error al cargar campus"));
+  }, []);
+
   useEffect(() => {
     loadPlans();
-  }, []);
+  }, [selectedCampus, incluirInactivos]);
 
   const loadPlans = async () => {
     setLoading(true);
     try {
-      const res = await getStudyPlansList();
+      const filters: StudyPlanFilters = {
+        incluirInactivos,
+      };
+      if (selectedCampus !== "all") {
+        filters.idCampus = parseInt(selectedCampus);
+      }
+      const res = await getStudyPlansList(filters);
       if (res && Array.isArray(res.items)) {
         setPlans(res.items);
       } else {
@@ -62,6 +99,11 @@ export default function StudyPlansPage() {
   const openDeleteDialog = (plan: StudyPlan) => {
     setPlanToDelete(plan);
     setDeleteDialogOpen(true);
+  };
+
+  const openEditDialog = (plan: StudyPlan) => {
+    setPlanToEdit(plan);
+    setEditDialogOpen(true);
   };
 
   const handleDeleteStudyPlan = async () => {
@@ -89,12 +131,27 @@ export default function StudyPlansPage() {
     }
   };
 
+  const handleToggleStatus = async (plan: StudyPlan) => {
+    try {
+      const updated = await toggleStudyPlanStatus(plan.idPlanEstudios);
+      setPlans((prev) =>
+        prev.map((p) => (p.idPlanEstudios === plan.idPlanEstudios ? updated : p))
+      );
+      toast.success(
+        updated.activo
+          ? "Plan de estudios activado"
+          : "Plan de estudios desactivado"
+      );
+    } catch {
+      toast.error("Error al cambiar el estado del plan");
+    }
+  };
+
   const filteredPlans = plans.filter((p) =>
     p.nombrePlanEstudios?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.clavePlanEstudios?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Paginación
   const totalPages = Math.ceil(filteredPlans.length / pageSize);
   const paginatedPlans = filteredPlans.slice(
     (currentPage - 1) * pageSize,
@@ -111,11 +168,39 @@ export default function StudyPlansPage() {
     setCurrentPage(1);
   };
 
-  // Calcular estadísticas
-  const activos = plans.length; // Todos los planes se consideran activos
-  const niveles = new Set(plans.map(p => p.idNivelEducativo).filter(Boolean));
+  const activos = plans.filter((p) => p.activo).length;
+  const inactivos = plans.filter((p) => !p.activo).length;
+  const niveles = new Set(plans.map((p) => p.idNivelEducativo).filter(Boolean));
 
-  if (loading) {
+  const getPeriodLabel = (periodicidad: string) => {
+    if (!periodicidad) return "Periodos";
+    const lower = periodicidad.toLowerCase();
+    if (lower.includes("cuatrimest")) return "Cuatrimestres";
+    if (lower.includes("semest")) return "Semestres";
+    if (lower.includes("anual")) return "Anos";
+    if (lower.includes("trimest")) return "Trimestres";
+    return "Periodos";
+  };
+
+  const getPeriodCount = (plan: StudyPlan) => {
+    if (!plan.duracionMeses) return "-";
+    const periodicidad = plan.periodicidad?.toLowerCase() || "";
+    if (periodicidad.includes("cuatrimest")) {
+      return Math.ceil(plan.duracionMeses / 4);
+    }
+    if (periodicidad.includes("semest")) {
+      return Math.ceil(plan.duracionMeses / 6);
+    }
+    if (periodicidad.includes("trimest")) {
+      return Math.ceil(plan.duracionMeses / 3);
+    }
+    if (periodicidad.includes("anual")) {
+      return Math.ceil(plan.duracionMeses / 12);
+    }
+    return Math.ceil(plan.duracionMeses / 4);
+  };
+
+  if (loading && plans.length === 0) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -156,7 +241,7 @@ export default function StudyPlansPage() {
             Planes de Estudio
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gestiona los planes de estudio de los programas académicos
+            Gestiona los planes de estudio de los programas academicos
           </p>
         </div>
         <div className="flex gap-2">
@@ -164,9 +249,44 @@ export default function StudyPlansPage() {
             <Upload className="h-4 w-4" />
             Importar
           </Button>
-          <CreateStudyPlanDialog open={open} setOpen={setOpen} />
+          <CreateStudyPlanDialog open={open} setOpen={setOpen} onSuccess={loadPlans} />
         </div>
       </div>
+
+      {/* Filtros */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="w-full sm:w-64 space-y-2">
+              <Label className="text-sm font-semibold">Campus</Label>
+              <Select value={selectedCampus} onValueChange={setSelectedCampus}>
+                <SelectTrigger className="w-full">
+                  <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <SelectValue placeholder="Todos los campus" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los campus</SelectItem>
+                  {campusList.map((c) => (
+                    <SelectItem key={c.idCampus} value={c.idCampus.toString()}>
+                      {c.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="incluirInactivos"
+                checked={incluirInactivos}
+                onCheckedChange={(checked) => setIncluirInactivos(!!checked)}
+              />
+              <Label htmlFor="incluirInactivos" className="text-sm cursor-pointer">
+                Incluir inactivos
+              </Label>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -201,7 +321,7 @@ export default function StudyPlansPage() {
           <CardHeader className="pb-2">
             <CardDescription className="text-orange-600 dark:text-orange-400">Inactivos</CardDescription>
             <CardTitle className="text-4xl text-orange-700 dark:text-orange-300">
-              {plans.length - activos}
+              {inactivos}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -237,7 +357,8 @@ export default function StudyPlansPage() {
               >
                 <TableHead className="font-semibold text-white">Clave</TableHead>
                 <TableHead className="font-semibold text-white">Nombre del Plan</TableHead>
-                <TableHead className="font-semibold text-white text-center">Cuatrimestres</TableHead>
+                <TableHead className="font-semibold text-white">Campus</TableHead>
+                <TableHead className="font-semibold text-white text-center">Periodos</TableHead>
                 <TableHead className="font-semibold text-white text-center">RVOE</TableHead>
                 <TableHead className="font-semibold text-white">Estado</TableHead>
                 <TableHead className="font-semibold text-white text-center">Acciones</TableHead>
@@ -246,7 +367,7 @@ export default function StudyPlansPage() {
             <TableBody>
               {paginatedPlans.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center">
+                  <TableCell colSpan={7} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <GraduationCap className="h-8 w-8" />
                       <span>No se encontraron planes de estudio</span>
@@ -257,7 +378,7 @@ export default function StudyPlansPage() {
                 paginatedPlans.map((plan, index) => (
                   <TableRow
                     key={plan.idPlanEstudios}
-                    className={index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"}
+                    className={`${index % 2 === 0 ? "bg-white dark:bg-gray-950" : "bg-muted/30"} ${!plan.activo ? "opacity-60" : ""}`}
                   >
                     <TableCell>
                       <Badge
@@ -265,7 +386,7 @@ export default function StudyPlansPage() {
                         className="font-mono"
                         style={{ background: 'rgba(20, 53, 111, 0.05)', color: '#14356F', borderColor: 'rgba(20, 53, 111, 0.2)' }}
                       >
-                        {plan.clavePlanEstudios ?? "—"}
+                        {plan.clavePlanEstudios ?? "-"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -284,46 +405,94 @@ export default function StudyPlansPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Calendar className="h-4 w-4 text-purple-500" />
-                        <span className="font-semibold">{plan.duracionMeses ? Math.ceil(plan.duracionMeses / 4) : "—"}</span>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{plan.nombreCampus || "-"}</span>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className="flex items-center justify-center gap-1">
+                              <Calendar className="h-4 w-4 text-purple-500" />
+                              <span className="font-semibold">{getPeriodCount(plan)}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{getPeriodLabel(plan.periodicidad)}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Layers className="h-4 w-4 text-orange-500" />
-                        <span className="font-semibold">{plan.rvoe ?? "—"}</span>
+                        <span className="font-semibold">{plan.rvoe ?? "-"}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant="default"
-                        className="bg-green-100 text-green-700 hover:bg-green-100"
+                        variant={plan.activo ? "default" : "secondary"}
+                        className={plan.activo
+                          ? "bg-green-100 text-green-700 hover:bg-green-100"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-100"}
                       >
-                        Activo
+                        {plan.activo ? "Activo" : "Inactivo"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
-                          onClick={() => {
-                            toast.info("Función de editar próximamente");
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
-                          onClick={() => openDeleteDialog(plan)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600"
+                                onClick={() => openEditDialog(plan)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Editar</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className={`h-8 w-8 p-0 ${plan.activo
+                                  ? "hover:bg-orange-100 hover:text-orange-600"
+                                  : "hover:bg-green-100 hover:text-green-600"}`}
+                                onClick={() => handleToggleStatus(plan)}
+                              >
+                                <Power className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {plan.activo ? "Desactivar" : "Activar"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                                onClick={() => openDeleteDialog(plan)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Eliminar</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -346,7 +515,7 @@ export default function StudyPlansPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title="Eliminar Plan de Estudios"
-        description="Esta acción no se puede deshacer. Se eliminará permanentemente el plan de estudios:"
+        description="Esta accion no se puede deshacer. Se eliminara permanentemente el plan de estudios:"
         itemName={planToDelete?.nombrePlanEstudios}
         onConfirm={handleDeleteStudyPlan}
         isDeleting={isDeleting}
@@ -356,6 +525,13 @@ export default function StudyPlansPage() {
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
         onImportSuccess={loadPlans}
+      />
+
+      <EditStudyPlanDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        plan={planToEdit}
+        onSuccess={loadPlans}
       />
     </div>
   );

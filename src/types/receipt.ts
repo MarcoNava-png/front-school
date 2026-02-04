@@ -1,7 +1,3 @@
-// ============================================================================
-// ENUMS
-// ============================================================================
-
 export enum ReceiptStatus {
   PENDIENTE = 0,
   PARCIAL = 1,
@@ -16,10 +12,6 @@ export enum EmissionStrategy {
   UNICO = 1,
   PERSONALIZADO = 2,
 }
-
-// ============================================================================
-// INTERFACES
-// ============================================================================
 
 export interface ReceiptLineItem {
   idReciboDetalle: number;
@@ -43,9 +35,10 @@ export interface Receipt {
   idPeriodoAcademico?: number | null;
   idGrupo?: number | null;
   idPlantillaCobro?: number | null;
-  fechaEmision: string; // DateOnly from backend
-  fechaVencimiento: string; // DateOnly from backend
-  estatus: ReceiptStatus;
+  fechaEmision: string;
+  fechaVencimiento: string;
+  estatus: ReceiptStatus | number | string;
+  estatusNombre?: string;
   subtotal: number;
   descuentoBeca?: number;
   descuento: number;
@@ -60,18 +53,12 @@ export interface Receipt {
   fechaCancelacion?: string | null;
   motivoCancelacion?: string | null;
   detalles: ReceiptLineItem[];
-
-  // Campos calculados (para UI)
   nombrePeriodo?: string;
   codigoGrupo?: string;
   recargoCalculado?: number;
   totalAPagarHoy?: number;
   diasVencido?: number;
 }
-
-// ============================================================================
-// REQUEST DTOs
-// ============================================================================
 
 export interface GenerateReceiptsRequest {
   idEstudiante: number;
@@ -96,10 +83,6 @@ export interface AjusteReciboRequest {
   autorizadoPor: string;
 }
 
-// ============================================================================
-// FILTERS
-// ============================================================================
-
 export interface ReceiptFilters {
   idPeriodoAcademico?: number | null;
   idEstudiante?: number | null;
@@ -108,10 +91,6 @@ export interface ReceiptFilters {
   matricula?: string;
   folio?: string;
 }
-
-// ============================================================================
-// PLANTILLAS DE COBRO
-// ============================================================================
 
 export interface PlantillaCobro {
   idPlantillaCobro: number;
@@ -125,7 +104,7 @@ export interface PlantillaCobro {
   esActiva: boolean;
   fechaVigenciaInicio: string;
   fechaVigenciaFin?: string | null;
-  estrategiaEmision: number; // 0=Mensual, 1=Único, 2=Personalizado
+  estrategiaEmision: number;
   numeroRecibos: number;
   diaVencimiento: number;
   creadoPor: string;
@@ -133,8 +112,6 @@ export interface PlantillaCobro {
   modificadoPor?: string | null;
   fechaModificacion?: string | null;
   detalles?: PlantillaCobroDetalle[];
-
-  // Campos calculados (para UI)
   nombrePlan?: string;
   nombrePlanEstudios?: string;
   nombrePeriodo?: string;
@@ -151,9 +128,7 @@ export interface PlantillaCobroDetalle {
   cantidad: number;
   precioUnitario: number;
   orden: number;
-  aplicaEnRecibo?: number | null; // null=todos, número específico para recibo específico
-
-  // Campos calculados
+  aplicaEnRecibo?: number | null;
   nombreConcepto?: string;
   claveConcepto?: string;
   importe?: number;
@@ -168,7 +143,7 @@ export interface CreatePlantillaCobroDto {
   idModalidad?: number | null;
   fechaVigenciaInicio: string;
   fechaVigenciaFin?: string | null;
-  estrategiaEmision: number; // 0=Mensual, 1=Único, 2=Personalizado
+  estrategiaEmision: number;
   numeroRecibos: number;
   diaVencimiento: number;
   detalles: CreatePlantillaCobroDetalleDto[];
@@ -180,7 +155,7 @@ export interface CreatePlantillaCobroDetalleDto {
   cantidad: number;
   precioUnitario: number;
   orden: number;
-  aplicaEnRecibo?: number | null; // null=todos los recibos, 1=primer recibo, etc.
+  aplicaEnRecibo?: number | null;
 }
 
 export interface UpdatePlantillaCobroDto {
@@ -193,33 +168,22 @@ export interface UpdatePlantillaCobroDto {
   detalles?: CreatePlantillaCobroDetalleDto[];
 }
 
-// Alias para compatibilidad hacia atrás
 export type PayloadCreatePlantilla = CreatePlantillaCobroDto;
-
-// ============================================================================
-// CONCEPTOS DE PAGO
-// ============================================================================
 
 export interface ConceptoPago {
   idConceptoPago: number;
   clave: string;
-  nombre: string; // Alias de descripcion para compatibilidad frontend
-  descripcion: string; // Nombre que viene del backend
-  // Propiedades del backend
-  conceptoTipo?: number; // 0=Otro, 1=Colegiatura, 2=Inscripcion
+  nombre: string;
+  descripcion: string;
+  conceptoTipo?: number;
   conceptoAplica?: number;
   esObligatorio?: boolean;
   periodicidadMeses?: number;
   activo?: boolean;
-  // Propiedades para formularios del frontend
   tipo?: 'INSCRIPCION' | 'COLEGIATURA' | 'EXAMEN' | 'CONSTANCIA' | 'CREDENCIAL' | 'SEGURO' | 'OTRO';
   permiteBeca?: boolean;
   status?: number;
 }
-
-// ============================================================================
-// BECAS - CATÁLOGO
-// ============================================================================
 
 export interface BecaCatalogo {
   idBeca: number;
@@ -233,8 +197,6 @@ export interface BecaCatalogo {
   activo: boolean;
   createdAt?: string;
   updatedAt?: string | null;
-
-  // Relaciones
   conceptoPago?: {
     idConceptoPago: number;
     nombre: string;
@@ -262,10 +224,6 @@ export interface ActualizarBecaCatalogoPayload {
   activo: boolean;
 }
 
-// ============================================================================
-// BECAS - ASIGNACIONES A ESTUDIANTES
-// ============================================================================
-
 export interface BecaEstudiante {
   idBecaAsignacion: number;
   idEstudiante: number;
@@ -279,8 +237,6 @@ export interface BecaEstudiante {
   vigenciaHasta?: string | null;
   activo: boolean;
   observaciones?: string | null;
-
-  // Relaciones
   beca?: BecaCatalogo | null;
   nombreConcepto?: string;
   matriculaEstudiante?: string;
@@ -322,12 +278,7 @@ export interface PayloadActualizarBeca {
   activo?: boolean | null;
 }
 
-// Alias para compatibilidad con modales
 export type CreateBecaEstudianteDto = PayloadCreateBeca;
-
-// ============================================================================
-// REPORTES
-// ============================================================================
 
 export interface CarteraVencidaReporte {
   registros: CarteraVencidaItem[];
@@ -375,10 +326,6 @@ export interface IngresoConcepto {
   montoCobrado: number;
   saldoPendiente: number;
 }
-
-// ============================================================================
-// GENERACIÓN MASIVA DE RECIBOS
-// ============================================================================
 
 export interface GenerarRecibosMasivosRequest {
   idPlantillaCobro: number;

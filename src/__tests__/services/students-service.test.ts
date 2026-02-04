@@ -8,7 +8,6 @@ import {
   getStudentsByGrupo,
 } from '@/services/students-service'
 
-// Mock del api-client
 jest.mock('@/services/api-client')
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>
 
@@ -21,8 +20,8 @@ describe('Students Service', () => {
     it('debe obtener lista de estudiantes con paginacion por defecto', async () => {
       const mockResponse = {
         data: [
-          { idEstudiante: 1, matricula: '2024001', nombre: 'Juan' },
-          { idEstudiante: 2, matricula: '2024002', nombre: 'Maria' },
+          { idEstudiante: 1, matricula: '2024001', nombreCompleto: 'Juan' },
+          { idEstudiante: 2, matricula: '2024002', nombreCompleto: 'Maria' },
         ],
         totalCount: 50,
         page: 1,
@@ -48,7 +47,7 @@ describe('Students Service', () => {
       const result = await getStudentsList(3, 10)
 
       expect(mockedApiClient.get).toHaveBeenCalledWith('/estudiantes?page=3&pageSize=10')
-      expect(result.page).toBe(3)
+      expect(result.pageNumber).toBe(3)
     })
   })
 
@@ -119,14 +118,14 @@ describe('Students Service', () => {
       const mockStudent = {
         idEstudiante: 5,
         matricula: '2024005',
-        nombre: 'Ana',
+        nombreCompleto: 'Ana',
       }
       mockedApiClient.get.mockResolvedValueOnce({ data: mockStudent })
 
       const result = await getStudent(5)
 
       expect(mockedApiClient.get).toHaveBeenCalledWith('/estudiantes/5')
-      expect(result.nombre).toBe('Ana')
+      expect(result.nombreCompleto).toBe('Ana')
     })
   })
 
@@ -148,9 +147,9 @@ describe('Students Service', () => {
   describe('getStudentsByGrupo', () => {
     it('debe obtener estudiantes de un grupo', async () => {
       const mockEstudiantes = [
-        { idEstudiante: 1, matricula: '2024001', nombre: 'Juan' },
-        { idEstudiante: 2, matricula: '2024002', nombre: 'Maria' },
-        { idEstudiante: 3, matricula: '2024003', nombre: 'Pedro' },
+        { idEstudiante: 1, matricula: '2024001', nombreCompleto: 'Juan' },
+        { idEstudiante: 2, matricula: '2024002', nombreCompleto: 'Maria' },
+        { idEstudiante: 3, matricula: '2024003', nombreCompleto: 'Pedro' },
       ]
       mockedApiClient.get.mockResolvedValueOnce({ data: { estudiantes: mockEstudiantes } })
 

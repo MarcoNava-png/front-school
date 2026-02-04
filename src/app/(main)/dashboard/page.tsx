@@ -67,7 +67,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Render the appropriate dashboard based on role
   if (isAdminDashboard(dashboard, rol)) {
     return <AdminDashboard data={dashboard} />;
   }
@@ -100,7 +99,6 @@ export default function DashboardPage() {
     return <AlumnoDashboard data={dashboard} />;
   }
 
-  // Fallback for unknown roles
   return (
     <div className="flex items-center justify-center min-h-[400px]">
       <Alert className="max-w-md">

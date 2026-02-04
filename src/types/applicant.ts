@@ -13,16 +13,12 @@ export interface Applicant {
   codigoPostalId: number;
   municipioId: number;
   estadoId: number;
-  // Usuario que atiende al aspirante (puede cambiar)
   usuarioAtiendeNombre: string;
   idAtendidoPorUsuario: string;
-  // Usuario que registró al aspirante (no cambia)
   createdBy: string;
   usuarioRegistroNombre: string;
-  // Campos adicionales para UI (si vienen del backend)
-  estatusPago?: string; // SIN_RECIBO | PENDIENTE | PARCIAL | PAGADO
-  estatusDocumentos?: string; // INCOMPLETO | COMPLETO | VALIDADO
-  // Cuatrimestre al que el aspirante desea ingresar (1-9)
+  estatusPago?: string;
+  estatusDocumentos?: string;
   cuatrimestreInteres?: number;
 }
 
@@ -78,10 +74,6 @@ export interface PayloadTrackingLog {
 
 export type ApplicantsResponse = PaginatedResponse<Applicant>;
 
-// ============================================================================
-// ENUMS
-// ============================================================================
-
 export enum EstatusDocumentoEnum {
   PENDIENTE = 0,
   SUBIDO = 1,
@@ -97,10 +89,6 @@ export enum EstatusRecibo {
   CANCELADO = 4,
   BONIFICADO = 5,
 }
-
-// ============================================================================
-// DOCUMENTOS
-// ============================================================================
 
 export interface AspiranteDocumentoDto {
   idAspiranteDocumento: number;
@@ -123,7 +111,7 @@ export interface DocumentoRequisitoDto {
 
 export interface ValidarDocumentoRequestDto {
   idAspiranteDocumento: number;
-  validar: boolean; // true => VALIDADO; false => RECHAZADO
+  validar: boolean;
   notas?: string | null;
 }
 
@@ -138,10 +126,6 @@ export interface CargarDocumentoFormData {
   archivo: File;
   notas?: string;
 }
-
-// ============================================================================
-// RECIBOS
-// ============================================================================
 
 export interface ReciboLineaDto {
   idReciboDetalle: number;
@@ -160,7 +144,7 @@ export interface ReciboDto {
   idAspirante?: number | null;
   idEstudiante?: number | null;
   idPeriodoAcademico?: number | null;
-  fechaEmision: string; // DateOnly -> string en frontend
+  fechaEmision: string;
   fechaVencimiento: string;
   estatus: EstatusRecibo;
   subtotal: number;
@@ -172,10 +156,6 @@ export interface ReciboDto {
   detalles: ReciboLineaDto[];
 }
 
-// ============================================================================
-// ESTADÍSTICAS
-// ============================================================================
-
 export interface EstadisticasAspirantesDto {
   totalAspirantes: number;
   aspirantesPorEstatus: Record<string, number>;
@@ -186,10 +166,6 @@ export interface EstadisticasAspirantesDto {
   aspirantesConDocumentosCompletos: number;
   aspirantesConPagosCompletos: number;
 }
-
-// ============================================================================
-// FICHA DE ADMISIÓN (Compleja - 12 clases anidadas)
-// ============================================================================
 
 export interface DireccionDto {
   calle: string;
@@ -315,10 +291,6 @@ export interface FichaAdmisionDto {
   metadata: MetadataGeneracionDto;
 }
 
-// ============================================================================
-// INSCRIPCIÓN COMO ESTUDIANTE
-// ============================================================================
-
 export interface DocumentoValidacionDto {
   descripcion: string;
   esObligatorio: boolean;
@@ -372,10 +344,58 @@ export interface InscribirAspiranteRequest {
   observaciones?: string | null;
 }
 
-// ============================================================================
-// OTRAS OPERACIONES
-// ============================================================================
-
 export interface CancelarAspiranteRequest {
   motivo: string;
+}
+
+export interface RecalcularDescuentosResult {
+  recibosActualizados: number;
+  descuentoTotalAplicado: number;
+  detalle: ReciboDescuentoResumen[];
+}
+
+export interface ReciboDescuentoResumen {
+  idRecibo: number;
+  folio: string | null;
+  subtotalOriginal: number;
+  descuentoAnterior: number;
+  descuentoNuevo: number;
+  saldoNuevo: number;
+}
+
+export interface PlantillaCobroAspirante {
+  idPlantillaCobro: number;
+  nombrePlantilla: string;
+  idPlanEstudios: number;
+  numeroCuatrimestre: number;
+  idPeriodoAcademico?: number | null;
+  idTurno?: number | null;
+  idModalidad?: number | null;
+  version: number;
+  esActiva: boolean;
+  fechaVigenciaInicio: string;
+  fechaVigenciaFin?: string | null;
+  estrategiaEmision: number;
+  numeroRecibos: number;
+  diaVencimiento: number;
+  nombrePlanEstudios?: string | null;
+  nombrePeriodo?: string | null;
+  nombreTurno?: string | null;
+  nombreModalidad?: string | null;
+  totalConceptos?: number | null;
+  detalles?: PlantillaCobroDetalleAspirante[];
+}
+
+export interface PlantillaCobroDetalleAspirante {
+  idPlantillaDetalle: number;
+  idPlantillaCobro: number;
+  idConceptoPago: number;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  orden: number;
+  aplicaEnRecibo?: number | null;
+  nombreConcepto?: string | null;
+  claveConcepto?: string | null;
+  importe: number;
 }

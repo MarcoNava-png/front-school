@@ -14,7 +14,6 @@ export default function AttendancesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -29,7 +28,6 @@ export default function AttendancesPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
           <CardHeader className="pb-2">
@@ -77,7 +75,6 @@ export default function AttendancesPage() {
         </Card>
       </div>
 
-      {/* Selector de Plan de Estudios */}
       <Card>
         <CardHeader className="border-b bg-muted/40">
           <CardTitle className="flex items-center gap-2">
@@ -96,7 +93,6 @@ export default function AttendancesPage() {
         </CardContent>
       </Card>
 
-      {/* Acordeón de Grupos y Materias */}
       {selectedPlanEstudios ? (
         <GruposAcordeonAsistencias planEstudiosId={selectedPlanEstudios} />
       ) : (

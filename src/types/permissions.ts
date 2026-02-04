@@ -61,7 +61,6 @@ export interface PermissionAssignment {
   canDelete: boolean
 }
 
-// Mapeo de modulos a rutas del sidebar
 export const MODULE_ROUTES: Record<string, string[]> = {
   Dashboard: ['/dashboard/default'],
   Admisiones: ['/dashboard/applicants'],
@@ -72,7 +71,6 @@ export const MODULE_ROUTES: Record<string, string[]> = {
   Configuracion: ['/dashboard/users', '/dashboard/roles'],
 }
 
-// Roles del sistema
 export const SYSTEM_ROLES = {
   SUPER_ADMIN: 'superadmin',
   ADMIN: 'admin',
@@ -87,7 +85,6 @@ export const SYSTEM_ROLES = {
 
 export type SystemRole = typeof SYSTEM_ROLES[keyof typeof SYSTEM_ROLES]
 
-// Mapeo de roles a etiquetas
 export const ROLE_LABELS: Record<string, string> = {
   superadmin: 'Super Admin',
   admin: 'Administrador',
@@ -100,7 +97,6 @@ export const ROLE_LABELS: Record<string, string> = {
   admisiones: 'Admisiones',
 }
 
-// Descripciones de roles
 export const ROLE_DESCRIPTIONS: Record<string, string> = {
   superadmin: 'Acceso total al sistema incluyendo gestión de administradores',
   admin: 'Acceso completo a todos los módulos excepto Sistema',
@@ -113,7 +109,6 @@ export const ROLE_DESCRIPTIONS: Record<string, string> = {
   admisiones: 'Proceso de admisión y cobro de inscripciones',
 }
 
-// Colores de roles
 export const ROLE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   superadmin: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300' },
   admin: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
@@ -126,7 +121,6 @@ export const ROLE_COLORS: Record<string, { bg: string; text: string; border: str
   admisiones: { bg: 'bg-cyan-100', text: 'text-cyan-700', border: 'border-cyan-300' },
 }
 
-// Iconos de módulos (nombres de lucide-react icons)
 export const MODULE_ICONS: Record<string, string> = {
   Dashboard: 'LayoutDashboard',
   Admisiones: 'UserPlus',

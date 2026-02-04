@@ -6,14 +6,6 @@ import {
 
 import apiClient from "./api-client";
 
-// ============================================================================
-// SERVICIOS DE CATÁLOGO DE BECAS
-// ============================================================================
-
-/**
- * Obtiene todas las becas del catálogo
- * @param soloActivas Filtrar solo becas activas
- */
 export async function obtenerCatalogoBecas(
   soloActivas?: boolean
 ): Promise<BecaCatalogo[]> {
@@ -28,9 +20,6 @@ export async function obtenerCatalogoBecas(
   return data;
 }
 
-/**
- * Obtiene una beca del catálogo por ID
- */
 export async function obtenerBecaCatalogoPorId(
   idBeca: number
 ): Promise<BecaCatalogo> {
@@ -38,9 +27,6 @@ export async function obtenerBecaCatalogoPorId(
   return data;
 }
 
-/**
- * Crea una nueva beca en el catálogo
- */
 export async function crearBecaCatalogo(
   payload: CrearBecaCatalogoPayload
 ): Promise<BecaCatalogo> {
@@ -48,9 +34,6 @@ export async function crearBecaCatalogo(
   return data;
 }
 
-/**
- * Actualiza una beca del catálogo
- */
 export async function actualizarBecaCatalogo(
   idBeca: number,
   payload: ActualizarBecaCatalogoPayload
@@ -62,16 +45,10 @@ export async function actualizarBecaCatalogo(
   return data;
 }
 
-/**
- * Desactiva una beca del catálogo
- */
 export async function desactivarBecaCatalogo(idBeca: number): Promise<void> {
   await apiClient.patch(`/becas/catalogo/${idBeca}/desactivar`);
 }
 
-/**
- * Activa una beca del catálogo
- */
 export async function activarBecaCatalogo(idBeca: number): Promise<void> {
   await apiClient.patch(`/becas/catalogo/${idBeca}/activar`);
 }

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { FileText, CheckCircle, Clock, XCircle, ExternalLink, FolderOpen, AlertCircle } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,9 +15,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { obtenerDocumentosPersonales } from "@/services/estudiante-panel-service";
 import type { DocumentosPersonalesEstudianteDto } from "@/types/estudiante-panel";
+// eslint-disable-next-line no-duplicate-imports
 import { formatDate } from "@/types/estudiante-panel";
 
 interface DocumentosPersonalesTabProps {
@@ -38,7 +39,6 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
       setDocumentos(data);
     } catch (error) {
       console.error("Error al cargar documentos personales:", error);
-      // No mostrar error si simplemente no hay documentos
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,6 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
 
   return (
     <div className="space-y-6">
-      {/* Resumen de documentos */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-4">
@@ -149,7 +148,6 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
         </Card>
       </div>
 
-      {/* Lista de documentos */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">

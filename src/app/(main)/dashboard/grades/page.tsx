@@ -14,7 +14,6 @@ export default function GradesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -31,8 +30,6 @@ export default function GradesPage() {
           </p>
         </div>
       </div>
-
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card
           className="border-2"
@@ -82,8 +79,6 @@ export default function GradesPage() {
           </CardHeader>
         </Card>
       </div>
-
-      {/* Selector de Plan de Estudios */}
       <Card>
         <CardHeader className="border-b bg-muted/40">
           <CardTitle className="flex items-center gap-2">
@@ -101,8 +96,6 @@ export default function GradesPage() {
           />
         </CardContent>
       </Card>
-
-      {/* Acordeón de Grupos y Materias */}
       {selectedPlanEstudios ? (
         <GruposAcordeon planEstudiosId={selectedPlanEstudios} />
       ) : (

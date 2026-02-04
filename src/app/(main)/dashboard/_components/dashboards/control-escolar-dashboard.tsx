@@ -29,7 +29,6 @@ interface ControlEscolarDashboardProps {
 export function ControlEscolarDashboard({ data }: ControlEscolarDashboardProps) {
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -46,7 +45,6 @@ export function ControlEscolarDashboard({ data }: ControlEscolarDashboardProps) 
         <Separator />
       </div>
 
-      {/* Periodo Actual */}
       {data.periodoActual && (
         <Card className="border-2 border-cyan-200 dark:border-cyan-800 bg-gradient-to-br from-cyan-50/50 to-blue-50/50 dark:from-cyan-950/20 dark:to-blue-950/20">
           <CardHeader>
@@ -96,7 +94,6 @@ export function ControlEscolarDashboard({ data }: ControlEscolarDashboardProps) 
         </Card>
       )}
 
-      {/* Inscripciones Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <UserPlus className="h-5 w-5 text-blue-600" />
@@ -134,7 +131,6 @@ export function ControlEscolarDashboard({ data }: ControlEscolarDashboardProps) 
         </StatGrid>
       </div>
 
-      {/* Documentos y Expedientes */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <FileText className="h-5 w-5 text-purple-600" />
@@ -160,7 +156,6 @@ export function ControlEscolarDashboard({ data }: ControlEscolarDashboardProps) 
         </StatGrid>
       </div>
 
-      {/* Grupos */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <School className="h-5 w-5 text-teal-600" />
@@ -185,7 +180,6 @@ export function ControlEscolarDashboard({ data }: ControlEscolarDashboardProps) 
         </StatGrid>
       </div>
 
-      {/* Estudiantes por Programa */}
       {data.estudiantesPorPrograma.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -218,7 +212,6 @@ export function ControlEscolarDashboard({ data }: ControlEscolarDashboardProps) 
         </Card>
       )}
 
-      {/* Alertas y Acciones */}
       <div className="grid gap-6 md:grid-cols-2">
         <AlertCard
           alerts={data.alertas}

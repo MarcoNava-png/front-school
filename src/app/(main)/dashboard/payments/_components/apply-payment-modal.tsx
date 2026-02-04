@@ -65,7 +65,6 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
         setResultado(null);
       } else {
         setResultado(data);
-        // Inicializar montos con el saldo de cada recibo (limitado al monto disponible)
         const montosIniciales: Record<number, number> = {};
         let disponible = montoPago;
         for (const recibo of data.recibos) {
@@ -127,7 +126,6 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
       return;
     }
 
-    // Construir aplicaciones (necesitamos los detalles de cada recibo)
     const aplicaciones: { idReciboDetalle: number; monto: number }[] = [];
 
     for (const idRecibo of recibosSeleccionados) {
@@ -136,7 +134,6 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
 
       let montoRestante = montosAplicar[idRecibo] || 0;
 
-      // Distribuir el monto entre los detalles del recibo
       for (const detalle of recibo.detalles) {
         if (montoRestante <= 0) break;
         const montoDetalle = Math.min(detalle.precioUnitario * detalle.cantidad, montoRestante);
@@ -188,7 +185,6 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            {/* Búsqueda de estudiante */}
             <div className="space-y-2">
               <Label>Buscar Estudiante</Label>
               <div className="flex gap-2">
@@ -205,8 +201,6 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
                 </Button>
               </div>
             </div>
-
-            {/* Información del estudiante encontrado */}
             {resultado?.estudiante && (
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-3">
@@ -226,8 +220,6 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
                 </div>
               </div>
             )}
-
-            {/* Resumen de aplicación */}
             {resultado && (
               <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 rounded-lg border">
                 <div className="text-center">
@@ -246,8 +238,6 @@ export function ApplyPaymentModal({ open, onOpenChange, onSuccess, idPago, monto
                 </div>
               </div>
             )}
-
-            {/* Lista de recibos pendientes */}
             {resultado && resultado.recibos.length > 0 && (
               <div className="space-y-2">
                 <Label>Recibos Pendientes ({resultado.recibos.length})</Label>

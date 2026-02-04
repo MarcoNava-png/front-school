@@ -86,8 +86,6 @@ export const UpdateTeacherDialog: React.FC<UpdateTeacherDialogProps> = ({
 
   React.useEffect(() => {
     if (open && teacher) {
-      // TODO: Cargar datos completos del profesor desde la API
-      // Por ahora, solo cargamos los datos básicos disponibles
       setForm({
         nombre: "",
         apellidoPaterno: "",

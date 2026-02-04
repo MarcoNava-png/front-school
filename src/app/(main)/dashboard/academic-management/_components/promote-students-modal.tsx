@@ -139,7 +139,6 @@ export function PromoteStudentsModal({
 
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Period Selection */}
             <div className="space-y-2">
               <Label htmlFor="period" className="text-sm">
                 Periodo Académico de Destino *
@@ -157,8 +156,6 @@ export function PromoteStudentsModal({
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Promedio Mínimo */}
             <div className="space-y-2">
               <Label htmlFor="promedio" className="text-sm">
                 Promedio Mínimo para Promoción
@@ -179,7 +176,6 @@ export function PromoteStudentsModal({
               </p>
             </div>
 
-            {/* Checkboxes */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <Checkbox
@@ -220,7 +216,6 @@ export function PromoteStudentsModal({
               </div>
             </div>
 
-            {/* Warning */}
             <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
@@ -234,7 +229,6 @@ export function PromoteStudentsModal({
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                 Cancelar
@@ -246,7 +240,6 @@ export function PromoteStudentsModal({
           </form>
         ) : (
           <div className="space-y-4">
-            {/* Result Summary */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -274,7 +267,6 @@ export function PromoteStudentsModal({
               </p>
             </div>
 
-            {/* Student Details */}
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
               <h3 className="font-semibold text-sm">Detalle de Estudiantes</h3>
               {result.estudiantes.map((student) => (
@@ -308,7 +300,6 @@ export function PromoteStudentsModal({
               ))}
             </div>
 
-            {/* Close Button */}
             <div className="flex justify-end pt-4 border-t">
               <Button
                 onClick={() => {

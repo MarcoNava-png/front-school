@@ -15,7 +15,7 @@ interface SelectGrupoMateriaProps {
 
 interface GrupoMateriaOption {
   idGrupoMateria: number;
-  label: string; // "Grupo 111 - Matemáticas I"
+  label: string;
   nombreGrupo: string;
   nombreMateria: string;
   cuatrimestre: string;
@@ -38,10 +38,8 @@ export function SelectGrupoMateria({ value, onChange, planEstudiosId }: SelectGr
 
     setLoading(true);
     try {
-      // 1. Obtener gestión académica (grupos organizados por cuatrimestre)
       const gestionAcademica = await getAcademicManagement(planEstudiosId);
 
-      // 2. Para cada cuatrimestre y grupo, obtener sus materias
       const allOptions: GrupoMateriaOption[] = [];
 
       for (const cuatrimestre of gestionAcademica.gruposPorCuatrimestre) {

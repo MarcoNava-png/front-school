@@ -72,7 +72,6 @@ export function EnrollGrupoMateriaModal({
       setAcademicPeriods(periodsData);
       setCurrentInscriptions(inscripcionesData);
 
-      // Auto-select current active period if available
       const activePeriod = periodsData.find((p) => p.status === 1);
       if (activePeriod) {
         setSelectedPeriodId(activePeriod.idPeriodoAcademico.toString());
@@ -124,11 +123,11 @@ export function EnrollGrupoMateriaModal({
         fechaInscripcion: new Date().toISOString(),
       };
 
-      console.log("📤 Inscribiendo a grupo-materia:", request);
+      console.log("Inscribiendo a grupo-materia:", request);
 
       const result = await enrollStudentInGrupoMateria(request);
 
-      console.log("✅ Inscripción exitosa:", result);
+      console.log("Inscripción exitosa:", result);
 
       toast.success(
         <div className="space-y-1">
@@ -144,7 +143,7 @@ export function EnrollGrupoMateriaModal({
       onClose();
       resetForm();
     } catch (error: unknown) {
-      console.error("❌ Error al inscribir:", error);
+      console.error("Error al inscribir:", error);
       const err = error as { response?: { data?: { mensaje?: string } }; message?: string };
       const errorMessage =
         err?.response?.data?.mensaje ?? err?.message ?? "Error al inscribir al estudiante en la materia";
@@ -175,7 +174,6 @@ export function EnrollGrupoMateriaModal({
           <div className="py-8 text-center text-sm text-gray-500">Cargando información...</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Current Inscriptions */}
             {currentInscriptions.length > 0 && (
               <div className="border rounded-lg p-4 bg-blue-50 border-blue-200">
                 <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
@@ -199,7 +197,6 @@ export function EnrollGrupoMateriaModal({
               </div>
             )}
 
-            {/* Period Selection */}
             <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
               <h3 className="font-semibold text-sm">Selección de Materia</h3>
 
@@ -260,8 +257,6 @@ export function EnrollGrupoMateriaModal({
                 )}
               </div>
             </div>
-
-            {/* Selected Grupo-Materia Details */}
             {selectedGrupoMateria && (
               <div className="border rounded-lg p-4 bg-green-50 border-green-200">
                 <h3 className="font-semibold text-sm mb-3">Detalle de la Materia Seleccionada</h3>
@@ -308,8 +303,6 @@ export function EnrollGrupoMateriaModal({
                 </div>
               </div>
             )}
-
-            {/* Warning if no capacity */}
             {selectedGrupoMateria && selectedGrupoMateria.disponibles === 0 && (
               <div className="bg-orange-50 border border-orange-300 rounded-lg p-4">
                 <div className="flex items-start gap-2">
@@ -323,8 +316,6 @@ export function EnrollGrupoMateriaModal({
                 </div>
               </div>
             )}
-
-            {/* Actions */}
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button type="button" variant="outline" onClick={onClose} disabled={submitting} className="text-xs">
                 Cancelar

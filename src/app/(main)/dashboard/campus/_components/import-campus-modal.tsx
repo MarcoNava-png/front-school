@@ -47,7 +47,6 @@ interface ImportCampusModalProps {
   onImportSuccess: () => void;
 }
 
-// Mapeo de columnas del Excel
 const COLUMN_MAPPING: Record<string, keyof ImportarCampusDto> = {
   clavecampus: "claveCampus",
   clave: "claveCampus",
@@ -228,8 +227,6 @@ export function ImportCampusModal({
             Carga masiva de campus desde archivo Excel
           </DialogDescription>
         </DialogHeader>
-
-        {/* Step: Upload */}
         {step === "upload" && (
           <div className="space-y-4">
             <div className="flex justify-end">
@@ -274,7 +271,6 @@ export function ImportCampusModal({
           </div>
         )}
 
-        {/* Step: Preview */}
         {step === "preview" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -335,7 +331,6 @@ export function ImportCampusModal({
           </div>
         )}
 
-        {/* Step: Importing */}
         {step === "importing" && (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -344,10 +339,8 @@ export function ImportCampusModal({
           </div>
         )}
 
-        {/* Step: Results */}
         {step === "results" && resultado && (
           <div className="space-y-4">
-            {/* Resumen */}
             <div className="grid gap-4 md:grid-cols-4">
               <div className="rounded-lg border bg-muted/50 p-3 text-center">
                 <p className="text-sm text-muted-foreground">Procesados</p>
@@ -385,7 +378,6 @@ export function ImportCampusModal({
               </Alert>
             )}
 
-            {/* Detalle */}
             <div className="max-h-[250px] overflow-auto rounded-lg border">
               <Table>
                 <TableHeader className="sticky top-0 bg-background">

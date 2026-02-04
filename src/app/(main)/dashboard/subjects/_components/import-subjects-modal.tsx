@@ -39,7 +39,6 @@ import importacionService, {
   type ImportarMateriasResponse,
 } from '@/services/importacion-service'
 
-// Mapeo de columnas del Excel a propiedades del DTO
 const COLUMN_MAPPING: Record<string, keyof ImportarMateriaDto> = {
   clave: 'clave',
   codigo: 'clave',
@@ -133,15 +132,12 @@ export function ImportSubjectsModal({
         return
       }
 
-      // Primera fila son los headers
       const headers = (jsonData[0] as string[]).map((h) => String(h).toLowerCase().trim())
       const rows = jsonData.slice(1) as unknown[][]
 
-      // Mapear datos
       const mapped: ImportarMateriaDto[] = []
 
       for (const row of rows) {
-        // Saltar filas vacías
         if (!row || row.every((cell) => !cell)) continue
 
         const materia: Partial<ImportarMateriaDto> = {}
@@ -159,7 +155,6 @@ export function ImportSubjectsModal({
           }
         })
 
-        // Solo agregar si tiene clave y nombre
         if (materia.clave && materia.nombre) {
           mapped.push(materia as ImportarMateriaDto)
         }
@@ -177,7 +172,6 @@ export function ImportSubjectsModal({
   }
 
   const handleImportar = async () => {
-    // Validar que las materias tengan plan y campus
     const sinPlan = materias.filter(m => !m.planEstudios)
     const sinCampus = materias.filter(m => !m.claveCampus)
 
@@ -245,7 +239,6 @@ export function ImportSubjectsModal({
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Materias')
 
-    // Hoja de instrucciones
     const instrucciones = [
       ['INSTRUCCIONES PARA IMPORTACIÓN DE MATERIAS'],
       [''],
@@ -272,7 +265,6 @@ export function ImportSubjectsModal({
     toast.success('Plantilla descargada')
   }
 
-  // Contar planes y campus únicos
   const planesUnicos = [...new Set(materias.map(m => m.planEstudios).filter(Boolean))]
   const campusUnicos = [...new Set(materias.map(m => m.claveCampus).filter(Boolean))]
 

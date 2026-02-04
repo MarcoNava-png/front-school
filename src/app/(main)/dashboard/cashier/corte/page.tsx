@@ -47,28 +47,23 @@ import {
 } from "@/types/payment";
 
 export default function CorteCajaPage() {
-  // Estado para filtros
   const [cajeros, setCajeros] = useState<UsuarioCajero[]>([]);
   const [cajeroSeleccionado, setCajeroSeleccionado] = useState<string>("all");
   const [fechaInicio, setFechaInicio] = useState<Date>(new Date());
   const [fechaFin, setFechaFin] = useState<Date>(new Date());
 
-  // Estado para resultados
   const [resumen, setResumen] = useState<ResumenCorteCajaDetallado | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [loadingCajeros, setLoadingCajeros] = useState(true);
 
-  // Estado para modal de cierre
   const [cerrarModalOpen, setCerrarModalOpen] = useState(false);
   const [montoInicial, setMontoInicial] = useState("");
   const [observaciones, setObservaciones] = useState("");
   const [procesando, setProcesando] = useState(false);
 
-  // Cargar cajeros al iniciar
   useEffect(() => {
     cargarCajeros();
-    // Configurar fechas del día actual
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     setFechaInicio(hoy);
@@ -82,7 +77,6 @@ export default function CorteCajaPage() {
       setCajeros(lista);
     } catch (error) {
       console.error("Error al cargar cajeros:", error);
-      // Si no hay cajeros, no es un error crítico
     } finally {
       setLoadingCajeros(false);
     }
@@ -126,7 +120,6 @@ export default function CorteCajaPage() {
 
       const blob = await generarPdfCorteCaja(request);
 
-      // Crear URL y descargar
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -160,7 +153,6 @@ export default function CorteCajaPage() {
 
       toast.success(`Corte de caja cerrado: ${corte.folioCorteCaja}`);
 
-      // Descargar PDF automáticamente
       await descargarPdf();
 
       setCerrarModalOpen(false);
@@ -176,7 +168,6 @@ export default function CorteCajaPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -187,7 +178,6 @@ export default function CorteCajaPage() {
         </div>
       </div>
 
-      {/* Filtros */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Filtros de Búsqueda</CardTitle>
@@ -195,7 +185,6 @@ export default function CorteCajaPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Selector de Cajero */}
             <div className="space-y-2">
               <Label>Cajero</Label>
               <Select
@@ -222,8 +211,6 @@ export default function CorteCajaPage() {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Fecha Inicio */}
             <div className="space-y-2">
               <Label>Fecha Inicio</Label>
               <Popover>
@@ -250,7 +237,6 @@ export default function CorteCajaPage() {
               </Popover>
             </div>
 
-            {/* Fecha Fin */}
             <div className="space-y-2">
               <Label>Fecha Fin</Label>
               <Popover>
@@ -277,7 +263,6 @@ export default function CorteCajaPage() {
               </Popover>
             </div>
 
-            {/* Botones de Acción */}
             <div className="space-y-2">
               <Label className="invisible">Acciones</Label>
               <div className="flex gap-2">
@@ -291,10 +276,8 @@ export default function CorteCajaPage() {
         </CardContent>
       </Card>
 
-      {/* Resultados */}
       {resumen && (
         <>
-          {/* Información del Cajero y Acciones */}
           <div className="flex items-center justify-between">
             <div>
               {resumen.cajero && (
@@ -323,7 +306,6 @@ export default function CorteCajaPage() {
             </div>
           </div>
 
-          {/* Resumen de Totales */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Card>
               <CardHeader className="pb-3">
@@ -390,7 +372,6 @@ export default function CorteCajaPage() {
             </Card>
           </div>
 
-          {/* Detalle de Pagos */}
           <Card>
             <CardHeader>
               <CardTitle>Detalle de Pagos ({resumen.pagos.length})</CardTitle>
@@ -452,7 +433,6 @@ export default function CorteCajaPage() {
         </>
       )}
 
-      {/* Estado inicial sin datos */}
       {!resumen && !loading && (
         <Card>
           <CardContent className="py-12 text-center">
@@ -465,7 +445,6 @@ export default function CorteCajaPage() {
         </Card>
       )}
 
-      {/* Modal de Cierre de Corte */}
       <Dialog open={cerrarModalOpen} onOpenChange={setCerrarModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -476,7 +455,6 @@ export default function CorteCajaPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            {/* Resumen */}
             {resumen && (
               <div className="bg-muted p-4 rounded-lg space-y-2">
                 <div className="flex justify-between">

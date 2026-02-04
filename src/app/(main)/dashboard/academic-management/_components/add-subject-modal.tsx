@@ -34,7 +34,7 @@ interface AddSubjectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   idGrupo: number;
-  idPlanEstudios?: number; // ID del plan de estudios del grupo
+  idPlanEstudios?: number;
   onSuccess: () => void;
 }
 

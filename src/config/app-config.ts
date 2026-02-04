@@ -1,12 +1,12 @@
 import packageJson from "../../package.json";
 
 export const APP_CONFIG = {
-  name: "Universidad San Andrés De Guanajuato",
+  name: "USAG",
+  fullName: "Universidad San Andrés de Guanajuato",
   version: packageJson.version,
-  copyright: "© 2026, Universidad San Andrés De Guanajuato.",
+  copyright: "© 2026, Universidad San Andrés de Guanajuato.",
   meta: {
-    title: "Universidad San Andrés De Guanajuato",
-    description:
-      "Universidad San Andrés De Guanajuato",
+    title: "USAG - Sistema Académico",
+    description: "Sistema de Gestión Académica - Universidad San Andrés de Guanajuato",
   },
 };

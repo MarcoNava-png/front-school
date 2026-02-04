@@ -1,12 +1,22 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCw, MoreVertical, Download, Mail, UserX, UserCheck, FileText, GraduationCap, ClipboardList, FileSpreadsheet } from "lucide-react";
+
+import { ArrowLeft, ClipboardList, Download, FileSpreadsheet, FileText, GraduationCap, Mail, MoreVertical, RefreshCw, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 
+import { PanelHeader } from "@/components/estudiante-panel/panel-header";
+import { PanelStatsCards } from "@/components/estudiante-panel/panel-stats-cards";
+import { BecasTab } from "@/components/estudiante-panel/tabs/becas-tab";
+import { DatosPersonalesTab } from "@/components/estudiante-panel/tabs/datos-personales-tab";
+import { DocumentosPersonalesTab } from "@/components/estudiante-panel/tabs/documentos-personales-tab";
+import { DocumentosTab } from "@/components/estudiante-panel/tabs/documentos-tab";
+import { RecibosTab } from "@/components/estudiante-panel/tabs/recibos-tab";
+import { SeguimientoAcademicoTab } from "@/components/estudiante-panel/tabs/seguimiento-academico-tab";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,26 +25,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { PanelHeader } from "@/components/estudiante-panel/panel-header";
-import { PanelStatsCards } from "@/components/estudiante-panel/panel-stats-cards";
-import { DatosPersonalesTab } from "@/components/estudiante-panel/tabs/datos-personales-tab";
-import { SeguimientoAcademicoTab } from "@/components/estudiante-panel/tabs/seguimiento-academico-tab";
-import { RecibosTab } from "@/components/estudiante-panel/tabs/recibos-tab";
-import { BecasTab } from "@/components/estudiante-panel/tabs/becas-tab";
-import { DocumentosTab } from "@/components/estudiante-panel/tabs/documentos-tab";
-import { DocumentosPersonalesTab } from "@/components/estudiante-panel/tabs/documentos-personales-tab";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  obtenerPanelEstudiante,
-  descargarYGuardarKardex,
+  actualizarEstatusEstudiante,
+  descargarYGuardarBoleta,
   descargarYGuardarConstancia,
   descargarYGuardarExpediente,
-  descargarYGuardarBoleta,
+  descargarYGuardarKardex,
   enviarRecordatorioPago,
-  actualizarEstatusEstudiante,
+  obtenerPanelEstudiante,
 } from "@/services/estudiante-panel-service";
-
 import type { EstudiantePanelDto } from "@/types/estudiante-panel";
 
 export default function PanelEstudiantePage() {
@@ -47,7 +47,6 @@ export default function PanelEstudiantePage() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("datos");
 
-  // Cargar datos del panel
   const cargarPanel = useCallback(async (showToast = false) => {
     try {
       if (showToast) setRefreshing(true);
@@ -74,7 +73,6 @@ export default function PanelEstudiantePage() {
     }
   }, [idEstudiante, cargarPanel]);
 
-  // Handlers de acciones
   const handleDescargarKardex = async () => {
     if (!panel) return;
     try {
@@ -170,7 +168,6 @@ export default function PanelEstudiantePage() {
     }
   };
 
-  // Loading skeleton
   if (loading) {
     return (
       <div className="container mx-auto py-6 px-4 space-y-6">
@@ -206,7 +203,6 @@ export default function PanelEstudiantePage() {
 
   return (
     <div className="container mx-auto py-6 px-4 space-y-6">
-      {/* Header con navegación y acciones */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -302,13 +298,10 @@ export default function PanelEstudiantePage() {
         </div>
       </div>
 
-      {/* Header con información del estudiante */}
       <PanelHeader panel={panel} />
 
-      {/* Tarjetas de estadísticas */}
       <PanelStatsCards panel={panel} />
 
-      {/* Tabs con contenido */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
           <TabsTrigger value="datos">Datos Personales</TabsTrigger>

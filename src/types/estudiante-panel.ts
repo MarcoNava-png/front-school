@@ -1,8 +1,3 @@
-// ============================================
-// Tipos para el Panel de Gestión de Estudiantes
-// ============================================
-
-// Información básica del estudiante para el panel
 export interface EstudiantePanelDto {
   idEstudiante: number;
   matricula: string;
@@ -22,7 +17,6 @@ export interface EstudiantePanelDto {
   fechaConsulta: string;
 }
 
-// Información académica
 export interface InformacionAcademicaPanelDto {
   idPlanEstudios: number | null;
   planEstudios: string | null;
@@ -38,7 +32,6 @@ export interface InformacionAcademicaPanelDto {
   semestreActual: number | null;
 }
 
-// Grupo actual del estudiante
 export interface GrupoActualDto {
   idGrupo: number;
   codigoGrupo: string;
@@ -48,7 +41,6 @@ export interface GrupoActualDto {
   alumnosInscritos: number | null;
 }
 
-// Período académico actual
 export interface PeriodoActualDto {
   idPeriodoAcademico: number;
   nombre: string;
@@ -58,7 +50,6 @@ export interface PeriodoActualDto {
   esActual: boolean;
 }
 
-// Resumen del Kardex
 export interface ResumenKardexDto {
   promedioGeneral: number;
   creditosCursados: number;
@@ -72,7 +63,6 @@ export interface ResumenKardexDto {
   ultimasMaterias: MateriaResumenDto[];
 }
 
-// Resumen de materia
 export interface MateriaResumenDto {
   claveMateria: string;
   nombreMateria: string;
@@ -81,7 +71,6 @@ export interface MateriaResumenDto {
   periodo: string | null;
 }
 
-// Beca asignada
 export interface BecaAsignadaDto {
   idBecaAsignacion: number;
   idBeca: number | null;
@@ -99,7 +88,6 @@ export interface BecaAsignadaDto {
   descripcionDescuento: string;
 }
 
-// Resumen de recibos
 export interface ResumenRecibosDto {
   totalAdeudo: number;
   totalPagado: number;
@@ -111,7 +99,6 @@ export interface ResumenRecibosDto {
   ultimosRecibos: ReciboPanelResumenDto[];
 }
 
-// Recibo resumido
 export interface ReciboPanelResumenDto {
   idRecibo: number;
   folio: string | null;
@@ -129,7 +116,6 @@ export interface ReciboPanelResumenDto {
   nombrePeriodo: string | null;
 }
 
-// Documentos disponibles
 export interface DocumentosDisponiblesDto {
   tiposDisponibles: TipoDocumentoDisponibleDto[];
   solicitudesRecientes: SolicitudDocumentoResumenDto[];
@@ -138,7 +124,6 @@ export interface DocumentosDisponiblesDto {
   documentosVigentes: number;
 }
 
-// Tipo de documento
 export interface TipoDocumentoDisponibleDto {
   idTipoDocumento: number;
   clave: string;
@@ -151,7 +136,6 @@ export interface TipoDocumentoDisponibleDto {
   tieneDocumentoVigente: boolean;
 }
 
-// Solicitud de documento
 export interface SolicitudDocumentoResumenDto {
   idSolicitud: number;
   folioSolicitud: string;
@@ -166,18 +150,12 @@ export interface SolicitudDocumentoResumenDto {
   codigoVerificacion: string | null;
 }
 
-// Contacto de emergencia
 export interface ContactoEmergenciaDto {
   nombre: string | null;
   telefono: string | null;
   parentesco: string | null;
 }
 
-// ============================================
-// Request DTOs
-// ============================================
-
-// Búsqueda de estudiantes
 export interface BuscarEstudiantesPanelRequest {
   busqueda?: string;
   idPlanEstudios?: number;
@@ -190,7 +168,6 @@ export interface BuscarEstudiantesPanelRequest {
   tamanoPagina: number;
 }
 
-// Respuesta de búsqueda
 export interface BuscarEstudiantesPanelResponse {
   estudiantes: EstudianteListaDto[];
   totalRegistros: number;
@@ -200,7 +177,6 @@ export interface BuscarEstudiantesPanelResponse {
   estadisticas: EstadisticasEstudiantesDto;
 }
 
-// Estudiante en lista
 export interface EstudianteListaDto {
   idEstudiante: number;
   matricula: string;
@@ -216,7 +192,6 @@ export interface EstudianteListaDto {
   fotografia: string | null;
 }
 
-// Estadísticas generales
 export interface EstadisticasEstudiantesDto {
   totalEstudiantes: number;
   estudiantesActivos: number;
@@ -226,7 +201,6 @@ export interface EstadisticasEstudiantesDto {
   promedioGeneralInstitucional: number;
 }
 
-// Request para generar documento
 export interface GenerarDocumentoPanelRequest {
   idEstudiante: number;
   idTipoDocumento: number;
@@ -234,16 +208,11 @@ export interface GenerarDocumentoPanelRequest {
   notas?: string;
 }
 
-// Respuesta de acciones
 export interface AccionPanelResponse {
   exitoso: boolean;
   mensaje: string;
   datos?: unknown;
 }
-
-// ============================================
-// DTOs para edición de datos
-// ============================================
 
 export interface ActualizarDatosEstudianteRequest {
   nombre: string;
@@ -255,15 +224,10 @@ export interface ActualizarDatosEstudianteRequest {
   fechaNacimiento: string | null;
   genero: string | null;
   direccion: string | null;
-  // Contacto de emergencia
   nombreContactoEmergencia: string | null;
   telefonoContactoEmergencia: string | null;
   parentescoContactoEmergencia: string | null;
 }
-
-// ============================================
-// DTOs para seguimiento académico detallado
-// ============================================
 
 export interface SeguimientoAcademicoDto {
   idEstudiante: number;
@@ -317,10 +281,6 @@ export interface EstadisticasPeriodoDto {
   creditosPosibles: number;
 }
 
-// ============================================
-// Colores y utilidades
-// ============================================
-
 export const ESTATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   'Aprobada': { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300' },
   'Reprobada': { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-300' },
@@ -359,10 +319,6 @@ export function formatDate(date: string | null): string {
     year: 'numeric',
   });
 }
-
-// ============================================
-// DTOs para documentos personales
-// ============================================
 
 export interface DocumentosPersonalesEstudianteDto {
   idEstudiante: number;

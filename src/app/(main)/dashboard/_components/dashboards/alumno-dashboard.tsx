@@ -41,7 +41,6 @@ function formatTime(timeString: string): string {
 export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
   return (
     <div className="space-y-6">
-      {/* Header con Perfil */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -63,7 +62,6 @@ export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
         <Separator />
       </div>
 
-      {/* Indicadores Principales */}
       <StatGrid columns={3}>
         <StatCard
           title="Promedio Actual"
@@ -87,7 +85,6 @@ export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
         />
       </StatGrid>
 
-      {/* Alerta de Deuda si existe */}
       {data.tieneDeuda && (
         <Card className="border-2 border-red-200 dark:border-red-800 bg-gradient-to-br from-red-50/50 to-orange-50/50 dark:from-red-950/20 dark:to-orange-950/20">
           <CardContent className="pt-6">
@@ -114,7 +111,6 @@ export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
         </Card>
       )}
 
-      {/* Horario de Hoy */}
       <Card className="border-2 border-blue-200 dark:border-blue-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -165,7 +161,6 @@ export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Calificaciones Recientes */}
       {data.calificacionesRecientes.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -220,7 +215,6 @@ export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
         </Card>
       )}
 
-      {/* Indicador de Asistencia */}
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -266,8 +260,6 @@ export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
           </div>
         </CardContent>
       </Card>
-
-      {/* Tramites Disponibles */}
       {data.tramitesDisponibles.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -296,8 +288,6 @@ export function AlumnoDashboard({ data }: AlumnoDashboardProps) {
           </CardContent>
         </Card>
       )}
-
-      {/* Alertas */}
       <AlertCard alerts={data.alertas} title="Tus Avisos" description="Notificaciones importantes para ti" />
     </div>
   );

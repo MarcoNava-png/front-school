@@ -28,7 +28,6 @@ export function DirectorDashboard({ data }: DirectorDashboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -44,8 +43,6 @@ export function DirectorDashboard({ data }: DirectorDashboardProps) {
         </div>
         <Separator />
       </div>
-
-      {/* Estudiantes Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <GraduationCap className="h-5 w-5 text-blue-600" />
@@ -85,8 +82,6 @@ export function DirectorDashboard({ data }: DirectorDashboardProps) {
           />
         </StatGrid>
       </div>
-
-      {/* Finanzas Resumen */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-emerald-600" />
@@ -108,8 +103,6 @@ export function DirectorDashboard({ data }: DirectorDashboardProps) {
           />
         </StatGrid>
       </div>
-
-      {/* Academico Section */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-violet-600" />
@@ -139,8 +132,6 @@ export function DirectorDashboard({ data }: DirectorDashboardProps) {
           />
         </StatGrid>
       </div>
-
-      {/* Programas Resumen */}
       {data.programasResumen.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -179,8 +170,6 @@ export function DirectorDashboard({ data }: DirectorDashboardProps) {
           </CardContent>
         </Card>
       )}
-
-      {/* Indicadores */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-2">
           <CardHeader>

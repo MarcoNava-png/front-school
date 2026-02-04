@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { recalcularDescuentosConvenio } from "@/services/applicants-service";
 import {
   obtenerConveniosDisponiblesParaAspirante,
   obtenerConveniosAspirante,
@@ -107,6 +108,20 @@ export function ConveniosAspiranteModal({
     try {
       await cambiarEstatusConvenioAspirante(idAspiranteConvenio, estatus);
       toast.success(`Convenio ${estatus.toLowerCase()}`);
+
+      if (estatus === "Aprobado" && applicant) {
+        try {
+          const resultado = await recalcularDescuentosConvenio(applicant.idAspirante);
+          if (resultado.recibosActualizados > 0) {
+            toast.success(
+              `Se actualizaron ${resultado.recibosActualizados} recibo(s). Descuento total: $${resultado.descuentoTotalAplicado.toFixed(2)}`
+            );
+          }
+        } catch {
+          // No bloquear si falla el recálculo
+        }
+      }
+
       loadData();
       onConvenioChanged?.();
     } catch {
@@ -150,7 +165,6 @@ export function ConveniosAspiranteModal({
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Asignar nuevo convenio */}
             <div className="border rounded-lg p-4 space-y-4">
               <h3 className="font-semibold text-sm">Asignar Convenio</h3>
 
@@ -198,8 +212,6 @@ export function ConveniosAspiranteModal({
                 </div>
               )}
             </div>
-
-            {/* Convenios asignados */}
             <div className="space-y-3">
               <h3 className="font-semibold text-sm">
                 Convenios Asignados ({conveniosAsignados.length})
@@ -330,8 +342,6 @@ export function ConveniosAspiranteModal({
                 </div>
               )}
             </div>
-
-            {/* Resumen */}
             {conveniosAsignados.filter((c) => c.estatus === "Aprobado").length >
               0 && (
               <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4">

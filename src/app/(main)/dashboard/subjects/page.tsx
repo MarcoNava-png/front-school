@@ -63,7 +63,7 @@ export default function SubjectsPage() {
     try {
       const [subjectsRes, planesRes, campusesRes] = await Promise.all([
         getMatterPlanList(),
-        getStudyPlansList(1, 100),
+        getStudyPlansList({ page: 1, pageSize: 100 }),
         getCampusList()
       ]);
       setSubjects(subjectsRes ?? []);
@@ -77,13 +77,11 @@ export default function SubjectsPage() {
     }
   };
 
-  // Filtrar planes por campus seleccionado
   const filteredPlanes = useMemo(() => {
     if (selectedCampusId === "all") return planes;
     return planes.filter(p => p.idCampus?.toString() === selectedCampusId);
   }, [planes, selectedCampusId]);
 
-  // Reset plan cuando cambia el campus
   useEffect(() => {
     if (selectedCampusId !== "all") {
       const planStillValid = filteredPlanes.some(p => p.idPlanEstudios.toString() === selectedPlanId);
@@ -128,20 +126,16 @@ export default function SubjectsPage() {
     setEditDialogOpen(true);
   };
 
-  // Filtrar materias
   const filteredSubjects = useMemo(() => {
     return subjects.filter((s) => {
-      // Filtro por texto
       const matchesSearch =
         s.nombreMateria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.materia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.claveMateria?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Filtro por plan de estudios
       const matchesPlan =
         selectedPlanId === "all" || s.idPlanEstudios?.toString() === selectedPlanId;
 
-      // Filtro por campus (a través del plan)
       let matchesCampus = true;
       if (selectedCampusId !== "all") {
         const plan = planes.find(p => p.idPlanEstudios === s.idPlanEstudios);
@@ -152,7 +146,6 @@ export default function SubjectsPage() {
     });
   }, [subjects, searchTerm, selectedPlanId, selectedCampusId, planes]);
 
-  // Agrupar materias por cuatrimestre
   const subjectsByCuatrimestre = useMemo(() => {
     const grouped: Record<number, MatterPlan[]> = {};
     filteredSubjects.forEach((s) => {
@@ -162,7 +155,6 @@ export default function SubjectsPage() {
       }
       grouped[cuatri].push(s);
     });
-    // Ordenar por cuatrimestre
     return Object.entries(grouped)
       .sort(([a], [b]) => Number(a) - Number(b))
       .map(([cuatri, materias]) => ({
@@ -199,7 +191,6 @@ export default function SubjectsPage() {
 
   const hasActiveFilters = searchTerm || selectedCampusId !== "all" || selectedPlanId !== "all";
 
-  // Obtener nombre del plan seleccionado
   const selectedPlanName = useMemo(() => {
     if (selectedPlanId === "all") return null;
     return planes.find(p => p.idPlanEstudios.toString() === selectedPlanId)?.nombrePlanEstudios;

@@ -86,7 +86,6 @@ export default function ProfilePage() {
     },
   });
 
-  // Inicializar formulario con datos del usuario (solo una vez)
   useEffect(() => {
     if (user && !formInitialized.current) {
       formInitialized.current = true;
@@ -132,7 +131,6 @@ export default function ProfilePage() {
 
       await updateUserProfile(values, photoFile);
 
-      // Actualizar usuario en localStorage
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
@@ -147,10 +145,8 @@ export default function ProfilePage() {
         window.dispatchEvent(new Event("storage"));
       }
 
-      // Refrescar el perfil desde el backend
       refreshProfile();
 
-      // Limpiar la foto temporal
       setPhotoFile(null);
       setPhotoPreview(null);
 
@@ -181,7 +177,6 @@ export default function ProfilePage() {
     setPhotoPreview(null);
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -193,7 +188,6 @@ export default function ProfilePage() {
     );
   }
 
-  // No user state
   if (!user) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -209,7 +203,6 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -228,7 +221,6 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Photo Section */}
         <Card
           className="border-2 md:col-span-1"
           style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}
@@ -306,8 +298,6 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Profile Information Form */}
         <Card
           className="border-2 md:col-span-2"
           style={{ borderColor: 'rgba(20, 53, 111, 0.2)' }}

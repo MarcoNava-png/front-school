@@ -1,9 +1,10 @@
 "use client";
 
 import { TrendingUp, BookOpen, DollarSign, Award, AlertTriangle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
+import { Card, CardContent } from "@/components/ui/card";
 import type { EstudiantePanelDto } from "@/types/estudiante-panel";
+// eslint-disable-next-line no-duplicate-imports
 import { formatCurrency } from "@/types/estudiante-panel";
 
 interface PanelStatsCardsProps {
@@ -13,7 +14,6 @@ interface PanelStatsCardsProps {
 export function PanelStatsCards({ panel }: PanelStatsCardsProps) {
   const { resumenKardex, resumenRecibos, becas } = panel;
 
-  // Calcular si tiene beca activa
   const becaActiva = becas.find((b) => b.activo && b.estaVigente);
   const descuentoBeca = becaActiva
     ? becaActiva.tipo === "PORCENTAJE"

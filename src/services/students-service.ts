@@ -17,6 +17,21 @@ export async function getStudentsList(page?: number, pageSize?: number): Promise
   return data;
 }
 
+export async function getStudentsWithoutGroup(
+  idPlanEstudios: number,
+  idPeriodoAcademico: number,
+  page?: number,
+  pageSize?: number
+): Promise<StudentsResponse> {
+  const params = new URLSearchParams();
+  params.append("idPlanEstudios", idPlanEstudios.toString());
+  params.append("idPeriodoAcademico", idPeriodoAcademico.toString());
+  params.append("page", (page ?? 1).toString());
+  params.append("pageSize", (pageSize ?? 1000).toString());
+  const { data } = await apiClient.get<StudentsResponse>(`/estudiantes/sin-grupo?${params.toString()}`);
+  return data;
+}
+
 export async function createStudent(payload: PayloadCreateStudent): Promise<Student> {
   const { data } = await apiClient.post<Student>(`/estudiantes`, payload);
   return data;
@@ -84,31 +99,22 @@ export async function getStudentsByGrupo(idGrupo: number): Promise<Student[]> {
 }
 
 export async function getKardexEstudiante(idEstudiante: number): Promise<KardexData> {
-  // Get student basic info
   const estudiante = await getStudent(idEstudiante);
 
-  // Get all inscriptions for the student
   const inscripciones = await getStudentInscripciones(idEstudiante);
 
-  // TODO: For now, using mock data structure until backend provides complete kárdex endpoint
-  // In the future, we should fetch calificaciones for each inscripcion and aggregate
-  // const calificacionesPromises = inscripciones.map(i => getConcentradoAlumno(i.idInscripcion));
-  // const calificaciones = await Promise.all(calificacionesPromises);
-
-  // Mock data transformation for demonstration
   const materias: MateriaKardex[] = inscripciones.map((inscripcion) => ({
     idInscripcion: inscripcion.idInscripcion,
     nombreMateria: inscripcion.nombreMateria,
-    claveMateria: inscripcion.nombreMateria.substring(0, 6).toUpperCase(), // Mock clave
-    creditos: 6, // Mock credits
+    claveMateria: inscripcion.nombreMateria.substring(0, 6).toUpperCase(),
+    creditos: 6,
     grupo: inscripcion.grupo,
-    periodoAcademico: "2024", // Mock period
-    calificacionFinal: null, // Will be fetched from calificaciones API
+    periodoAcademico: "2024",
+    calificacionFinal: null,
     estatus: inscripcion.estado === "Inscrito" ? "Cursando" : "Aprobada",
     parciales: {},
   }));
 
-  // Calculate statistics from mock data
   const materiasAprobadas = materias.filter((m) => m.estatus === "Aprobada").length;
   const materiasReprobadas = materias.filter((m) => m.estatus === "Reprobada").length;
   const materiasCursando = materias.filter((m) => m.estatus === "Cursando").length;
@@ -119,11 +125,11 @@ export async function getKardexEstudiante(idEstudiante: number): Promise<KardexD
     materiasAprobadas,
     materiasReprobadas,
     materiasCursando,
-    creditosAcumulados: materiasAprobadas * 6, // Mock: 6 credits per subject
-    creditosTotal: materias.length * 6, // Mock total
-    promedioGeneral: 0, // Will be calculated from calificaciones
+    creditosAcumulados: materiasAprobadas * 6,
+    creditosTotal: materias.length * 6,
+    promedioGeneral: 0,
     materias,
-    puedeReinscribirse: true, // Will be determined by validation rules
+    puedeReinscribirse: true,
     motivosBloqueo: [],
   };
 }

@@ -36,7 +36,6 @@ export function GruposAcordeonAsistencias({ planEstudiosId }: GruposAcordeonAsis
     try {
       const gestionAcademica = await getAcademicManagement(planEstudiosId);
 
-      // Cargar materias para cada grupo
       const gruposConMaterias: GrupoConMaterias[] = [];
 
       for (const cuatrimestre of gestionAcademica.gruposPorCuatrimestre) {
@@ -99,7 +98,6 @@ export function GruposAcordeonAsistencias({ planEstudiosId }: GruposAcordeonAsis
     );
   }
 
-  // Agrupar grupos por cuatrimestre
   const gruposPorCuatrimestre: { [key: number]: GrupoConMaterias[] } = {};
   grupos.forEach((grupo) => {
     if (!gruposPorCuatrimestre[grupo.numeroCuatrimestre]) {
@@ -129,7 +127,6 @@ export function GruposAcordeonAsistencias({ planEstudiosId }: GruposAcordeonAsis
 
                   return (
                     <div key={grupo.idGrupo} className="transition-colors hover:bg-gray-50">
-                      {/* Header del Grupo */}
                       <div
                         className="p-4 cursor-pointer flex items-center justify-between"
                         onClick={() => toggleGrupo(grupo.idGrupo)}
@@ -163,8 +160,6 @@ export function GruposAcordeonAsistencias({ planEstudiosId }: GruposAcordeonAsis
                           </div>
                         </div>
                       </div>
-
-                      {/* Lista de Materias */}
                       {isExpanded && (
                         <div className="px-4 pb-4 bg-gray-50/50">
                           <div className="space-y-2">

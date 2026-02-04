@@ -57,7 +57,6 @@ export default function DocumentosEstudiantePage() {
   const [pagina, setPagina] = useState(1)
   const [totalPaginas, setTotalPaginas] = useState(1)
 
-  // Filtros
   const [filtro, setFiltro] = useState<SolicitudesFiltro>({
     pagina: 1,
     tamanoPagina: 20,
@@ -65,12 +64,10 @@ export default function DocumentosEstudiantePage() {
   const [busqueda, setBusqueda] = useState('')
   const [showFilters, setShowFilters] = useState(true)
 
-  // Modales
   const [crearModalOpen, setCrearModalOpen] = useState(false)
   const [kardexModalOpen, setKardexModalOpen] = useState(false)
   const [selectedSolicitud, setSelectedSolicitud] = useState<SolicitudDocumento | null>(null)
 
-  // Estados para descarga
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
 
   const loadSolicitudes = useCallback(async () => {
@@ -153,14 +150,12 @@ export default function DocumentosEstudiantePage() {
     setBusqueda('')
   }
 
-  // Estadisticas
   const pendientesPago = solicitudes.filter((s) => s.estatus === 'PENDIENTE_PAGO').length
   const pagados = solicitudes.filter((s) => s.estatus === 'PAGADO').length
   const generados = solicitudes.filter((s) => s.estatus === 'GENERADO').length
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
@@ -192,7 +187,6 @@ export default function DocumentosEstudiantePage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card
           className="border-2"
@@ -238,8 +232,6 @@ export default function DocumentosEstudiantePage() {
           </CardHeader>
         </Card>
       </div>
-
-      {/* Filters */}
       {showFilters && (
         <Card>
           <CardHeader className="pb-4">
@@ -329,7 +321,6 @@ export default function DocumentosEstudiantePage() {
         </Card>
       )}
 
-      {/* Table */}
       <Card>
         <CardHeader className="border-b bg-muted/40">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -392,25 +383,18 @@ export default function DocumentosEstudiantePage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            {solicitud.puedeGenerar && solicitud.estatus === 'PAGADO' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleGenerarDocumento(solicitud.idSolicitud)}
-                              >
-                                <FileCheck className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {solicitud.estatus === 'GENERADO' && (
+                            {(solicitud.estatus === 'PAGADO' || solicitud.estatus === 'GENERADO') && (
                               <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleVerKardex(solicitud)}
-                                  title="Ver documento"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
+                                {solicitud.tipoDocumentoClave?.includes('KARDEX') && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleVerKardex(solicitud)}
+                                    title="Ver Kardex"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                )}
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -424,16 +408,18 @@ export default function DocumentosEstudiantePage() {
                                     <Download className="h-4 w-4" />
                                   )}
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    window.open(solicitud.urlVerificacion, '_blank')
-                                  }
-                                  title="Ver QR de verificacion"
-                                >
-                                  <QrCode className="h-4 w-4" />
-                                </Button>
+                                {solicitud.estatus === 'GENERADO' && solicitud.urlVerificacion && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() =>
+                                      window.open(solicitud.urlVerificacion, '_blank')
+                                    }
+                                    title="Ver QR de verificacion"
+                                  >
+                                    <QrCode className="h-4 w-4" />
+                                  </Button>
+                                )}
                               </>
                             )}
                           </div>
@@ -472,8 +458,6 @@ export default function DocumentosEstudiantePage() {
           </div>
         )}
       </Card>
-
-      {/* Modales */}
       <CrearSolicitudModal
         open={crearModalOpen}
         onOpenChange={setCrearModalOpen}

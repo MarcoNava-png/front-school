@@ -46,10 +46,8 @@ export function GruposAcordeon({ planEstudiosId }: GruposAcordeonProps) {
   const loadGrupos = async () => {
     setLoading(true);
     try {
-      // Obtener gestión académica
       const gestionAcademica = await getAcademicManagement(planEstudiosId);
 
-      // Cargar materias para cada grupo
       const gruposConMaterias: GrupoConMaterias[] = [];
 
       for (const cuatrimestre of gestionAcademica.gruposPorCuatrimestre) {
@@ -95,7 +93,6 @@ export function GruposAcordeon({ planEstudiosId }: GruposAcordeonProps) {
     setMateriaSeleccionada(null);
   };
 
-  // Agrupar grupos por cuatrimestre
   const gruposPorCuatrimestre = grupos.reduce((acc, grupo) => {
     if (!acc[grupo.numeroCuatrimestre]) {
       acc[grupo.numeroCuatrimestre] = [];
@@ -128,7 +125,6 @@ export function GruposAcordeon({ planEstudiosId }: GruposAcordeonProps) {
     );
   }
 
-  // Si hay una materia seleccionada, mostrar solo la tabla
   if (materiaSeleccionada) {
     return (
       <div className="space-y-4">
@@ -156,7 +152,6 @@ export function GruposAcordeon({ planEstudiosId }: GruposAcordeonProps) {
     );
   }
 
-  // Vista de acordeón de grupos
   return (
     <div className="space-y-6">
       {Object.keys(gruposPorCuatrimestre)

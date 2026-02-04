@@ -36,7 +36,6 @@ export function ReceiptDetailsModal({ open, onOpenChange, receipt }: ReceiptDeta
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Información General */}
           <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
             <div>
               <p className="text-sm text-muted-foreground">Fecha de Emisión</p>
@@ -60,7 +59,7 @@ export function ReceiptDetailsModal({ open, onOpenChange, receipt }: ReceiptDeta
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Estatus</p>
-              <p className="font-medium">{estatusLabels[receipt.estatus]}</p>
+              <p className="font-medium">{estatusLabels[receipt.estatus as ReceiptStatus]}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Periodo Académico</p>
@@ -68,7 +67,6 @@ export function ReceiptDetailsModal({ open, onOpenChange, receipt }: ReceiptDeta
             </div>
           </div>
 
-          {/* Detalles/Conceptos */}
           <div>
             <h3 className="font-semibold mb-3">Conceptos</h3>
             <div className="border rounded-lg overflow-hidden">
@@ -103,7 +101,6 @@ export function ReceiptDetailsModal({ open, onOpenChange, receipt }: ReceiptDeta
             </div>
           </div>
 
-          {/* Totales */}
           <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between">
               <span className="text-sm">Subtotal:</span>
@@ -137,7 +134,6 @@ export function ReceiptDetailsModal({ open, onOpenChange, receipt }: ReceiptDeta
             </div>
           </div>
 
-          {/* Notas */}
           {receipt.notas && (
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm font-medium text-blue-900 mb-1">Notas:</p>

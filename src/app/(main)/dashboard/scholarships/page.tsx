@@ -47,10 +47,8 @@ import { EditarBecaModal } from "./_components/editar-beca-modal";
 import { CreateBecaCatalogoModal } from "./catalog/_components/create-beca-catalogo-modal";
 
 export default function ScholarshipsPage() {
-  // Tab activa
   const [activeTab, setActiveTab] = useState("catalogo");
 
-  // ========== Estado para Catálogo ==========
   const [catalogoBecas, setCatalogoBecas] = useState<BecaCatalogo[]>([]);
   const [loadingCatalogo, setLoadingCatalogo] = useState(true);
   const [busquedaCatalogo, setBusquedaCatalogo] = useState("");
@@ -59,7 +57,6 @@ export default function ScholarshipsPage() {
   const [createCatalogoModalOpen, setCreateCatalogoModalOpen] = useState(false);
   const [editingBecaCatalogo, setEditingBecaCatalogo] = useState<BecaCatalogo | null>(null);
 
-  // ========== Estado para Asignar Beca ==========
   const [matricula, setMatricula] = useState("");
   const [estudiante, setEstudiante] = useState<Student | null>(null);
   const [becasEstudiante, setBecasEstudiante] = useState<BecaEstudiante[]>([]);
@@ -70,12 +67,10 @@ export default function ScholarshipsPage() {
   const [editarBecaModalOpen, setEditarBecaModalOpen] = useState(false);
   const [becaToEdit, setBecaToEdit] = useState<BecaEstudiante | null>(null);
 
-  // Cargar catálogo al montar
   useEffect(() => {
     cargarCatalogo();
   }, [soloActivosCatalogo]);
 
-  // ========== Funciones de Catálogo ==========
   async function cargarCatalogo() {
     setLoadingCatalogo(true);
     try {
@@ -117,7 +112,6 @@ export default function ScholarshipsPage() {
     }
   }
 
-  // Filtrar catálogo localmente
   const catalogoFiltrado = catalogoBecas.filter((b) => {
     const matchBusqueda =
       !busquedaCatalogo ||
@@ -127,7 +121,6 @@ export default function ScholarshipsPage() {
     return matchBusqueda && matchTipo;
   });
 
-  // ========== Funciones de Asignar Beca ==========
   async function buscarEstudiante() {
     if (!matricula.trim()) {
       toast.error("Ingresa una matrícula");
@@ -142,7 +135,6 @@ export default function ScholarshipsPage() {
       const data = await getStudentByMatricula(matricula.trim());
       setEstudiante(data);
       toast.success(`Estudiante encontrado: ${data.nombreCompleto}`);
-      // Cargar becas del estudiante
       cargarBecasEstudiante(data.idEstudiante);
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -163,7 +155,6 @@ export default function ScholarshipsPage() {
       setBecasEstudiante(data);
     } catch (error) {
       console.error(error);
-      // No mostrar error ya que puede no tener becas
       setBecasEstudiante([]);
     } finally {
       setLoadingBecas(false);
@@ -224,7 +215,6 @@ export default function ScholarshipsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Award className="h-8 w-8" />
@@ -235,16 +225,12 @@ export default function ScholarshipsPage() {
         </p>
       </div>
 
-      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="catalogo">Catálogo de Becas</TabsTrigger>
           <TabsTrigger value="asignar">Asignar Beca</TabsTrigger>
         </TabsList>
-
-        {/* ==================== TAB: CATÁLOGO ==================== */}
         <TabsContent value="catalogo" className="space-y-6">
-          {/* Filtros */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -305,7 +291,6 @@ export default function ScholarshipsPage() {
             </CardContent>
           </Card>
 
-          {/* Tabla de Catálogo */}
           <Card>
             <CardHeader>
               <CardTitle>Becas Registradas ({catalogoFiltrado.length})</CardTitle>
@@ -414,9 +399,7 @@ export default function ScholarshipsPage() {
           </Card>
         </TabsContent>
 
-        {/* ==================== TAB: ASIGNAR BECA ==================== */}
         <TabsContent value="asignar" className="space-y-6">
-          {/* Búsqueda de Estudiante */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -454,8 +437,6 @@ export default function ScholarshipsPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Información del Estudiante */}
           {estudiante && (
             <Card>
               <CardHeader>
@@ -492,8 +473,6 @@ export default function ScholarshipsPage() {
               </CardHeader>
             </Card>
           )}
-
-          {/* Becas del Estudiante */}
           {estudiante && (
             <Card>
               <CardHeader>
@@ -614,8 +593,6 @@ export default function ScholarshipsPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Mensaje cuando no hay estudiante seleccionado */}
           {!estudiante && !loadingEstudiante && (
             <Card>
               <CardContent className="py-12">
@@ -629,14 +606,12 @@ export default function ScholarshipsPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Modal para crear/editar beca del catálogo */}
       <CreateBecaCatalogoModal
         open={createCatalogoModalOpen}
         onClose={handleCloseCatalogoModal}
         becaToEdit={editingBecaCatalogo}
       />
 
-      {/* Modal para asignar beca a estudiante */}
       {estudiante && (
         <AsignarBecaModal
           open={asignarBecaModalOpen}
@@ -648,7 +623,6 @@ export default function ScholarshipsPage() {
         />
       )}
 
-      {/* Modal para editar beca existente */}
       <EditarBecaModal
         open={editarBecaModalOpen}
         onClose={handleCloseEditarBecaModal}

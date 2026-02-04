@@ -35,8 +35,8 @@ interface GroupSubjectsModalProps {
   idGrupo: number;
   nombreGrupo: string;
   idPlanEstudios?: number;
-  codigoGrupo?: string; // Para obtener el cuatrimestre (fallback)
-  numeroCuatrimestre?: number; // Número de cuatrimestre directo
+  codigoGrupo?: string;
+  numeroCuatrimestre?: number;
 }
 
 export function GroupSubjectsModal({
@@ -68,7 +68,6 @@ export function GroupSubjectsModal({
     setLoading(true);
     try {
       const data = await getGroupSubjects(idGrupo);
-      // Transformar los datos del backend para usar camelCase consistente
       const transformedData = data.map((subject: any) => ({
         ...subject,
         inscritos: subject.estudiantesInscritos ?? subject.inscritos ?? 0,
@@ -120,7 +119,6 @@ export function GroupSubjectsModal({
       return;
     }
 
-    // Obtener el cuatrimestre: primero del prop directo, luego del código del grupo
     let numeroCuatrimestreGrupo = numeroCuatrimestre;
     if (!numeroCuatrimestreGrupo && codigoGrupo) {
       numeroCuatrimestreGrupo = parseInt(codigoGrupo[0]);
@@ -135,10 +133,8 @@ export function GroupSubjectsModal({
     setShowAutoLoadDialog(false);
 
     try {
-      // 1. Obtener todas las materias del plan de estudios
       const allMatters = await getMattersByStudyPlan(idPlanEstudios);
 
-      // 2. Filtrar solo las del cuatrimestre correspondiente
       const mattersForQuarter = allMatters.filter(m => m.cuatrimestre === numeroCuatrimestreGrupo);
 
       if (mattersForQuarter.length === 0) {
@@ -146,11 +142,9 @@ export function GroupSubjectsModal({
         return;
       }
 
-      // 3. Obtener las materias que ya tiene el grupo
       const currentSubjects = await getGroupSubjects(idGrupo);
       const existingMatterIds = new Set(currentSubjects.map(s => s.idMateriaPlan));
 
-      // 4. Agregar solo las materias que no existen
       const mattersToAdd = mattersForQuarter.filter(m => !existingMatterIds.has(m.idMateriaPlan));
 
       if (mattersToAdd.length === 0) {
@@ -158,7 +152,6 @@ export function GroupSubjectsModal({
         return;
       }
 
-      // 5. Agregar cada materia al grupo
       let added = 0;
       let failed = 0;
 
@@ -166,16 +159,14 @@ export function GroupSubjectsModal({
         try {
           await addSubjectToGroup(idGrupo, {
             idMateriaPlan: matter.idMateriaPlan,
-            cupo: 30, // Cupo por defecto
-            // Sin horarios inicialmente - se pueden configurar después
+            cupo: 30,
           });
           added++;
         } catch (err: any) {
           console.error(`Error adding matter ${matter.idMateriaPlan}:`, err);
-          // Si es error 500 de serialización pero la materia sí se agregó, contamos como éxito
           if (err?.response?.status === 500 && err?.response?.data?.includes?.('cycle')) {
             console.warn(`Warning: Backend serialization error for matter ${matter.idMateriaPlan}, but likely added successfully`);
-            added++; // Consideramos que se agregó exitosamente
+            added++;
           } else {
             failed++;
           }
@@ -252,14 +243,12 @@ export function GroupSubjectsModal({
                 </p>
               </div>
 
-            {/* Loading */}
             {loading && (
               <div className="text-center py-8 text-sm text-gray-500">
                 Cargando materias...
               </div>
             )}
 
-            {/* Empty State */}
             {!loading && subjects.length === 0 && (
               <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed">
                 <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -270,7 +259,6 @@ export function GroupSubjectsModal({
               </div>
             )}
 
-            {/* Subjects List */}
             {!loading && subjects.length > 0 && (
               <div className="space-y-3">
                 {subjects.map((subject) => (
@@ -330,7 +318,6 @@ export function GroupSubjectsModal({
                           </div>
                         </div>
 
-                        {/* Mostrar horarios estructurados si existen */}
                         {subject.horarioJson && subject.horarioJson.length > 0 ? (
                           <div className="mt-3 p-2 bg-blue-50 rounded border border-blue-200">
                             <div className="flex items-center gap-2 mb-1">
@@ -383,7 +370,6 @@ export function GroupSubjectsModal({
                       </div>
                     </div>
 
-                    {/* Progress bar para ocupación */}
                     <div className="mt-3">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
@@ -413,7 +399,6 @@ export function GroupSubjectsModal({
         </DialogContent>
       </Dialog>
 
-      {/* Add Subject Modal */}
       <AddSubjectModal
         open={showAddModal}
         onOpenChange={setShowAddModal}
@@ -422,7 +407,6 @@ export function GroupSubjectsModal({
         onSuccess={loadSubjects}
       />
 
-      {/* Edit Schedule Modal */}
       <EditSubjectScheduleModal
         open={showEditScheduleModal}
         onOpenChange={setShowEditScheduleModal}
@@ -430,7 +414,6 @@ export function GroupSubjectsModal({
         onSuccess={loadSubjects}
       />
 
-      {/* Assign Teacher Modal */}
       <AssignTeacherModal
         open={showAssignTeacherModal}
         onClose={() => {
@@ -441,7 +424,6 @@ export function GroupSubjectsModal({
         onSuccess={loadSubjects}
       />
 
-      {/* Auto-Load Confirmation Dialog */}
       <AlertDialog open={showAutoLoadDialog} onOpenChange={setShowAutoLoadDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

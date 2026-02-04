@@ -55,13 +55,10 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Datos para selects
   const [periodosAcademicos, setPeriodosAcademicos] = useState<AcademicPeriod[]>([]);
 
-  // Form state
   const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("");
 
-  // Resultados
   const [previewResult, setPreviewResult] = useState<GenerarRecibosMasivosResult | null>(null);
   const [finalResult, setFinalResult] = useState<GenerarRecibosMasivosResult | null>(null);
 
@@ -71,7 +68,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
       setStep("config");
       setPreviewResult(null);
       setFinalResult(null);
-      // Si la plantilla tiene periodo, usarlo por defecto
       if (plantilla.idPeriodoAcademico) {
         setIdPeriodoAcademico(plantilla.idPeriodoAcademico.toString());
       } else {
@@ -192,7 +188,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
         </DialogHeader>
 
         <div className="px-4 sm:px-6 overflow-y-auto max-h-[60vh]">
-          {/* Información de la plantilla */}
           <div className="bg-blue-50 p-3 sm:p-4 rounded-lg space-y-2 border border-blue-100 mb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <span className="font-semibold text-blue-900 text-sm sm:text-base truncate">
@@ -223,8 +218,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
               </div>
             </div>
           </div>
-
-          {/* Step: Config */}
           {step === "config" && (
             <div className="space-y-4 pb-4">
               <div className="space-y-2">
@@ -262,8 +255,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
               </Alert>
             </div>
           )}
-
-          {/* Step: Preview */}
           {step === "preview" && previewResult && (
             <div className="space-y-4 pb-4">
               <Alert
@@ -286,8 +277,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                     : previewResult.mensaje ?? "No se encontraron estudiantes que coincidan con los criterios"}
                 </AlertDescription>
               </Alert>
-
-              {/* Alerta si hay estudiantes omitidos */}
               {previewResult.estudiantesOmitidos > 0 && (
                 <Alert className="border-amber-200 bg-amber-50">
                   <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -308,7 +297,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
 
               {previewResult.totalEstudiantes > 0 && (
                 <>
-                  {/* Resumen - Grid responsivo */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                     <div className="bg-blue-50 p-2 sm:p-3 rounded-lg text-center border border-blue-100">
                       <div className="text-xl sm:text-2xl font-bold text-blue-700">
@@ -335,13 +323,10 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                       <div className="text-xs text-orange-600">Desc. Becas</div>
                     </div>
                   </div>
-
-                  {/* Tabla de detalle */}
                   {previewResult.detalleEstudiantes && previewResult.detalleEstudiantes.length > 0 && (
                     <div>
                       <Label className="mb-2 block text-sm">Detalle por estudiante</Label>
 
-                      {/* Vista de tabla para pantallas medianas y grandes */}
                       <div className="hidden sm:block border rounded-lg overflow-hidden">
                         <ScrollArea className="h-[200px]">
                           <Table>
@@ -390,7 +375,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                         </ScrollArea>
                       </div>
 
-                      {/* Vista de tarjetas para móviles */}
                       <div className="sm:hidden space-y-2 max-h-[250px] overflow-y-auto">
                         {previewResult.detalleEstudiantes.map((estudiante, index) => (
                           <div
@@ -432,7 +416,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                 </>
               )}
 
-              {/* Errores */}
               {previewResult.errores && previewResult.errores.length > 0 && (
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
@@ -456,7 +439,6 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
             </div>
           )}
 
-          {/* Step: Result */}
           {step === "result" && finalResult && (
             <div className="space-y-4 pb-4">
               <Alert

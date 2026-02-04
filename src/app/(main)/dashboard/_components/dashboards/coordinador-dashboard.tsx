@@ -39,7 +39,6 @@ interface CoordinadorDashboardProps {
 export function CoordinadorDashboard({ data }: CoordinadorDashboardProps) {
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -56,7 +55,6 @@ export function CoordinadorDashboard({ data }: CoordinadorDashboardProps) {
         <Separator />
       </div>
 
-      {/* Indicadores Principales */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <ClipboardList className="h-5 w-5 text-teal-600" />
@@ -95,8 +93,6 @@ export function CoordinadorDashboard({ data }: CoordinadorDashboardProps) {
           />
         </StatGrid>
       </div>
-
-      {/* Grupos en Riesgo */}
       {data.gruposEnRiesgo.length > 0 && (
         <Card className="border-2 border-amber-200 dark:border-amber-800">
           <CardHeader>
@@ -145,7 +141,6 @@ export function CoordinadorDashboard({ data }: CoordinadorDashboardProps) {
         </Card>
       )}
 
-      {/* Docentes con Entregas Pendientes */}
       {data.docentesConEntregasPendientes.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -213,7 +208,6 @@ export function CoordinadorDashboard({ data }: CoordinadorDashboardProps) {
         </Card>
       )}
 
-      {/* Mis Grupos */}
       {data.misGrupos.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -255,7 +249,6 @@ export function CoordinadorDashboard({ data }: CoordinadorDashboardProps) {
         </Card>
       )}
 
-      {/* Alertas y Acciones */}
       <div className="grid gap-6 md:grid-cols-2">
         <AlertCard
           alerts={data.alertas}

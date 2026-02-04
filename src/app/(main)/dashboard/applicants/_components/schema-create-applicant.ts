@@ -21,7 +21,6 @@ export const createApplicantSchema = z.object({
   notas: z.string().optional(),
   horarioId: z.coerce.number().int().min(1, "Selecciona un horario"),
   cuatrimestreInteres: z.coerce.number().int().min(1).max(9).optional(),
-  // Campos auxiliares para la UI (no se envían al backend)
   stateId: z.string().optional(),
   municipalityId: z.string().optional(),
   atendidoPorUsuarioId: z.string().optional(),

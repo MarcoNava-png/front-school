@@ -37,7 +37,6 @@ import importacionService, {
   type ValidarImportacionResponse,
 } from '@/services/importacion-service'
 
-// Mapeo de columnas del Excel a propiedades del DTO
 const COLUMN_MAPPING: Record<string, keyof ImportarEstudianteDto> = {
   ciclo: 'ciclo',
   escuela: 'campus',
@@ -87,7 +86,6 @@ export default function ImportarEstudiantesPage() {
   const [resultado, setResultado] = useState<ImportarEstudiantesResponse | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Opciones de importacion
   const [crearCatalogos, setCrearCatalogos] = useState(false)
   const [actualizarExistentes, setActualizarExistentes] = useState(true)
   const [inscribirAGrupo, setInscribirAGrupo] = useState(false)
@@ -122,15 +120,12 @@ export default function ImportarEstudiantesPage() {
         return
       }
 
-      // Primera fila son los headers
       const headers = (jsonData[0]).map((h) => String(h).toLowerCase().trim())
       const rows = jsonData.slice(1)
 
-      // Mapear datos
       const mapped: ImportarEstudianteDto[] = []
 
       for (const row of rows) {
-        // Saltar filas vacías
         if (!row || row.every((cell) => !cell)) continue
 
         const estudiante: Partial<ImportarEstudianteDto> = {}
@@ -140,7 +135,6 @@ export default function ImportarEstudiantesPage() {
           if (mappedKey && row[index] !== undefined && row[index] !== null) {
             let value = String(row[index]).trim()
 
-            // Limpiar fechas
             if (mappedKey === 'fechaNacimiento' || mappedKey === 'fechaInscripcion') {
               if (value === '-' || value === '0000-00-00') {
                 value = ''
@@ -151,7 +145,6 @@ export default function ImportarEstudiantesPage() {
           }
         })
 
-        // Solo agregar si tiene matricula
         if (estudiante.matricula) {
           mapped.push(estudiante as ImportarEstudianteDto)
         }
@@ -279,7 +272,7 @@ export default function ImportarEstudiantesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
@@ -304,8 +297,6 @@ export default function ImportarEstudiantesPage() {
           Descargar Plantilla
         </Button>
       </div>
-
-      {/* Progress Steps */}
       <div className="flex items-center justify-center gap-2">
         {['upload', 'preview', 'validate', 'import', 'results'].map((s, i) => (
           <div key={s} className="flex items-center">
@@ -329,8 +320,6 @@ export default function ImportarEstudiantesPage() {
           </div>
         ))}
       </div>
-
-      {/* Step: Upload */}
       {step === 'upload' && (
         <Card>
           <CardHeader>
@@ -369,8 +358,6 @@ export default function ImportarEstudiantesPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Step: Preview */}
       {step === 'preview' && (
         <Card>
           <CardHeader>
@@ -439,10 +426,8 @@ export default function ImportarEstudiantesPage() {
         </Card>
       )}
 
-      {/* Step: Validate */}
       {step === 'validate' && validacion && (
         <div className="space-y-6">
-          {/* Resumen de validacion */}
           <div className="grid gap-4 md:grid-cols-4">
             <Card
               className={
@@ -487,8 +472,6 @@ export default function ImportarEstudiantesPage() {
               </CardHeader>
             </Card>
           </div>
-
-          {/* Alertas */}
           {validacion.campusNoEncontrados.length > 0 && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
@@ -536,8 +519,6 @@ export default function ImportarEstudiantesPage() {
               </AlertDescription>
             </Alert>
           )}
-
-          {/* Opciones de importacion */}
           <Card>
             <CardHeader>
               <CardTitle>Opciones de Importacion</CardTitle>
@@ -582,8 +563,6 @@ export default function ImportarEstudiantesPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Detalle de validacion */}
           <Card>
             <CardHeader>
               <CardTitle>Detalle de Validacion</CardTitle>
@@ -674,11 +653,8 @@ export default function ImportarEstudiantesPage() {
           </div>
         </div>
       )}
-
-      {/* Step: Results */}
       {step === 'results' && resultado && (
         <div className="space-y-6">
-          {/* Resumen */}
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
@@ -705,8 +681,6 @@ export default function ImportarEstudiantesPage() {
               </CardHeader>
             </Card>
           </div>
-
-          {/* Alerta de exito o error */}
           {resultado.fallidos === 0 ? (
             <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -724,8 +698,6 @@ export default function ImportarEstudiantesPage() {
               </AlertDescription>
             </Alert>
           )}
-
-          {/* Detalle de resultados */}
           <Card>
             <CardHeader>
               <CardTitle>Detalle de Resultados</CardTitle>

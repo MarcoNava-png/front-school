@@ -183,7 +183,6 @@ export default function ConveniosPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -209,8 +208,6 @@ export default function ConveniosPage() {
           </Button>
         </div>
       </div>
-
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card
           className="border-2"
@@ -250,8 +247,6 @@ export default function ConveniosPage() {
           </CardHeader>
         </Card>
       </div>
-
-      {/* Table Card */}
       <Card>
         <CardHeader className="border-b bg-muted/40">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -448,8 +443,6 @@ export default function ConveniosPage() {
           </Table>
         </CardContent>
       </Card>
-
-      {/* Modals */}
       <CreateConvenioModal
         open={modalOpen}
         campusList={campusList}

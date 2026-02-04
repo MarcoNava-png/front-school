@@ -51,7 +51,6 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
       setAcademicPeriods(periodsData);
       setTurnos(turnosData);
 
-      // Usar el periodo pasado como prop, o buscar el periodo actual
       if (defaultPeriodId && defaultPeriodId !== "all") {
         setSelectedPeriodId(defaultPeriodId);
       } else {
@@ -139,7 +138,6 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Academic Period */}
           <div className="space-y-2">
             <Label htmlFor="period" className="text-sm">
               Periodo Académico *
@@ -165,7 +163,6 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
             </Select>
           </div>
 
-          {/* Grid de configuración */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="cuatrimestre" className="text-sm">
@@ -233,7 +230,6 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
             </div>
           </div>
 
-          {/* Cargar materias automáticamente */}
           <div className="flex items-center space-x-2 p-4 rounded-lg" style={{ backgroundColor: 'rgba(20, 53, 111, 0.05)', border: '1px solid rgba(20, 53, 111, 0.2)' }}>
             <Checkbox id="cargarMaterias" checked={cargarMaterias} onCheckedChange={(checked) => setCargarMaterias(!!checked)} />
             <div className="grid gap-1.5 leading-none">
@@ -249,7 +245,6 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
             </div>
           </div>
 
-          {/* Preview del código */}
           {numeroCuatrimestre && selectedTurnoId && numeroGrupo && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
               <p className="text-xs text-gray-600 mb-1">Vista previa del código:</p>
@@ -261,7 +256,6 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancelar

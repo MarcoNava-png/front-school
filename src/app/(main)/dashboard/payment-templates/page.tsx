@@ -36,6 +36,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getAcademicPeriodsList } from "@/services/academic-period-service";
+import { getCampusList } from "@/services/campus-service";
 import {
   listarPlantillas,
   cambiarEstadoPlantilla,
@@ -43,6 +44,7 @@ import {
 } from "@/services/plantillas-service";
 import { getStudyPlansList } from "@/services/study-plans-service";
 import { AcademicPeriod } from "@/types/academic-period";
+import { Campus } from "@/types/campus";
 import { PlantillaCobro } from "@/types/receipt";
 import { StudyPlan } from "@/types/study-plan";
 
@@ -60,15 +62,15 @@ export default function PaymentTemplatesPage() {
   const [plantillas, setPlantillas] = useState<PlantillaCobro[]>([]);
   const [periodos, setPeriodos] = useState<AcademicPeriod[]>([]);
   const [planesEstudio, setPlanesEstudio] = useState<StudyPlan[]>([]);
+  const [campuses, setCampuses] = useState<Campus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filtros
+  const [selectedCampus, setSelectedCampus] = useState<string>("TODOS");
   const [selectedPeriodo, setSelectedPeriodo] = useState<string>("TODOS");
   const [selectedPlan, setSelectedPlan] = useState<string>("TODOS");
   const [soloActivas, setSoloActivas] = useState(false);
 
-  // Modales
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editingPlantilla, setEditingPlantilla] = useState<PlantillaCobro | null>(null);
   const [vistaPreviaPlantilla, setVistaPreviaPlantilla] = useState<PlantillaCobro | null>(null);
@@ -86,12 +88,14 @@ export default function PaymentTemplatesPage() {
   async function cargarDatosIniciales() {
     setLoading(true);
     try {
-      const [periodosData, planesData] = await Promise.all([
+      const [periodosData, planesData, campusData] = await Promise.all([
         getAcademicPeriodsList(),
         getStudyPlansList(),
+        getCampusList(),
       ]);
       setPeriodos(periodosData.items);
       setPlanesEstudio(planesData.items);
+      setCampuses(campusData.items);
       setError(null);
     } catch (err) {
       console.error("Error al cargar datos iniciales:", err);
@@ -175,6 +179,21 @@ export default function PaymentTemplatesPage() {
     return plan ? `${plan.clavePlanEstudios} - ${plan.nombrePlanEstudios}` : `Plan #${idPlanEstudios}`;
   }
 
+  function getPeriodicidadLabel(idPlanEstudios: number): string {
+    const plan = planesEstudio.find((p) => p.idPlanEstudios === idPlanEstudios);
+    if (!plan) return "Periodo";
+    return plan.periodicidad?.toLowerCase().includes("semest") ? "Semestre" : "Cuatrimestre";
+  }
+
+  const planesFiltrados = selectedCampus === "TODOS"
+    ? planesEstudio
+    : planesEstudio.filter((p) => p.idCampus === parseInt(selectedCampus));
+
+  function handleCampusChange(value: string) {
+    setSelectedCampus(value);
+    setSelectedPlan("TODOS");
+  }
+
   if (loading && plantillas.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -186,7 +205,6 @@ export default function PaymentTemplatesPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 lg:p-6">
-      {/* Header - Responsivo */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold flex items-center gap-2">
@@ -194,7 +212,7 @@ export default function PaymentTemplatesPage() {
             <span className="truncate">Plantillas de Cobro</span>
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Configura plantillas de cobro por plan de estudios y cuatrimestre
+            Configura plantillas de cobro por plan de estudios y periodo
           </p>
         </div>
 
@@ -207,7 +225,6 @@ export default function PaymentTemplatesPage() {
         </Button>
       </div>
 
-      {/* Alerta de error */}
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -219,14 +236,29 @@ export default function PaymentTemplatesPage() {
           </AlertDescription>
         </Alert>
       )}
-
-      {/* Filtros - Responsivo */}
       <Card>
         <CardHeader className="pb-3 sm:pb-6">
           <CardTitle className="text-base sm:text-lg">Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+            <div className="space-y-2">
+              <label className="text-xs sm:text-sm font-medium">Campus</label>
+              <Select value={selectedCampus} onValueChange={handleCampusChange}>
+                <SelectTrigger className="w-full text-sm">
+                  <SelectValue placeholder="Seleccionar campus" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  <SelectItem value="TODOS">Todos los campus</SelectItem>
+                  {campuses.map((campus) => (
+                    <SelectItem key={campus.idCampus} value={campus.idCampus.toString()}>
+                      {campus.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs sm:text-sm font-medium">Plan de Estudios</label>
               <Select value={selectedPlan} onValueChange={setSelectedPlan}>
@@ -235,9 +267,12 @@ export default function PaymentTemplatesPage() {
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
                   <SelectItem value="TODOS">Todos los planes</SelectItem>
-                  {planesEstudio.map((plan) => (
+                  {planesFiltrados.map((plan) => (
                     <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()}>
-                      <span className="truncate">{plan.clavePlanEstudios} - {plan.nombrePlanEstudios}</span>
+                      <span className="truncate">
+                        {plan.clavePlanEstudios} - {plan.nombrePlanEstudios}
+                        {plan.periodicidad ? ` (${plan.periodicidad})` : ""}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -291,8 +326,6 @@ export default function PaymentTemplatesPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Tabla de Plantillas - Responsiva */}
       <Card>
         <CardHeader className="pb-3 sm:pb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -319,7 +352,6 @@ export default function PaymentTemplatesPage() {
             </div>
           ) : (
             <>
-              {/* Vista de tabla para pantallas medianas y grandes */}
               <div className="hidden md:block">
                 <ScrollArea className="w-full">
                   <Table>
@@ -327,7 +359,7 @@ export default function PaymentTemplatesPage() {
                       <TableRow className="bg-blue-600 hover:bg-blue-600">
                         <TableHead className="text-white font-semibold">Nombre</TableHead>
                         <TableHead className="text-white font-semibold">Plan de Estudios</TableHead>
-                        <TableHead className="text-white font-semibold text-center">Cuatrimestre</TableHead>
+                        <TableHead className="text-white font-semibold text-center">Periodo</TableHead>
                         <TableHead className="text-white font-semibold text-center">Recibos</TableHead>
                         <TableHead className="text-white font-semibold text-center">Vencimiento</TableHead>
                         <TableHead className="text-white font-semibold text-center">Conceptos</TableHead>
@@ -356,7 +388,7 @@ export default function PaymentTemplatesPage() {
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                              {plantilla.numeroCuatrimestre}°
+                              {plantilla.numeroCuatrimestre}° {getPeriodicidadLabel(plantilla.idPlanEstudios)}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
@@ -447,7 +479,6 @@ export default function PaymentTemplatesPage() {
                 </ScrollArea>
               </div>
 
-              {/* Vista de tarjetas para móviles */}
               <div className="md:hidden space-y-3 px-4 pb-4">
                 {plantillas.map((plantilla, index) => (
                   <Card
@@ -477,7 +508,7 @@ export default function PaymentTemplatesPage() {
                           </p>
                         </div>
                         <div>
-                          <span className="text-muted-foreground text-xs">Cuatrimestre</span>
+                          <span className="text-muted-foreground text-xs">{getPeriodicidadLabel(plantilla.idPlanEstudios)}</span>
                           <p className="font-medium">{plantilla.numeroCuatrimestre}°</p>
                         </div>
                         <div>
@@ -503,8 +534,6 @@ export default function PaymentTemplatesPage() {
                           </div>
                         )}
                       </div>
-
-                      {/* Acciones móviles */}
                       <div className="flex items-center justify-between pt-3 border-t gap-1">
                         <Button
                           variant="outline"
@@ -560,8 +589,6 @@ export default function PaymentTemplatesPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Modales */}
       <CreatePlantillaModal
         open={createModalOpen}
         onClose={handleCloseModal}
@@ -575,8 +602,6 @@ export default function PaymentTemplatesPage() {
           onClose={() => setVistaPreviaPlantilla(null)}
         />
       )}
-
-      {/* Diálogo de confirmación de eliminación - Responsivo */}
       <AlertDialog open={!!plantillaToDelete} onOpenChange={() => setPlantillaToDelete(null)}>
         <AlertDialogContent className="max-w-[95vw] sm:max-w-[425px]">
           <AlertDialogHeader>
@@ -598,8 +623,6 @@ export default function PaymentTemplatesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Modal para generar recibos masivamente */}
       {generarRecibosPlantilla && (
         <GenerarRecibosModal
           plantilla={generarRecibosPlantilla}

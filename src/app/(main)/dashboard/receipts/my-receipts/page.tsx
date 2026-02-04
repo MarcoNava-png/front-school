@@ -29,7 +29,6 @@ import { listarRecibos, descargarReciboPDF } from "@/services/receipts-service";
 import { AcademicPeriod } from "@/types/academic-period";
 import { Receipt, ReceiptStatus } from "@/types/receipt";
 
-// TODO: Obtener del contexto de autenticación
 const MOCK_STUDENT_ID = 1;
 
 export default function MyReceiptsPage() {
@@ -89,10 +88,9 @@ export default function MyReceiptsPage() {
     }
   }
 
-  // Calcular totales
   const totalPendiente = recibos
     .filter((r) =>
-      [ReceiptStatus.PENDIENTE, ReceiptStatus.PARCIAL, ReceiptStatus.VENCIDO].includes(r.estatus)
+      [ReceiptStatus.PENDIENTE, ReceiptStatus.PARCIAL, ReceiptStatus.VENCIDO].includes(r.estatus as ReceiptStatus)
     )
     .reduce((sum, r) => sum + r.saldo, 0);
 
@@ -112,7 +110,6 @@ export default function MyReceiptsPage() {
         <p className="text-muted-foreground">Consulta y descarga tus recibos de pago</p>
       </div>
 
-      {/* Alertas */}
       {recibosVencidos.length > 0 && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -124,7 +121,6 @@ export default function MyReceiptsPage() {
         </Alert>
       )}
 
-      {/* Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-3">
@@ -156,7 +152,6 @@ export default function MyReceiptsPage() {
         </Card>
       </div>
 
-      {/* Filtros */}
       <Card>
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
@@ -204,8 +199,6 @@ export default function MyReceiptsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Tabla de Recibos */}
       <Card>
         <CardHeader>
           <CardTitle>Recibos ({recibos.length})</CardTitle>
@@ -276,7 +269,7 @@ export default function MyReceiptsPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <ReceiptStatusBadge status={recibo.estatus} />
+                        <ReceiptStatusBadge status={recibo.estatus as ReceiptStatus} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
@@ -305,7 +298,6 @@ export default function MyReceiptsPage() {
         </CardContent>
       </Card>
 
-      {/* Modal de Detalles */}
       <ReceiptDetailsModal
         receipt={selectedReceipt}
         open={!!selectedReceipt}

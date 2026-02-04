@@ -80,7 +80,6 @@ export function DataTable<TData, TValue>({
       const oldIndex = dataIds.indexOf(active.id);
       const newIndex = dataIds.indexOf(over.id);
 
-      // Call parent with new data order (parent manages state)
       const newData = arrayMove(table.options.data, oldIndex, newIndex);
       onReorder(newData);
     }

@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 
-// Mock para next/navigation
 jest.mock('next/navigation', () => ({
   useRouter() {
     return {
@@ -23,7 +22,6 @@ jest.mock('next/navigation', () => ({
   },
 }))
 
-// Mock para next/image - version simple sin JSX
 jest.mock('next/image', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(({ src, alt, ...props }) => {
@@ -33,7 +31,6 @@ jest.mock('next/image', () => ({
   }),
 }))
 
-// Mock para window.matchMedia (necesario para algunos componentes UI)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query) => ({
@@ -48,21 +45,18 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Mock para ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }))
 
-// Mock para IntersectionObserver
 global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }))
 
-// Limpiar mocks despues de cada test
 afterEach(() => {
   jest.clearAllMocks()
 })

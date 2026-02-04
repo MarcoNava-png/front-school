@@ -38,7 +38,6 @@ interface Props {
 export function CreateBecaCatalogoModal({ open, onClose, becaToEdit }: Props) {
   const [loading, setLoading] = useState(false);
 
-  // Form state
   const [clave, setClave] = useState("");
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -73,7 +72,6 @@ export function CreateBecaCatalogoModal({ open, onClose, becaToEdit }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones
     if (!clave.trim()) {
       toast.error("La clave es requerida");
       return;

@@ -40,7 +40,6 @@ export interface UserResponse {
   messageError: string | null;
 }
 
-// Legacy types (keeping for compatibility)
 export interface PayloadCreateUser {
   email: string;
   password: string;

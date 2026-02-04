@@ -1,51 +1,35 @@
-// ============================================
-// Servicio para el Panel de Gestión de Estudiantes
-// ============================================
-
-import apiClient from './api-client';
 import type {
-  EstudiantePanelDto,
-  BuscarEstudiantesPanelRequest,
-  BuscarEstudiantesPanelResponse,
-  EstadisticasEstudiantesDto,
-  InformacionAcademicaPanelDto,
-  ResumenKardexDto,
-  BecaAsignadaDto,
-  ResumenRecibosDto,
-  ReciboPanelResumenDto,
-  DocumentosDisponiblesDto,
-  DocumentosPersonalesEstudianteDto,
-  GenerarDocumentoPanelRequest,
   AccionPanelResponse,
   ActualizarDatosEstudianteRequest,
+  BecaAsignadaDto,
+  BuscarEstudiantesPanelRequest,
+  BuscarEstudiantesPanelResponse,
+  DocumentosDisponiblesDto,
+  DocumentosPersonalesEstudianteDto,
+  EstadisticasEstudiantesDto,
+  EstudiantePanelDto,
+  GenerarDocumentoPanelRequest,
+  InformacionAcademicaPanelDto,
+  ReciboPanelResumenDto,
+  ResumenKardexDto,
+  ResumenRecibosDto,
   SeguimientoAcademicoDto,
 } from '@/types/estudiante-panel';
 
+import apiClient from './api-client';
+
 const BASE_URL = '/estudiante-panel';
 
-// ============================================
-// Consultas de Panel
-// ============================================
-
-/**
- * Obtiene el panel completo de un estudiante por ID
- */
 export async function obtenerPanelEstudiante(idEstudiante: number): Promise<EstudiantePanelDto> {
   const response = await apiClient.get<EstudiantePanelDto>(`${BASE_URL}/${idEstudiante}`);
   return response.data;
 }
 
-/**
- * Obtiene el panel de un estudiante por matrícula
- */
 export async function obtenerPanelPorMatricula(matricula: string): Promise<EstudiantePanelDto> {
   const response = await apiClient.get<EstudiantePanelDto>(`${BASE_URL}/matricula/${matricula}`);
   return response.data;
 }
 
-/**
- * Busca estudiantes con filtros avanzados
- */
 export async function buscarEstudiantes(
   request: BuscarEstudiantesPanelRequest
 ): Promise<BuscarEstudiantesPanelResponse> {
@@ -56,9 +40,6 @@ export async function buscarEstudiantes(
   return response.data;
 }
 
-/**
- * Obtiene estadísticas generales de estudiantes
- */
 export async function obtenerEstadisticas(
   idPlanEstudios?: number,
   idPeriodoAcademico?: number
@@ -73,13 +54,6 @@ export async function obtenerEstadisticas(
   return response.data;
 }
 
-// ============================================
-// Información Académica
-// ============================================
-
-/**
- * Obtiene la información académica detallada
- */
 export async function obtenerInformacionAcademica(
   idEstudiante: number
 ): Promise<InformacionAcademicaPanelDto> {
@@ -89,9 +63,6 @@ export async function obtenerInformacionAcademica(
   return response.data;
 }
 
-/**
- * Obtiene el resumen del kardex
- */
 export async function obtenerResumenKardex(idEstudiante: number): Promise<ResumenKardexDto> {
   const response = await apiClient.get<ResumenKardexDto>(
     `${BASE_URL}/${idEstudiante}/resumen-kardex`
@@ -99,9 +70,6 @@ export async function obtenerResumenKardex(idEstudiante: number): Promise<Resume
   return response.data;
 }
 
-/**
- * Obtiene el seguimiento académico detallado (por período)
- */
 export async function obtenerSeguimientoAcademico(
   idEstudiante: number
 ): Promise<SeguimientoAcademicoDto> {
@@ -111,13 +79,6 @@ export async function obtenerSeguimientoAcademico(
   return response.data;
 }
 
-// ============================================
-// Becas
-// ============================================
-
-/**
- * Obtiene las becas asignadas a un estudiante
- */
 export async function obtenerBecasEstudiante(
   idEstudiante: number,
   soloActivas: boolean = true
@@ -128,13 +89,6 @@ export async function obtenerBecasEstudiante(
   return response.data;
 }
 
-// ============================================
-// Recibos y Pagos
-// ============================================
-
-/**
- * Obtiene el resumen de recibos
- */
 export async function obtenerResumenRecibos(idEstudiante: number): Promise<ResumenRecibosDto> {
   const response = await apiClient.get<ResumenRecibosDto>(
     `${BASE_URL}/${idEstudiante}/resumen-recibos`
@@ -142,9 +96,6 @@ export async function obtenerResumenRecibos(idEstudiante: number): Promise<Resum
   return response.data;
 }
 
-/**
- * Obtiene los recibos de un estudiante
- */
 export async function obtenerRecibosEstudiante(
   idEstudiante: number,
   estatus?: string,
@@ -160,13 +111,6 @@ export async function obtenerRecibosEstudiante(
   return response.data;
 }
 
-// ============================================
-// Documentos
-// ============================================
-
-/**
- * Obtiene los documentos disponibles para un estudiante
- */
 export async function obtenerDocumentosDisponibles(
   idEstudiante: number
 ): Promise<DocumentosDisponiblesDto> {
@@ -176,9 +120,6 @@ export async function obtenerDocumentosDisponibles(
   return response.data;
 }
 
-/**
- * Obtiene los documentos personales del estudiante (subidos cuando era aspirante)
- */
 export async function obtenerDocumentosPersonales(
   idEstudiante: number
 ): Promise<DocumentosPersonalesEstudianteDto> {
@@ -188,9 +129,6 @@ export async function obtenerDocumentosPersonales(
   return response.data;
 }
 
-/**
- * Genera una solicitud de documento
- */
 export async function generarDocumento(
   request: GenerarDocumentoPanelRequest
 ): Promise<AccionPanelResponse> {
@@ -201,9 +139,6 @@ export async function generarDocumento(
   return response.data;
 }
 
-/**
- * Descarga el Kardex en PDF
- */
 export async function descargarKardexPdf(
   idEstudiante: number,
   soloPeriodoActual: boolean = false
@@ -215,9 +150,6 @@ export async function descargarKardexPdf(
   return response.data;
 }
 
-/**
- * Descarga la Constancia de Estudios en PDF
- */
 export async function descargarConstanciaPdf(idEstudiante: number): Promise<Blob> {
   const response = await apiClient.get(`${BASE_URL}/${idEstudiante}/constancia/pdf`, {
     responseType: 'blob',
@@ -225,9 +157,6 @@ export async function descargarConstanciaPdf(idEstudiante: number): Promise<Blob
   return response.data;
 }
 
-/**
- * Descarga el Expediente completo en PDF
- */
 export async function descargarExpedientePdf(idEstudiante: number): Promise<Blob> {
   const response = await apiClient.get(`${BASE_URL}/${idEstudiante}/expediente/pdf`, {
     responseType: 'blob',
@@ -235,9 +164,6 @@ export async function descargarExpedientePdf(idEstudiante: number): Promise<Blob
   return response.data;
 }
 
-/**
- * Descarga la Boleta de Calificaciones en PDF
- */
 export async function descargarBoletaPdf(
   idEstudiante: number,
   idPeriodoAcademico?: number
@@ -249,13 +175,6 @@ export async function descargarBoletaPdf(
   return response.data;
 }
 
-// ============================================
-// Acciones Rápidas
-// ============================================
-
-/**
- * Envía recordatorio de pago por email
- */
 export async function enviarRecordatorioPago(
   idEstudiante: number,
   idRecibo?: number
@@ -267,9 +186,6 @@ export async function enviarRecordatorioPago(
   return response.data;
 }
 
-/**
- * Actualiza el estatus del estudiante (activo/inactivo)
- */
 export async function actualizarEstatusEstudiante(
   idEstudiante: number,
   activo: boolean,
@@ -285,9 +201,6 @@ export async function actualizarEstatusEstudiante(
   return response.data;
 }
 
-/**
- * Actualiza los datos personales del estudiante
- */
 export async function actualizarDatosEstudiante(
   idEstudiante: number,
   datos: ActualizarDatosEstudianteRequest
@@ -299,13 +212,6 @@ export async function actualizarDatosEstudiante(
   return response.data;
 }
 
-// ============================================
-// Exportación
-// ============================================
-
-/**
- * Exporta lista de estudiantes a Excel
- */
 export async function exportarEstudiantesExcel(
   filtros: BuscarEstudiantesPanelRequest
 ): Promise<Blob> {
@@ -315,13 +221,6 @@ export async function exportarEstudiantesExcel(
   return response.data;
 }
 
-// ============================================
-// Utilidades
-// ============================================
-
-/**
- * Helper para descargar archivos blob
- */
 export function descargarArchivo(blob: Blob, nombreArchivo: string): void {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -333,9 +232,6 @@ export function descargarArchivo(blob: Blob, nombreArchivo: string): void {
   window.URL.revokeObjectURL(url);
 }
 
-/**
- * Descarga y guarda el Kardex PDF
- */
 export async function descargarYGuardarKardex(
   idEstudiante: number,
   matricula: string,
@@ -346,9 +242,6 @@ export async function descargarYGuardarKardex(
   descargarArchivo(blob, `Kardex_${matricula}_${fecha}.pdf`);
 }
 
-/**
- * Descarga y guarda la Constancia PDF
- */
 export async function descargarYGuardarConstancia(
   idEstudiante: number,
   matricula: string
@@ -358,9 +251,6 @@ export async function descargarYGuardarConstancia(
   descargarArchivo(blob, `Constancia_${matricula}_${fecha}.pdf`);
 }
 
-/**
- * Descarga y guarda el Expediente PDF
- */
 export async function descargarYGuardarExpediente(
   idEstudiante: number,
   matricula: string
@@ -370,9 +260,6 @@ export async function descargarYGuardarExpediente(
   descargarArchivo(blob, `Expediente_${matricula}_${fecha}.pdf`);
 }
 
-/**
- * Descarga y guarda la Boleta PDF
- */
 export async function descargarYGuardarBoleta(
   idEstudiante: number,
   matricula: string,
@@ -383,23 +270,17 @@ export async function descargarYGuardarBoleta(
   descargarArchivo(blob, `Boleta_${matricula}_${fecha}.pdf`);
 }
 
-// Export default con todos los métodos
 const estudiantePanelService = {
-  // Consultas
   obtenerPanelEstudiante,
   obtenerPanelPorMatricula,
   buscarEstudiantes,
   obtenerEstadisticas,
-  // Información académica
   obtenerInformacionAcademica,
   obtenerResumenKardex,
   obtenerSeguimientoAcademico,
-  // Becas
   obtenerBecasEstudiante,
-  // Recibos
   obtenerResumenRecibos,
   obtenerRecibosEstudiante,
-  // Documentos
   obtenerDocumentosDisponibles,
   obtenerDocumentosPersonales,
   generarDocumento,
@@ -407,13 +288,10 @@ const estudiantePanelService = {
   descargarConstanciaPdf,
   descargarExpedientePdf,
   descargarBoletaPdf,
-  // Acciones
   enviarRecordatorioPago,
   actualizarEstatusEstudiante,
   actualizarDatosEstudiante,
-  // Exportación
   exportarEstudiantesExcel,
-  // Utilidades
   descargarArchivo,
   descargarYGuardarKardex,
   descargarYGuardarConstancia,

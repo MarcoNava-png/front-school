@@ -45,7 +45,6 @@ import { createTeacher } from "@/services/teacher-service";
 import { CivilStatus, Genres } from "@/types/catalog";
 import { State, Municipality, Township } from "@/types/location";
 
-// Schema de validación
 const createTeacherSchema = z.object({
   nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   apellidoPaterno: z.string().min(2, "El apellido paterno debe tener al menos 2 caracteres"),
@@ -124,7 +123,6 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
   const watchedMunicipalityId = form.watch("municipalityId");
   const watchedCodigoPostalId = form.watch("codigoPostalId");
 
-  // Reset form when modal opens/closes
   useEffect(() => {
     if (open) {
       form.reset();
@@ -133,7 +131,6 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
     }
   }, [open, form]);
 
-  // Load municipalities when state changes
   useEffect(() => {
     if (watchedStateId) {
       getMunicipalities(watchedStateId).then(setMunicipalities);
@@ -145,7 +142,6 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
 
   }, [watchedStateId]);
 
-  // Load townships when municipality changes
   useEffect(() => {
     if (watchedMunicipalityId) {
       getTownships(watchedMunicipalityId).then(setTownships);
@@ -156,12 +152,10 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
 
   }, [watchedMunicipalityId]);
 
-  // Filter townships by municipality
   const filteredTownships = useMemo(() => {
     return townships.filter((t) => t.municipioId === watchedMunicipalityId);
   }, [townships, watchedMunicipalityId]);
 
-  // Search townships
   const searchedTownships = useMemo(() => {
     if (!coloniaSearch) return filteredTownships;
     return filteredTownships.filter((t) =>
@@ -169,7 +163,6 @@ export const CreateTeacherDialog: React.FC<CreateTeacherDialogProps> = ({
     );
   }, [filteredTownships, coloniaSearch]);
 
-  // Get selected township name
   const selectedColoniaName = useMemo(() => {
     const found = townships.find((t) => t.id === watchedCodigoPostalId);
     return found?.asentamiento || "";

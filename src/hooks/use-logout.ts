@@ -14,7 +14,6 @@ export function useLogout() {
 
     document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
 
-    // Limpiar cache de permisos
     clearPermissionsCache();
 
     router.replace("/auth/v2/login");

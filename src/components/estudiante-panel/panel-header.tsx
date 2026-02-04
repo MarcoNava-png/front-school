@@ -1,11 +1,12 @@
 "use client";
 
 import { User, Mail, Phone, MapPin, Calendar, GraduationCap, Building, Clock } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import type { EstudiantePanelDto } from "@/types/estudiante-panel";
+// eslint-disable-next-line no-duplicate-imports
 import { formatDate } from "@/types/estudiante-panel";
 
 interface PanelHeaderProps {
@@ -28,7 +29,6 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
       />
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Avatar y estado */}
           <div className="flex flex-col items-center gap-3">
             <Avatar className="w-28 h-28 border-4 border-white shadow-lg">
               <AvatarImage src={panel.fotografia || undefined} alt={panel.nombreCompleto} />
@@ -51,9 +51,7 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
             </Badge>
           </div>
 
-          {/* Información principal */}
           <div className="flex-1 space-y-4">
-            {/* Nombre y matrícula */}
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{panel.nombreCompleto}</h2>
               <p className="text-lg font-medium" style={{ color: "#14356F" }}>
@@ -61,7 +59,6 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
               </p>
             </div>
 
-            {/* Datos de contacto */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {panel.email && (
                 <div className="flex items-center gap-2 text-gray-600">
@@ -83,11 +80,8 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
               )}
             </div>
 
-            {/* Separador */}
             <div className="border-t border-gray-200 pt-4">
-              {/* Información académica */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Carrera / Plan */}
                 <div className="flex items-start gap-2">
                   <GraduationCap className="w-5 h-5 mt-0.5" style={{ color: "#14356F" }} />
                   <div>
@@ -101,7 +95,6 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
                   </div>
                 </div>
 
-                {/* Campus */}
                 <div className="flex items-start gap-2">
                   <Building className="w-5 h-5 mt-0.5" style={{ color: "#14356F" }} />
                   <div>
@@ -112,7 +105,6 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
                   </div>
                 </div>
 
-                {/* Grupo y Turno */}
                 <div className="flex items-start gap-2">
                   <Clock className="w-5 h-5 mt-0.5" style={{ color: "#14356F" }} />
                   <div>
@@ -124,7 +116,6 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
                   </div>
                 </div>
 
-                {/* Fecha de ingreso */}
                 <div className="flex items-start gap-2">
                   <Calendar className="w-5 h-5 mt-0.5" style={{ color: "#14356F" }} />
                   <div>
@@ -136,7 +127,6 @@ export function PanelHeader({ panel }: PanelHeaderProps) {
                 </div>
               </div>
 
-              {/* Período actual */}
               {panel.informacionAcademica.periodoActual && (
                 <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: "rgba(20, 53, 111, 0.05)" }}>
                   <div className="flex items-center justify-between">

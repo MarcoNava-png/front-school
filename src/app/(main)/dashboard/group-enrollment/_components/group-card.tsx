@@ -17,7 +17,6 @@ export function GroupCard({ group, onEnroll, disabled, enrolling }: GroupCardPro
     e.preventDefault();
     e.stopPropagation();
 
-    // Solo ejecutar si no está deshabilitado y no está inscribiendo
     if (!disabled && !enrolling) {
       onEnroll(group.idGrupo, group.codigoGrupo);
     }
@@ -26,7 +25,6 @@ export function GroupCard({ group, onEnroll, disabled, enrolling }: GroupCardPro
   return (
     <div className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
       <div className="space-y-3">
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-bold text-lg text-gray-900">Grupo {group.codigoGrupo}</h3>
@@ -36,8 +34,6 @@ export function GroupCard({ group, onEnroll, disabled, enrolling }: GroupCardPro
             {group.consecutivoPeriodicidad}° Cuatri
           </div>
         </div>
-
-        {/* Info */}
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-gray-700">
             <Clock className="w-4 h-4 text-gray-500" />
@@ -77,8 +73,6 @@ export function GroupCard({ group, onEnroll, disabled, enrolling }: GroupCardPro
             </div>
           </div>
         </div>
-
-        {/* Action Button */}
         <Button
           onClick={handleClick}
           disabled={disabled ?? enrolling}

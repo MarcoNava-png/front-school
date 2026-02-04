@@ -40,7 +40,6 @@ interface Props {
 export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
   const [loading, setLoading] = useState(false);
 
-  // Form state
   const [clave, setClave] = useState("");
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -74,7 +73,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validaciones
     if (!clave.trim()) {
       toast.error("La clave es requerida");
       return;
@@ -89,7 +87,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
 
     try {
       if (isEditing) {
-        // Actualizar concepto existente
         await actualizarConceptoPago(conceptoToEdit.idConceptoPago, {
           nombre,
           descripcion: descripcion || undefined,
@@ -98,7 +95,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
         });
         toast.success("Concepto actualizado exitosamente");
       } else {
-        // Crear nuevo concepto
         const dto: CreateConceptoPagoDto = {
           clave,
           nombre,
@@ -111,7 +107,7 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
         toast.success("Concepto creado exitosamente");
       }
 
-      onClose(true); // Indica que se guardó exitosamente
+      onClose(true);
       resetForm();
     } catch (error: any) {
       toast.error(
@@ -133,7 +129,7 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
 
   function handleDialogChange(open: boolean) {
     if (!open) {
-      onClose(); // Cancelar sin recargar
+      onClose();
     }
   }
 
@@ -153,7 +149,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            {/* Clave */}
             <div className="space-y-2">
               <Label htmlFor="clave">
                 Clave <span className="text-red-500">*</span>
@@ -163,7 +158,7 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
                 value={clave || ""}
                 onChange={(e) => setClave(e.target.value.toUpperCase())}
                 placeholder="Ej: INSC-2024"
-                disabled={isEditing} // No se puede cambiar la clave al editar
+                disabled={isEditing}
                 maxLength={20}
               />
               {isEditing && (
@@ -173,7 +168,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
               )}
             </div>
 
-            {/* Tipo */}
             <div className="space-y-2">
               <Label htmlFor="tipo">
                 Tipo de Concepto <span className="text-red-500">*</span>
@@ -207,7 +201,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
             />
           </div>
 
-          {/* Descripción */}
           <div className="space-y-2">
             <Label htmlFor="descripcion">Descripción</Label>
             <Textarea
@@ -219,7 +212,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
             />
           </div>
 
-          {/* Permite Beca */}
           <div className="flex items-center justify-between space-x-2 p-4 border rounded-lg">
             <div className="space-y-0.5">
               <Label htmlFor="permite-beca" className="text-base">
@@ -236,7 +228,6 @@ export function CreateConceptModal({ open, onClose, conceptoToEdit }: Props) {
             />
           </div>
 
-          {/* Ayuda */}
           <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
             <h4 className="font-semibold text-sm mb-2">Tipos de Concepto:</h4>
             <ul className="text-xs space-y-1 text-muted-foreground">

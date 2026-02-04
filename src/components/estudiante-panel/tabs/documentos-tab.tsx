@@ -1,12 +1,28 @@
 "use client";
 
 import { useState } from "react";
+
 import { FileText, Download, Clock, CheckCircle, XCircle, AlertCircle, ExternalLink, Eye } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -15,35 +31,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-
 import {
   generarDocumento,
   descargarYGuardarKardex,
   descargarYGuardarConstancia,
   descargarYGuardarBoleta,
 } from "@/services/estudiante-panel-service";
-
 import type {
   DocumentosDisponiblesDto,
   TipoDocumentoDisponibleDto,
   SolicitudDocumentoResumenDto,
 } from "@/types/estudiante-panel";
+// eslint-disable-next-line no-duplicate-imports
 import { formatCurrency, formatDate } from "@/types/estudiante-panel";
 
 interface DocumentosTabProps {
@@ -65,9 +65,7 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
     try {
       setGenerando(true);
 
-      // Si es documento que se puede generar directo (sin pago)
       if (!selectedTipo.requierePago) {
-        // Descargar directamente según el tipo
         if (selectedTipo.clave === "KARDEX" || selectedTipo.clave === "KARDEX_ACADEMICO") {
           await descargarYGuardarKardex(idEstudiante, matricula, variante === "PERIODO_ACTUAL");
           toast.success("Kardex descargado exitosamente");
@@ -78,7 +76,6 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
           await descargarYGuardarBoleta(idEstudiante, matricula);
           toast.success("Boleta descargada exitosamente");
         } else {
-          // Crear solicitud para otros documentos
           const result = await generarDocumento({
             idEstudiante,
             idTipoDocumento: selectedTipo.idTipoDocumento,
@@ -93,7 +90,6 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
           }
         }
       } else {
-        // Crear solicitud que requiere pago
         const result = await generarDocumento({
           idEstudiante,
           idTipoDocumento: selectedTipo.idTipoDocumento,
@@ -155,7 +151,6 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
 
   return (
     <div className="space-y-6">
-      {/* Resumen de documentos */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-4">
@@ -202,7 +197,6 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
         </Card>
       </div>
 
-      {/* Tipos de documentos disponibles */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -252,7 +246,6 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
         </CardContent>
       </Card>
 
-      {/* Historial de solicitudes */}
       {documentos.solicitudesRecientes.length > 0 && (
         <Card>
           <CardHeader>
@@ -314,7 +307,6 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
         </Card>
       )}
 
-      {/* Modal para generar documento */}
       <Dialog open={showGenerarModal} onOpenChange={setShowGenerarModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

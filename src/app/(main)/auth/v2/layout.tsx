@@ -6,14 +6,12 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
   return (
     <main>
       <div className="grid h-dvh justify-center p-2 lg:grid-cols-2">
-        {/* Panel izquierdo con gradiente institucional */}
         <div
           className="relative order-2 hidden h-full rounded-3xl lg:flex overflow-hidden"
           style={{
             background: 'linear-gradient(to bottom right, #14356F, #0f2850, #0a1c38)',
           }}
         >
-          {/* Decoración de fondo */}
           <div className="absolute inset-0 bg-grid-white/[0.03] bg-[size:20px_20px]" />
           <div
             className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl"
@@ -25,9 +23,11 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
           />
 
           <div className="relative z-10 flex flex-col justify-between w-full p-10">
-            {/* Header con logo grande */}
             <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="relative bg-white rounded-3xl p-6 shadow-2xl mb-8 transform hover:scale-105 transition-transform duration-300">
+              <div
+                className="relative rounded-3xl p-6 shadow-2xl mb-8 transform hover:scale-105 transition-transform duration-300"
+                style={{ background: 'linear-gradient(135deg, #14356F, #1e4a8f)' }}
+              >
                 <Image
                   src="/Logousag.png"
                   alt="Logo USAG"
@@ -39,7 +39,7 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
               </div>
               <div className="text-center text-white space-y-3">
                 <h1 className="text-3xl xl:text-4xl font-bold leading-tight">
-                  Colegio de San Andrés
+                  Universidad San Andrés
                 </h1>
                 <h2
                   className="text-2xl xl:text-3xl font-semibold"
@@ -56,7 +56,6 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
               </div>
             </div>
 
-            {/* Características */}
             <div className="text-white space-y-4 mt-8">
               <div className="grid gap-3">
                 <div
@@ -92,7 +91,6 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
               </div>
             </div>
 
-            {/* Footer */}
             <div
               className="flex items-center justify-center text-sm mt-8 pt-6 border-t"
               style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
@@ -100,14 +98,13 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
               <div className="text-center">
                 <p className="font-medium text-white">Versión 1.0.0</p>
                 <p className="text-xs" style={{ color: '#a3c4e8' }}>
-                  © 2025 Colegio de San Andrés de Guanajuato
+                  © 2025 Universidad San Andrés de Guanajuato
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Panel derecho con formulario */}
         <div className="relative order-1 flex h-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
           {children}
         </div>

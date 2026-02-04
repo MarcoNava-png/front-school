@@ -30,12 +30,10 @@ export default function PaymentConceptsPage() {
   const [conceptos, setConceptos] = useState<ConceptoPago[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filtros
   const [busqueda, setBusqueda] = useState("");
   const [tipoFiltro, setTipoFiltro] = useState<string>("TODOS");
   const [soloActivos, setSoloActivos] = useState(true);
 
-  // Modales
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editingConcepto, setEditingConcepto] = useState<ConceptoPago | null>(null);
 
@@ -95,7 +93,6 @@ export default function PaymentConceptsPage() {
   function handleCloseModal(shouldReload?: boolean) {
     setCreateModalOpen(false);
     setEditingConcepto(null);
-    // Solo recargar si se guardó algo exitosamente
     if (shouldReload) {
       cargarConceptos();
     }
@@ -142,7 +139,6 @@ export default function PaymentConceptsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -159,8 +155,6 @@ export default function PaymentConceptsPage() {
           Nuevo Concepto
         </Button>
       </div>
-
-      {/* Filtros */}
       <Card>
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
@@ -220,8 +214,6 @@ export default function PaymentConceptsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Tabla de Conceptos */}
       <Card>
         <CardHeader>
           <CardTitle>Conceptos Registrados ({conceptos.length})</CardTitle>
@@ -317,8 +309,6 @@ export default function PaymentConceptsPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Modal */}
       <CreateConceptModal
         open={createModalOpen}
         onClose={handleCloseModal}

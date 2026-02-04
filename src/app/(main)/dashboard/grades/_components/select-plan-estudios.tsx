@@ -24,7 +24,7 @@ export function SelectPlanEstudios({ value, onChange }: SelectPlanEstudiosProps)
   const loadPlanes = async () => {
     setLoading(true);
     try {
-      const result = await getStudyPlansList(1, 100);
+      const result = await getStudyPlansList();
       setPlanes(result.items);
     } catch (error) {
       console.error("Error loading planes de estudio:", error);

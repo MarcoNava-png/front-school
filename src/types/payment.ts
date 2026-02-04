@@ -22,8 +22,6 @@ export interface Payment {
   motivoCancelacion?: string | null;
   createdAt?: string;
   updatedAt?: string;
-
-  // Campos calculados (joins)
   medioPago?: string;
   nombreUsuario?: string;
   lineasAplicadas?: number;
@@ -57,15 +55,11 @@ export interface PaymentFilters {
   idMedioPago?: number;
 }
 
-// ============================================================================
-// MÓDULO DE CAJA
-// ============================================================================
-
 export interface MedioPago {
   idMedioPago: number;
   clave: string;
   descripcion?: string;
-  nombre: string; // Alias de descripcion para compatibilidad
+  nombre: string;
   requiereReferencia: boolean;
   activo: boolean;
 }
@@ -80,6 +74,7 @@ export interface RecibosParaCobro {
   };
   recibos: import('./receipt').Receipt[];
   totalAdeudo: number;
+  totalPagado?: number;
   multiple?: boolean;
   estudiantes?: {
     idEstudiante: number;
@@ -121,10 +116,6 @@ export interface CancelarPagoRequest {
   autorizadoPor: string;
 }
 
-// ============================================================================
-// CORTE DE CAJA
-// ============================================================================
-
 export interface CorteCaja {
   idCorteCaja: number;
   folioCorteCaja: string;
@@ -142,8 +133,6 @@ export interface CorteCaja {
   cerradoPor?: string | null;
   observaciones?: string | null;
   createdAt?: string;
-
-  // Campos calculados
   nombreUsuario?: string;
   cantidadPagos?: number;
 }
@@ -163,10 +152,6 @@ export interface CerrarCorteRequest {
   montoInicial?: number;
   observaciones?: string;
 }
-
-// ============================================================================
-// CORTE DE CAJA DETALLADO
-// ============================================================================
 
 export interface UsuarioCajero {
   idUsuario: string;
@@ -195,11 +180,9 @@ export interface PagoDetallado {
   notas?: string;
   estatus: number;
   estatusNombre?: string;
-  // Información del estudiante
   idEstudiante?: number;
   matricula?: string;
   nombreEstudiante?: string;
-  // Información del concepto
   concepto?: string;
   folioRecibo?: string;
 }

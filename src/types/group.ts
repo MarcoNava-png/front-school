@@ -10,9 +10,9 @@ export interface Group {
   numeroGrupo: number;
   turno: string;
   capacidadMaxima: number;
-  codigoGrupo: string; // Formato: {CUATRIMESTRE}{TURNO}{NUMERO_GRUPO} ej: "111", "122"
+  codigoGrupo: string;
   grupoMateria: Array<any>;
-  estudiantesInscritos?: number; // Número de estudiantes inscritos en el grupo
+  estudiantesInscritos?: number;
 }
 
 export interface PayloadCreateGroup {
@@ -40,10 +40,6 @@ export interface PayloadAddMatters {
 }
 
 export type GroupsResponse = PaginatedResponse<Group>;
-
-// ============================================================================
-// INSCRIPCIÓN A GRUPO
-// ============================================================================
 
 export interface EnrollStudentInGroupRequest {
   idEstudiante: number;
@@ -84,15 +80,11 @@ export interface GroupEnrollmentValidation {
   estudianteActivo: boolean;
   planEstudiosCompatible: boolean;
   periodoActivo: boolean;
-  pagosAlCorriente: boolean; // NUEVO: Validación de pagos pendientes
+  pagosAlCorriente: boolean;
   cuposDisponibles: boolean;
   sinDuplicados: boolean;
   advertencias: string[];
 }
-
-// ============================================================================
-// ESTUDIANTES EN GRUPO
-// ============================================================================
 
 export interface StudentsInGroup {
   idGrupo: number;
@@ -115,10 +107,6 @@ export interface StudentInGroup {
   estado?: string;
 }
 
-// ============================================================================
-// GESTIÓN ACADÉMICA DE GRUPOS
-// ============================================================================
-
 export interface GestionAcademicaResponse {
   idPlanEstudios: number;
   nombrePlan: string;
@@ -140,7 +128,7 @@ export interface GrupoResumen {
   totalEstudiantes: number;
   capacidadMaxima: number;
   totalMaterias: number;
-  idPlanEstudios?: number; // NUEVO: ID del plan de estudios del grupo
+  idPlanEstudios?: number;
 }
 
 export interface GrupoConMaterias extends GrupoResumen {
@@ -166,16 +154,12 @@ export interface CreateGroupWithSubjectsResponse {
   mensaje: string;
 }
 
-// ============================================================================
-// HORARIOS
-// ============================================================================
-
 export type DiaSemana = 'Lunes' | 'Martes' | 'Miércoles' | 'Jueves' | 'Viernes' | 'Sábado' | 'Domingo';
 
 export interface HorarioMateria {
   dia: DiaSemana;
-  horaInicio: string; // Formato "HH:mm" ej: "08:00"
-  horaFin: string; // Formato "HH:mm" ej: "10:00"
+  horaInicio: string;
+  horaFin: string;
   aula: string;
 }
 
@@ -192,14 +176,12 @@ export interface GrupoMateria {
   inscritos: number;
   disponibles: number;
 
-  // NUEVO: Gestión completa de horarios
-  horarioJson?: HorarioMateria[]; // Array de horarios por semana
-  diasSemana?: string; // "Lunes, Miércoles, Viernes" (legacy, para mostrar)
-  horaInicio?: string; // Hora de inicio general (legacy)
-  horaFin?: string; // Hora de fin general (legacy)
-  horario?: string; // Texto descriptivo completo (legacy)
+  horarioJson?: HorarioMateria[];
+  diasSemana?: string;
+  horaInicio?: string;
+  horaFin?: string;
+  horario?: string;
 
-  // Propiedades alternativas del backend (camelCase vs PascalCase)
   estudiantesInscritos?: number;
   cupoDisponible?: number;
 }
@@ -209,7 +191,7 @@ export interface AddSubjectToGroupRequest {
   idProfesor?: number;
   aula?: string;
   cupo: number;
-  horarioJson?: HorarioMateria[]; // NUEVO: Array de horarios estructurados
+  horarioJson?: HorarioMateria[];
 }
 
 export interface PromocionRequest {

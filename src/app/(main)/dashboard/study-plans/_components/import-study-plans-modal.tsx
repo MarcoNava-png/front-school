@@ -47,7 +47,6 @@ interface ImportStudyPlansModalProps {
   onImportSuccess: () => void;
 }
 
-// Mapeo de columnas del Excel
 const COLUMN_MAPPING: Record<string, keyof ImportarPlanEstudiosDto> = {
   claveplanestudios: "clavePlanEstudios",
   clave: "clavePlanEstudios",

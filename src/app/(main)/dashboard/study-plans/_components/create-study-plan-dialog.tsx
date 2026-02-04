@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,10 +27,25 @@ import { EducationLevel, Periodicity } from "@/types/catalog";
 interface CreateStudyPlanDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogProps) {
-  const form = useForm();
+const defaultValues = {
+  clavePlanEstudios: "",
+  nombrePlanEstudios: "",
+  rvoe: "",
+  version: "",
+  duracionMeses: "",
+  minimaAprobatoriaParcial: "",
+  minimaAprobatoriaFinal: "",
+  permiteAdelantar: "false",
+  idPeriodicidad: "",
+  idNivelEducativo: "",
+  idCampus: "",
+};
+
+export function CreateStudyPlanDialog({ open, setOpen, onSuccess }: CreateStudyPlanDialogProps) {
+  const form = useForm({ defaultValues });
   const [campus, setCampus] = useState<Campus[]>([]);
   const [periodicity, setPeriodicity] = useState<Periodicity[]>([]);
   const [educationLevels, setEducationLevels] = useState<EducationLevel[]>([]);
@@ -46,7 +62,7 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
     try {
       await createStudyPlan({
         ...data,
-        permiteAdelantar: Boolean(data.permiteAdelantar),
+        permiteAdelantar: data.permiteAdelantar === "true",
         duracionMeses: Number(data.duracionMeses),
         minimaAprobatoriaParcial: Number(data.minimaAprobatoriaParcial),
         minimaAprobatoriaFinal: Number(data.minimaAprobatoriaFinal),
@@ -54,10 +70,13 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
         idNivelEducativo: Number(data.idNivelEducativo),
         idCampus: Number(data.idCampus),
       });
+      toast.success("Plan de estudios creado exitosamente");
       setOpen(false);
       form.reset();
+      onSuccess?.();
     } catch (e) {
-      console.log(e);
+      console.error(e);
+      toast.error("Error al crear el plan de estudios");
     } finally {
       setLoading(false);
     }
@@ -77,24 +96,24 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
             <div className="grid gap-4 py-2">
               <FormField
                 name="clavePlanEstudios"
-                render={({ field }) => <Input {...field} placeholder="Clave" required className="w-full" />}
+                render={({ field }) => <Input {...field} value={field.value ?? ""} placeholder="Clave" required className="w-full" />}
               />
               <FormField
                 name="nombrePlanEstudios"
-                render={({ field }) => <Input {...field} placeholder="Nombre" required className="w-full" />}
+                render={({ field }) => <Input {...field} value={field.value ?? ""} placeholder="Nombre" required className="w-full" />}
               />
               <FormField
                 name="rvoe"
-                render={({ field }) => <Input {...field} placeholder="RVOE" required className="w-full" />}
+                render={({ field }) => <Input {...field} value={field.value ?? ""} placeholder="RVOE" required className="w-full" />}
               />
               <FormField
                 name="version"
-                render={({ field }) => <Input {...field} placeholder="Versión" required className="w-full" />}
+                render={({ field }) => <Input {...field} value={field.value ?? ""} placeholder="Version" required className="w-full" />}
               />
               <FormField
                 name="duracionMeses"
                 render={({ field }) => (
-                  <Input {...field} type="number" placeholder="Duración (meses)" required className="w-full" />
+                  <Input {...field} value={field.value ?? ""} type="number" placeholder="Duracion (meses)" required className="w-full" />
                 )}
               />
               <FormField
@@ -102,8 +121,9 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
                 render={({ field }) => (
                   <Input
                     {...field}
+                    value={field.value ?? ""}
                     type="number"
-                    placeholder="Mínima aprobatoria parcial"
+                    placeholder="Minima aprobatoria parcial"
                     required
                     className="w-full"
                   />
@@ -112,18 +132,18 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
               <FormField
                 name="minimaAprobatoriaFinal"
                 render={({ field }) => (
-                  <Input {...field} type="number" placeholder="Mínima aprobatoria final" required className="w-full" />
+                  <Input {...field} value={field.value ?? ""} type="number" placeholder="Minima aprobatoria final" required className="w-full" />
                 )}
               />
               <FormField
                 name="permiteAdelantar"
                 render={({ field }) => (
-                  <Select {...field} onValueChange={field.onChange} value={field.value ? "true" : "false"}>
+                  <Select onValueChange={field.onChange} value={field.value || "false"}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Permite adelantar" />
                     </SelectTrigger>
                     <SelectContent className="w-full">
-                      <SelectItem value="true">Sí</SelectItem>
+                      <SelectItem value="true">Si</SelectItem>
                       <SelectItem value="false">No</SelectItem>
                     </SelectContent>
                   </Select>
@@ -132,7 +152,7 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
               <FormField
                 name="idPeriodicidad"
                 render={({ field }) => (
-                  <Select {...field} onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Periodicidad" />
                     </SelectTrigger>
@@ -149,7 +169,7 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
               <FormField
                 name="idNivelEducativo"
                 render={({ field }) => (
-                  <Select {...field} onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Nivel educativo" />
                     </SelectTrigger>
@@ -166,7 +186,7 @@ export function CreateStudyPlanDialog({ open, setOpen }: CreateStudyPlanDialogPr
               <FormField
                 name="idCampus"
                 render={({ field }) => (
-                  <Select {...field} onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Campus" />
                     </SelectTrigger>

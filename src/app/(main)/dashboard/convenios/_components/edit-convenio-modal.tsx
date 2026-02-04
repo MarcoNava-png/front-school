@@ -298,7 +298,6 @@ export const EditConvenioModal: React.FC<EditConvenioModalProps> = ({
             </div>
           </div>
 
-          {/* Configuracion de aplicacion */}
           <div className="border rounded-lg p-4 space-y-4 bg-blue-50/50">
             <div>
               <Label className="text-base font-semibold">
@@ -349,7 +348,6 @@ export const EditConvenioModal: React.FC<EditConvenioModalProps> = ({
             <Label htmlFor="activo">Convenio Activo</Label>
           </div>
 
-          {/* Alcances */}
           <div className="border rounded-lg p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div>

@@ -26,7 +26,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { AccionRapida } from "@/types/dashboard";
 
-// Map icon names to Lucide icons
 const iconMap: Record<string, LucideIcon> = {
   users: Users,
   "user-plus": UserPlus,

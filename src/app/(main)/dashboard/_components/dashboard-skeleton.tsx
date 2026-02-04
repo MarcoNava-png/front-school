@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Header Skeleton */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
@@ -21,7 +20,6 @@ export function DashboardSkeleton() {
         <Skeleton className="h-px w-full" />
       </div>
 
-      {/* Stats Grid Skeleton */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="overflow-hidden">
@@ -37,7 +35,6 @@ export function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Bottom Cards Skeleton */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-2">
           <CardHeader>

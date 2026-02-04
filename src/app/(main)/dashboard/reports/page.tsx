@@ -51,7 +51,6 @@ import type {
   UsuarioCajero,
 } from "@/types/payment";
 
-// Tipos para reporte de cobranza
 interface DeudorAgrupado {
   matricula: string;
   nombreCompleto: string;
@@ -76,7 +75,6 @@ interface EstadisticasCobranza {
   promedioDiasVencido: number;
 }
 
-// Tipos para el dashboard de estadísticas
 interface AntiguedadCartera {
   rango: string;
   cantidad: number;
@@ -86,40 +84,32 @@ interface AntiguedadCartera {
 }
 
 interface EstadisticasDashboard {
-  // KPIs principales
   totalRecibosEmitidos: number;
   totalRecaudado: number;
   totalPorCobrar: number;
   tasaRecuperacion: number;
   indiceMorosidad: number;
 
-  // Cartera
   carteraTotal: number;
   carteraVigente: number;
   carteraVencida: number;
 
-  // Antigüedad
   antiguedadCartera: AntiguedadCartera[];
 
-  // Por estatus
   recibosPagados: number;
   recibosPendientes: number;
   recibosVencidos: number;
   recibosParciales: number;
 
-  // Recargos
   totalRecargos: number;
 
-  // Promedios
   promedioMontoPorRecibo: number;
   promedioDiasVencimiento: number;
 }
 
 export default function ReportsPage() {
-  // Estado general
   const [loading, setLoading] = useState(false);
 
-  // Estado para Corte de Caja
   const [fechaInicio, setFechaInicio] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -133,30 +123,25 @@ export default function ReportsPage() {
   const [corteCaja, setCorteCaja] = useState<ResumenCorteCajaDetallado | null>(null);
   const [loadingCajeros, setLoadingCajeros] = useState(false);
 
-  // Estado para periodos académicos
   const [periodos, setPeriodos] = useState<AcademicPeriod[]>([]);
   const [idPeriodoAcademico, setIdPeriodoAcademico] = useState<string>("all");
   const [loadingPeriodos, setLoadingPeriodos] = useState(false);
 
-  // Estado para Reporte de Recibos
   const [estatusRecibo, setEstatusRecibo] = useState<string>("all");
   const [reporteRecibos, setReporteRecibos] = useState<ReciboBusquedaResultado | null>(null);
   const [estadisticasRecibos, setEstadisticasRecibos] = useState<ReciboEstadisticas | null>(null);
   const [loadingRecibos, setLoadingRecibos] = useState(false);
   const [paginaRecibos, setPaginaRecibos] = useState(1);
 
-  // Estado para Reporte de Cobranza
   const [idPeriodoCobranza, setIdPeriodoCobranza] = useState<string>("all");
   const [reporteCobranza, setReporteCobranza] = useState<DeudorAgrupado[] | null>(null);
   const [estadisticasCobranza, setEstadisticasCobranza] = useState<EstadisticasCobranza | null>(null);
   const [loadingCobranza, setLoadingCobranza] = useState(false);
 
-  // Estado para Dashboard de Estadísticas
   const [idPeriodoStats, setIdPeriodoStats] = useState<string>("all");
   const [dashboardStats, setDashboardStats] = useState<EstadisticasDashboard | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
-  // Cargar datos iniciales al montar
   useEffect(() => {
     cargarCajeros();
     cargarPeriodos();
@@ -179,7 +164,6 @@ export default function ReportsPage() {
     try {
       const response = await getAcademicPeriodsList();
       setPeriodos(response.items || []);
-      // Seleccionar el periodo actual si existe
       const periodoActual = response.items?.find((p) => p.esPeriodoActual);
       if (periodoActual) {
         setIdPeriodoAcademico(periodoActual.idPeriodoAcademico.toString());
@@ -207,7 +191,6 @@ export default function ReportsPage() {
         filtros.estatus = estatusRecibo;
       }
 
-      // Obtener recibos y estadísticas en paralelo
       const [recibosData, estadisticasData] = await Promise.all([
         buscarRecibosAvanzado(filtros),
         obtenerEstadisticasRecibos(idPeriodoAcademico !== "all" ? parseInt(idPeriodoAcademico) : undefined),
@@ -244,12 +227,10 @@ export default function ReportsPage() {
 
       const blob = await exportarRecibosExcel(filtros);
 
-      // Descargar el archivo Excel
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
 
-      // Obtener nombre del periodo para el archivo
       const periodoNombre = idPeriodoAcademico !== "all"
         ? periodos.find((p) => p.idPeriodoAcademico.toString() === idPeriodoAcademico)?.nombre?.replace(/\s+/g, "_") || idPeriodoAcademico
         : "TodosLosPeriodos";
@@ -274,9 +255,9 @@ export default function ReportsPage() {
     setLoadingCobranza(true);
     try {
       const filtros: ReciboBusquedaFiltros = {
-        tamanioPagina: 1000, // Traer todos para agrupar
+        tamanioPagina: 1000,
         pagina: 1,
-        soloPendientes: true, // Solo recibos con saldo pendiente
+        soloPendientes: true,
       };
 
       if (idPeriodoCobranza !== "all") {
@@ -285,11 +266,9 @@ export default function ReportsPage() {
 
       const recibosData = await buscarRecibosAvanzado(filtros);
 
-      // Agrupar recibos por estudiante/aspirante
       const deudoresMap = new Map<string, DeudorAgrupado>();
 
       recibosData.recibos.forEach((recibo) => {
-        // Solo incluir recibos con saldo > 0
         if (recibo.saldo <= 0) return;
 
         const key = recibo.matricula || `unknown-${recibo.idEstudiante || recibo.idAspirante}`;
@@ -325,10 +304,8 @@ export default function ReportsPage() {
         }
       });
 
-      // Convertir a array y ordenar por total adeudo (mayor primero)
       const deudores = Array.from(deudoresMap.values()).sort((a, b) => b.totalAdeudo - a.totalAdeudo);
 
-      // Calcular estadísticas
       const estadisticas: EstadisticasCobranza = {
         totalDeudores: deudores.length,
         totalAdeudo: deudores.reduce((sum, d) => sum + d.totalAdeudo, 0),
@@ -396,7 +373,6 @@ export default function ReportsPage() {
   const handleGenerarEstadisticas = async () => {
     setLoadingStats(true);
     try {
-      // Obtener todos los recibos del periodo para calcular estadísticas
       const filtros: ReciboBusquedaFiltros = {
         tamanioPagina: 5000,
         pagina: 1,
@@ -409,7 +385,6 @@ export default function ReportsPage() {
       const recibosData = await buscarRecibosAvanzado(filtros);
       const recibos = recibosData.recibos;
 
-      // Calcular KPIs principales
       const totalRecibosEmitidos = recibos.length;
       const recibosPagados = recibos.filter((r) => r.estatus === "PAGADO").length;
       const recibosPendientes = recibos.filter((r) => r.estatus === "PENDIENTE").length;
@@ -442,7 +417,6 @@ export default function ReportsPage() {
         ? recibosConVencimiento.reduce((sum, r) => sum + r.diasVencido, 0) / recibosConVencimiento.length
         : 0;
 
-      // Calcular antigüedad de cartera
       const rangosAntiguedad = [
         { min: 0, max: 0, label: "Vigente", color: "bg-green-500" },
         { min: 1, max: 30, label: "1-30 días", color: "bg-yellow-500" },
@@ -535,7 +509,6 @@ export default function ReportsPage() {
         idUsuarioCaja: cajeroSeleccionado !== "todos" ? cajeroSeleccionado : undefined,
       });
 
-      // Descargar el PDF
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -625,9 +598,6 @@ export default function ReportsPage() {
           <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
         </TabsList>
 
-        {/* ============================================================ */}
-        {/* CORTE DE CAJA */}
-        {/* ============================================================ */}
         <TabsContent value="corte-caja" className="space-y-4">
           <Card>
             <CardHeader>
@@ -692,7 +662,6 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
 
-          {/* Resumen estadístico */}
           {corteCaja && (
             <>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -753,7 +722,6 @@ export default function ReportsPage() {
                 </Card>
               </div>
 
-              {/* Info del cajero si se filtró */}
               {corteCaja.cajero && (
                 <Card className="border-blue-200 bg-blue-50">
                   <CardContent className="py-3">
@@ -768,7 +736,6 @@ export default function ReportsPage() {
                 </Card>
               )}
 
-              {/* Tabla de pagos */}
               <Card>
                 <CardHeader>
                   <CardTitle>Detalle de Pagos</CardTitle>
@@ -843,9 +810,6 @@ export default function ReportsPage() {
           )}
         </TabsContent>
 
-        {/* ============================================================ */}
-        {/* REPORTE DE RECIBOS */}
-        {/* ============================================================ */}
         <TabsContent value="recibos" className="space-y-4">
           <Card>
             <CardHeader>
@@ -908,7 +872,6 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
 
-          {/* Estadísticas de recibos */}
           {estadisticasRecibos && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card>
@@ -969,7 +932,6 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* Tabla de recibos */}
           {reporteRecibos && (
             <Card>
               <CardHeader>
@@ -1040,7 +1002,6 @@ export default function ReportsPage() {
                   </Table>
                 </div>
 
-                {/* Paginación simple */}
                 {reporteRecibos.totalPaginas > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <p className="text-sm text-muted-foreground">
@@ -1073,7 +1034,6 @@ export default function ReportsPage() {
                   </div>
                 )}
 
-                {/* Resumen del reporte */}
                 <div className="mt-4 p-4 bg-slate-50 rounded-lg border">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div>
@@ -1112,9 +1072,6 @@ export default function ReportsPage() {
           )}
         </TabsContent>
 
-        {/* ============================================================ */}
-        {/* REPORTE DE COBRANZA */}
-        {/* ============================================================ */}
         <TabsContent value="cobranza" className="space-y-4">
           <Card>
             <CardHeader>
@@ -1231,7 +1188,6 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {/* Tabla de deudores */}
           {reporteCobranza && (
             <Card>
               <CardHeader>
@@ -1311,7 +1267,6 @@ export default function ReportsPage() {
                   </Table>
                 </div>
 
-                {/* Resumen del reporte */}
                 {reporteCobranza.length > 0 && (
                   <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -1354,9 +1309,6 @@ export default function ReportsPage() {
           )}
         </TabsContent>
 
-        {/* ============================================================ */}
-        {/* ESTADÍSTICAS */}
-        {/* ============================================================ */}
         <TabsContent value="estadisticas" className="space-y-4">
           <Card>
             <CardHeader>
@@ -1434,7 +1386,6 @@ export default function ReportsPage() {
                 </Card>
               </div>
 
-              {/* Indicadores de Eficiencia */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader>
@@ -1493,7 +1444,6 @@ export default function ReportsPage() {
                 </Card>
               </div>
 
-              {/* Antigüedad de Cartera */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -1531,9 +1481,7 @@ export default function ReportsPage() {
                 </CardContent>
               </Card>
 
-              {/* Distribución por Estatus y Promedios */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Distribución por estatus */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Distribución de Recibos</CardTitle>
@@ -1593,7 +1541,6 @@ export default function ReportsPage() {
                   </CardContent>
                 </Card>
 
-                {/* Indicadores adicionales */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Indicadores Clave</CardTitle>
