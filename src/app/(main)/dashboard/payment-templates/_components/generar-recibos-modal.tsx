@@ -46,11 +46,12 @@ interface Props {
   open: boolean;
   onClose: () => void;
   plantilla: PlantillaCobro;
+  periodicidadLabel?: string;
 }
 
 type Step = "config" | "preview" | "result";
 
-export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
+export function GenerarRecibosModal({ open, onClose, plantilla, periodicidadLabel = "Cuatrimestre" }: Props) {
   const [step, setStep] = useState<Step>("config");
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -209,7 +210,7 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                 <span className="text-blue-900">{plantilla.nombrePlanEstudios ?? `Plan #${plantilla.idPlanEstudios}`}</span>
               </div>
               <div>
-                <span className="font-medium">Cuatrimestre:</span>{" "}
+                <span className="font-medium">{periodicidadLabel}:</span>{" "}
                 <span className="text-blue-900">{plantilla.numeroCuatrimestre}°</span>
               </div>
               <div>
@@ -241,7 +242,7 @@ export function GenerarRecibosModal({ open, onClose, plantilla }: Props) {
                 </Select>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   Se generarán recibos para estudiantes inscritos en este periodo que estén en el{" "}
-                  {plantilla.numeroCuatrimestre}° cuatrimestre del plan de estudios.
+                  {plantilla.numeroCuatrimestre}° {periodicidadLabel.toLowerCase()} del plan de estudios.
                 </p>
               </div>
 

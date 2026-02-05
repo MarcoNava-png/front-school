@@ -628,6 +628,7 @@ export default function PaymentTemplatesPage() {
           plantilla={generarRecibosPlantilla}
           open={!!generarRecibosPlantilla}
           onClose={() => setGenerarRecibosPlantilla(null)}
+          periodicidadLabel={getPeriodicidadLabel(generarRecibosPlantilla.idPlanEstudios)}
         />
       )}
     </div>

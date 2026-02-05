@@ -589,7 +589,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                   </Select>
                 </div>
 
-                <div className="space-y-1.5 sm:space-y-2">
+                <div className="space-y-1.5 sm:space-y-2 sm:col-span-2">
                   <Label htmlFor="plan" className="text-xs sm:text-sm">
                     Plan de Estudios <span className="text-red-500">*</span>
                   </Label>
@@ -598,14 +598,16 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                     onValueChange={setIdPlanEstudios}
                     disabled={!selectedCampus || !!plantillaToEdit}
                   >
-                    <SelectTrigger className="text-sm">
+                    <SelectTrigger className="text-sm w-full [&>span]:truncate [&>span]:block [&>span]:max-w-[calc(100%-20px)]">
                       <SelectValue placeholder={selectedCampus ? "Selecciona un plan de estudios" : "Primero selecciona un campus"} />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[250px]">
+                    <SelectContent className="max-h-[250px] max-w-[90vw] sm:max-w-[600px]">
                       {planesFiltrados.map((plan) => (
-                        <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()}>
-                          {plan.clavePlanEstudios} - {plan.nombrePlanEstudios}
-                          {plan.periodicidad ? ` (${plan.periodicidad})` : ""}
+                        <SelectItem key={plan.idPlanEstudios} value={plan.idPlanEstudios.toString()} className="max-w-full">
+                          <span className="line-clamp-2">
+                            {plan.clavePlanEstudios} - {plan.nombrePlanEstudios}
+                            {plan.periodicidad ? ` (${plan.periodicidad})` : ""}
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
