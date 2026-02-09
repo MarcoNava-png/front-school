@@ -26,6 +26,21 @@ export function logout() {
   document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
 }
 
+export async function refreshToken(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data }: { data: LoginResponse } = await apiClient.post("/auth/refresh");
+    if (data.isSuccess && data.data?.token) {
+      localStorage.setItem("access_token", data.data.token);
+      localStorage.setItem("user", JSON.stringify(data.data));
+      document.cookie = `access_token=${data.data.token}; path=/; max-age=86400; SameSite=Lax`;
+      return { success: true };
+    }
+    return { success: false, error: "No se pudo renovar la sesión" };
+  } catch {
+    return { success: false, error: "Error al renovar la sesión" };
+  }
+}
+
 export async function register({ name, email, password }: { name: string; email: string; password: string }) {
   await new Promise((resolve) => setTimeout(resolve, 700));
   if (name && email && password) {

@@ -660,7 +660,7 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="estrategia" className="text-xs sm:text-sm">Estrategia</Label>
                   <Select value={estrategiaEmision} onValueChange={setEstrategiaEmision}>
@@ -703,17 +703,6 @@ export function CreatePlantillaModal({ open, onClose, plantillaToEdit }: Props) 
                     max="31"
                     value={diaVencimiento}
                     onChange={(e) => setDiaVencimiento(e.target.value)}
-                    className="text-sm"
-                  />
-                </div>
-
-                <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor="fechaVigencia" className="text-xs sm:text-sm">Vigencia</Label>
-                  <Input
-                    id="fechaVigencia"
-                    type="date"
-                    value={fechaVigenciaInicio}
-                    onChange={(e) => setFechaVigenciaInicio(e.target.value)}
                     className="text-sm"
                   />
                 </div>

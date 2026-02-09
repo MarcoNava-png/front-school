@@ -36,6 +36,7 @@ interface AddSubjectModalProps {
   idGrupo: number;
   idPlanEstudios?: number;
   onSuccess: () => void;
+  periodicidadLabel?: string;
 }
 
 export function AddSubjectModal({
@@ -44,6 +45,7 @@ export function AddSubjectModal({
   idGrupo,
   idPlanEstudios,
   onSuccess,
+  periodicidadLabel = "Cuatrimestre",
 }: AddSubjectModalProps) {
   const [loading, setLoading] = useState(false);
   const [loadingMatters, setLoadingMatters] = useState(false);
@@ -206,7 +208,7 @@ export function AddSubjectModal({
                               )}
                               {!matter.creditos && (
                                 <span className="text-xs text-gray-500">
-                                  Cuatrimestre {matter.cuatrimestre}
+                                  {periodicidadLabel} {matter.cuatrimestre}
                                 </span>
                               )}
                             </div>

@@ -341,4 +341,6 @@ export interface DocumentoPersonalDto {
   urlArchivo: string | null;
   notas: string | null;
   esObligatorio: boolean;
+  fechaValidacion: string | null;
+  validadoPor: string | null;
 }

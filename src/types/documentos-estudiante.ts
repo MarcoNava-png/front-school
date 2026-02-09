@@ -15,6 +15,7 @@ export type EstatusSolicitud =
   | 'GENERADO'
   | 'VENCIDO'
   | 'CANCELADO'
+  | 'ENTREGADO'
 
 export type VarianteDocumento = 'COMPLETO' | 'PERIODO_ACTUAL' | 'BASICO'
 
@@ -149,6 +150,7 @@ export const ESTATUS_LABELS: Record<EstatusSolicitud, string> = {
   GENERADO: 'Generado',
   VENCIDO: 'Vencido',
   CANCELADO: 'Cancelado',
+  ENTREGADO: 'Entregado',
 }
 
 export const ESTATUS_COLORS: Record<EstatusSolicitud, { bg: string; text: string }> = {
@@ -157,6 +159,7 @@ export const ESTATUS_COLORS: Record<EstatusSolicitud, { bg: string; text: string
   GENERADO: { bg: 'bg-green-100', text: 'text-green-800' },
   VENCIDO: { bg: 'bg-red-100', text: 'text-red-800' },
   CANCELADO: { bg: 'bg-gray-100', text: 'text-gray-800' },
+  ENTREGADO: { bg: 'bg-purple-100', text: 'text-purple-800' },
 }
 
 export const VARIANTE_LABELS: Record<VarianteDocumento, string> = {

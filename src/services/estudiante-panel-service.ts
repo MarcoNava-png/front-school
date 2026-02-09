@@ -129,6 +129,38 @@ export async function obtenerDocumentosPersonales(
   return response.data;
 }
 
+export async function subirDocumentoPersonal(
+  idEstudiante: number,
+  idDocumentoRequisito: number,
+  archivo: File,
+  notas?: string
+): Promise<AccionPanelResponse> {
+  const formData = new FormData();
+  formData.append('idDocumentoRequisito', idDocumentoRequisito.toString());
+  formData.append('archivo', archivo);
+  if (notas) formData.append('notas', notas);
+
+  const response = await apiClient.post<AccionPanelResponse>(
+    `${BASE_URL}/${idEstudiante}/subir-documento`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+  return response.data;
+}
+
+export async function validarDocumentoPersonal(
+  idEstudiante: number,
+  idAspiranteDocumento: number,
+  aprobar: boolean,
+  notas?: string
+): Promise<AccionPanelResponse> {
+  const response = await apiClient.patch<AccionPanelResponse>(
+    `${BASE_URL}/${idEstudiante}/documentos/${idAspiranteDocumento}/validar`,
+    { aprobar, notas }
+  );
+  return response.data;
+}
+
 export async function generarDocumento(
   request: GenerarDocumentoPanelRequest
 ): Promise<AccionPanelResponse> {
@@ -283,6 +315,8 @@ const estudiantePanelService = {
   obtenerRecibosEstudiante,
   obtenerDocumentosDisponibles,
   obtenerDocumentosPersonales,
+  subirDocumentoPersonal,
+  validarDocumentoPersonal,
   generarDocumento,
   descargarKardexPdf,
   descargarConstanciaPdf,

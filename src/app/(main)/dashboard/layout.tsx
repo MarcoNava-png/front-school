@@ -3,6 +3,8 @@ import { ReactNode } from "react";
 import { cookies } from "next/headers";
 
 import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";
+import { NotificationBell } from "@/components/notification-bell";
+import { SessionExpirationModal } from "@/components/session-expiration-modal";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { getPreference } from "@/server/server-actions";
@@ -52,12 +54,14 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
               <SidebarTrigger className="-ml-1" />
             </div>
             <div className="flex items-center gap-2">
+              <NotificationBell />
               <AccountSwitcher />
             </div>
           </div>
         </header>
         <div className="h-full p-4 md:p-6">{children}</div>
       </SidebarInset>
+      <SessionExpirationModal />
     </SidebarProvider>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Loader2 } from "lucide-react";
+import { Pencil, Loader2, ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -28,14 +28,33 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { updateUser } from "@/services/users-service";
 import type { User, UpdateUserRequest } from "@/types/user";
+
+const ROLES = [
+  { value: "admin", label: "Administrador" },
+  { value: "director", label: "Director" },
+  { value: "coordinador", label: "Coordinador" },
+  { value: "controlescolar", label: "Control Escolar" },
+  { value: "finanzas", label: "Finanzas" },
+  { value: "admisiones", label: "Admisiones" },
+  { value: "docente", label: "Docente/Profesor" },
+  { value: "alumno", label: "Alumno/Estudiante" },
+] as const;
 
 const formSchema = z.object({
   email: z.string().email("Email invalido"),
   nombres: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   apellidos: z.string().min(2, "Los apellidos deben tener al menos 2 caracteres"),
+  rol: z.string().min(1, "Debes seleccionar un rol"),
   telefono: z.string().optional(),
   biografia: z.string().optional(),
 });
@@ -58,6 +77,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
       email: user.email || "",
       nombres: user.nombres || "",
       apellidos: user.apellidos || "",
+      rol: user.roles?.[0] || "",
       telefono: user.telefono || "",
       biografia: user.biografia || "",
     },
@@ -69,6 +89,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
         email: user.email || "",
         nombres: user.nombres || "",
         apellidos: user.apellidos || "",
+        rol: user.roles?.[0] || "",
         telefono: user.telefono || "",
         biografia: user.biografia || "",
       });
@@ -80,9 +101,12 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
       setIsSubmitting(true);
 
       const userData: UpdateUserRequest = {
-        ...values,
+        email: values.email,
+        nombres: values.nombres,
+        apellidos: values.apellidos,
         telefono: values.telefono || undefined,
         biografia: values.biografia || undefined,
+        roles: [values.rol],
       };
 
       await updateUser(user.id, userData);
@@ -143,6 +167,39 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="rol"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Rol del Usuario <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="focus-visible:ring-[#14356F]">
+                          <SelectValue placeholder="Selecciona un rol" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ROLES.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="h-4 w-4 text-[#14356F]" />
+                              <span>{role.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Cambiar el rol modifica los permisos del usuario en el sistema
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

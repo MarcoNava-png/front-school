@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 
-import { FileText, Download, Clock, CheckCircle, XCircle, AlertCircle, ExternalLink, Eye } from "lucide-react";
+import { FileText, Download, Clock, CheckCircle, XCircle, AlertCircle, Eye, Receipt, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -108,9 +108,21 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
       setSelectedTipo(null);
       setVariante("COMPLETO");
       setNotas("");
-    } catch (error) {
-      toast.error("Error al generar el documento");
-      console.error(error);
+    } catch (error: unknown) {
+      console.error("Error al generar documento:", error);
+
+      // Extract error message from backend response
+      let errorMessage = "Error al generar el documento";
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { mensaje?: string; error?: string; Error?: string } } };
+        if (axiosError.response?.data) {
+          errorMessage = axiosError.response.data.mensaje
+            || axiosError.response.data.error
+            || axiosError.response.data.Error
+            || errorMessage;
+        }
+      }
+      toast.error(errorMessage);
     } finally {
       setGenerando(false);
     }
@@ -134,19 +146,74 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
   };
 
   const getEstatusBadge = (solicitud: SolicitudDocumentoResumenDto) => {
-    const colors: Record<string, string> = {
-      GENERADO: "bg-green-100 text-green-800",
-      PENDIENTE_PAGO: "bg-yellow-100 text-yellow-800",
-      PAGADO: "bg-blue-100 text-blue-800",
-      VENCIDO: "bg-red-100 text-red-800",
-      CANCELADO: "bg-gray-100 text-gray-800",
+    const config: Record<string, { color: string; label: string; icon: React.ReactNode }> = {
+      GENERADO: {
+        color: "bg-green-100 text-green-800",
+        label: "Generado",
+        icon: <CheckCircle className="w-3 h-3 mr-1" />,
+      },
+      PENDIENTE_PAGO: {
+        color: "bg-yellow-100 text-yellow-800",
+        label: "Pendiente de Pago",
+        icon: <Receipt className="w-3 h-3 mr-1" />,
+      },
+      PAGADO: {
+        color: "bg-blue-100 text-blue-800",
+        label: "Pagado - Listo",
+        icon: <CheckCircle className="w-3 h-3 mr-1" />,
+      },
+      VENCIDO: {
+        color: "bg-red-100 text-red-800",
+        label: "Vencido",
+        icon: <XCircle className="w-3 h-3 mr-1" />,
+      },
+      CANCELADO: {
+        color: "bg-gray-100 text-gray-800",
+        label: "Cancelado",
+        icon: <XCircle className="w-3 h-3 mr-1" />,
+      },
+    };
+
+    const statusConfig = config[solicitud.estatus] || {
+      color: "bg-gray-100 text-gray-800",
+      label: solicitud.estatus,
+      icon: null,
     };
 
     return (
-      <Badge className={colors[solicitud.estatus] || "bg-gray-100 text-gray-800"}>
-        {solicitud.estatus.replace("_", " ")}
+      <Badge className={`${statusConfig.color} flex items-center`}>
+        {statusConfig.icon}
+        {statusConfig.label}
       </Badge>
     );
+  };
+
+  const getEstatusDescription = (solicitud: SolicitudDocumentoResumenDto) => {
+    switch (solicitud.estatus) {
+      case "PENDIENTE_PAGO":
+        return (
+          <span className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded flex items-center gap-1">
+            <Receipt className="w-3 h-3" />
+            Pagar en caja para continuar
+          </span>
+        );
+      case "PAGADO":
+        return (
+          <span className="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            Control Escolar generará el documento
+          </span>
+        );
+      case "GENERADO":
+        return solicitud.estaVigente ? (
+          <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded flex items-center gap-1">
+            <CheckCircle className="w-3 h-3" />
+            Documento vigente
+          </span>
+        ) : null;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -249,55 +316,95 @@ export function DocumentosTab({ idEstudiante, documentos, matricula }: Documento
       {documentos.solicitudesRecientes.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Historial de Solicitudes</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="w-5 h-5" style={{ color: "#14356F" }} />
+              Historial de Solicitudes
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Folio</TableHead>
-                  <TableHead>Documento</TableHead>
-                  <TableHead>Variante</TableHead>
-                  <TableHead className="text-center">Fecha Solicitud</TableHead>
-                  <TableHead className="text-center">Fecha Generación</TableHead>
-                  <TableHead className="text-center">Vencimiento</TableHead>
-                  <TableHead className="text-center">Estatus</TableHead>
-                  <TableHead className="text-center">Acciones</TableHead>
+                <TableRow
+                  className="hover:bg-transparent"
+                  style={{ background: "linear-gradient(to right, #14356F, #1e4a8f)" }}
+                >
+                  <TableHead className="text-white font-semibold">Folio</TableHead>
+                  <TableHead className="text-white font-semibold">Documento</TableHead>
+                  <TableHead className="text-white font-semibold">Variante</TableHead>
+                  <TableHead className="text-white font-semibold text-center">Fecha Solicitud</TableHead>
+                  <TableHead className="text-white font-semibold text-center">Estatus</TableHead>
+                  <TableHead className="text-white font-semibold text-center">Info</TableHead>
+                  <TableHead className="text-white font-semibold text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {documentos.solicitudesRecientes.map((solicitud) => (
-                  <TableRow key={solicitud.idSolicitud}>
+                  <TableRow
+                    key={solicitud.idSolicitud}
+                    className={
+                      solicitud.estatus === "PENDIENTE_PAGO"
+                        ? "bg-yellow-50/50"
+                        : solicitud.estatus === "PAGADO"
+                          ? "bg-blue-50/50"
+                          : ""
+                    }
+                  >
                     <TableCell className="font-mono text-sm">
                       {solicitud.folioSolicitud}
                     </TableCell>
-                    <TableCell>{solicitud.tipoDocumento}</TableCell>
+                    <TableCell>
+                      <div>
+                        <span className="font-medium">{solicitud.tipoDocumento}</span>
+                        {solicitud.estatus === "GENERADO" && solicitud.fechaVencimiento && (
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            Vence: {formatDate(solicitud.fechaVencimiento)}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">{solicitud.variante}</Badge>
                     </TableCell>
                     <TableCell className="text-center text-sm">
                       {formatDate(solicitud.fechaSolicitud)}
                     </TableCell>
-                    <TableCell className="text-center text-sm">
-                      {solicitud.fechaGeneracion ? formatDate(solicitud.fechaGeneracion) : "-"}
-                    </TableCell>
-                    <TableCell className="text-center text-sm">
-                      {solicitud.fechaVencimiento ? formatDate(solicitud.fechaVencimiento) : "-"}
-                    </TableCell>
                     <TableCell className="text-center">
                       {getEstatusBadge(solicitud)}
                     </TableCell>
                     <TableCell className="text-center">
-                      {solicitud.puedeDescargar && (
-                        <Button variant="ghost" size="icon" title="Descargar">
-                          <Download className="w-4 h-4" />
-                        </Button>
-                      )}
-                      {solicitud.codigoVerificacion && (
-                        <Button variant="ghost" size="icon" title="Ver código QR">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      )}
+                      {getEstatusDescription(solicitud)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        {solicitud.puedeDescargar && solicitud.estatus === "GENERADO" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="Descargar documento"
+                            className="text-green-700 border-green-300 hover:bg-green-50"
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            Descargar
+                          </Button>
+                        )}
+                        {solicitud.estatus === "PENDIENTE_PAGO" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="Ver recibo"
+                            className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+                          >
+                            <Receipt className="w-4 h-4 mr-1" />
+                            Ver Recibo
+                          </Button>
+                        )}
+                        {solicitud.estatus === "PAGADO" && (
+                          <span className="text-xs text-blue-600 flex items-center gap-1">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            En proceso
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -32,9 +32,10 @@ interface GroupCardProps {
   grupo: GrupoResumen;
   numeroCuatrimestre?: number;
   onUpdate: () => void;
+  periodicidadLabel?: string;
 }
 
-export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProps) {
+export function GroupCard({ grupo, numeroCuatrimestre, onUpdate, periodicidadLabel = "Cuatrimestre" }: GroupCardProps) {
   const [showSubjectsModal, setShowSubjectsModal] = useState(false);
   const [showStudentsModal, setShowStudentsModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
@@ -179,6 +180,7 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
         idPlanEstudios={grupo.idPlanEstudios}
         codigoGrupo={grupo.codigoGrupo}
         numeroCuatrimestre={numeroCuatrimestre}
+        periodicidadLabel={periodicidadLabel}
       />
 
       <StudentsInGroupModal
@@ -194,6 +196,7 @@ export function GroupCard({ grupo, numeroCuatrimestre, onUpdate }: GroupCardProp
         idGrupo={grupo.idGrupo}
         nombreGrupo={grupo.nombreGrupo}
         onSuccess={onUpdate}
+        periodicidadLabel={periodicidadLabel}
       />
 
       <ConfirmDeleteDialog

@@ -1,12 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { FileText, CheckCircle, Clock, XCircle, ExternalLink, FolderOpen, AlertCircle } from "lucide-react";
+import {
+  FileText,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ExternalLink,
+  FolderOpen,
+  AlertCircle,
+  Upload,
+  Loader2,
+  ShieldCheck,
+  ShieldX,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -15,18 +38,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { obtenerDocumentosPersonales } from "@/services/estudiante-panel-service";
-import type { DocumentosPersonalesEstudianteDto } from "@/types/estudiante-panel";
-// eslint-disable-next-line no-duplicate-imports
-import { formatDate } from "@/types/estudiante-panel";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  obtenerDocumentosPersonales,
+  subirDocumentoPersonal,
+  validarDocumentoPersonal,
+} from "@/services/estudiante-panel-service";
+import { formatDate, type DocumentoPersonalDto, type DocumentosPersonalesEstudianteDto } from "@/types/estudiante-panel";
 
 interface DocumentosPersonalesTabProps {
   idEstudiante: number;
 }
 
+const EXTENSIONES_PERMITIDAS = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
+const MAX_SIZE_MB = 10;
+
+type ModalType = "subir" | "validar" | null;
+
 export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTabProps) {
   const [loading, setLoading] = useState(true);
   const [documentos, setDocumentos] = useState<DocumentosPersonalesEstudianteDto | null>(null);
+
+  // Estado del modal de subida
+  const [modalType, setModalType] = useState<ModalType>(null);
+  const [docSeleccionado, setDocSeleccionado] = useState<DocumentoPersonalDto | null>(null);
+  const [archivo, setArchivo] = useState<File | null>(null);
+  const [notas, setNotas] = useState("");
+  const [subiendo, setSubiendo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Estado del modal de validación
+  const [accionValidar, setAccionValidar] = useState<boolean>(true);
+  const [procesando, setProcesando] = useState(false);
 
   useEffect(() => {
     cargarDocumentos();
@@ -41,6 +84,97 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
       console.error("Error al cargar documentos personales:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // --- Modal de subida ---
+  function abrirModalSubida(doc: DocumentoPersonalDto) {
+    setDocSeleccionado(doc);
+    setArchivo(null);
+    setNotas("");
+    setModalType("subir");
+  }
+
+  // --- Modal de validación ---
+  function abrirModalValidacion(doc: DocumentoPersonalDto, aprobar: boolean) {
+    setDocSeleccionado(doc);
+    setAccionValidar(aprobar);
+    setNotas("");
+    setModalType("validar");
+  }
+
+  function cerrarModal() {
+    setModalType(null);
+    setDocSeleccionado(null);
+    setArchivo(null);
+    setNotas("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      toast.error(`El archivo excede el tamaño máximo de ${MAX_SIZE_MB} MB`);
+      e.target.value = "";
+      return;
+    }
+
+    setArchivo(file);
+  }
+
+  async function handleSubir() {
+    if (!archivo || !docSeleccionado) return;
+
+    setSubiendo(true);
+    try {
+      const resultado = await subirDocumentoPersonal(
+        idEstudiante,
+        docSeleccionado.idDocumentoRequisito,
+        archivo,
+        notas || undefined
+      );
+
+      if (resultado.exitoso) {
+        toast.success(resultado.mensaje || "Documento subido exitosamente");
+        cerrarModal();
+        await cargarDocumentos();
+      } else {
+        toast.error(resultado.mensaje || "Error al subir el documento");
+      }
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Error al subir el documento";
+      toast.error(msg);
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
+  async function handleValidar() {
+    if (!docSeleccionado || docSeleccionado.idAspiranteDocumento === 0) return;
+
+    setProcesando(true);
+    try {
+      const resultado = await validarDocumentoPersonal(
+        idEstudiante,
+        docSeleccionado.idAspiranteDocumento,
+        accionValidar,
+        notas || undefined
+      );
+
+      if (resultado.exitoso) {
+        toast.success(resultado.mensaje);
+        cerrarModal();
+        await cargarDocumentos();
+      } else {
+        toast.error(resultado.mensaje || "Error al procesar el documento");
+      }
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Error al procesar el documento";
+      toast.error(msg);
+    } finally {
+      setProcesando(false);
     }
   }
 
@@ -74,6 +208,9 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
     );
   };
 
+  const puedeSubir = (estatus: string) => estatus === "PENDIENTE" || estatus === "RECHAZADO";
+  const puedeValidar = (estatus: string) => estatus === "SUBIDO";
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -82,7 +219,7 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
     );
   }
 
-  if (!documentos || documentos.documentos.length === 0) {
+  if (!documentos) {
     return (
       <Card>
         <CardContent className="py-12">
@@ -91,8 +228,6 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
             <h3 className="text-lg font-medium text-gray-900 mb-2">Sin documentos personales</h3>
             <p className="text-gray-500">
               No se encontraron documentos personales para este estudiante.
-              <br />
-              Los documentos se cargan durante el proceso de inscripción como aspirante.
             </p>
           </div>
         </CardContent>
@@ -163,13 +298,14 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
                 <TableHead className="text-center">Obligatorio</TableHead>
                 <TableHead className="text-center">Fecha Subido</TableHead>
                 <TableHead className="text-center">Estatus</TableHead>
+                <TableHead>Validado por</TableHead>
                 <TableHead>Notas</TableHead>
                 <TableHead className="text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {documentos.documentos.map((doc) => (
-                <TableRow key={doc.idAspiranteDocumento}>
+                <TableRow key={`${doc.idDocumentoRequisito}-${doc.idAspiranteDocumento}`}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {getEstatusIcon(doc.estatus)}
@@ -192,20 +328,69 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
                   <TableCell className="text-center">
                     {getEstatusBadge(doc.estatus)}
                   </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {doc.validadoPor ? (
+                      <div>
+                        <p className="font-medium">{doc.validadoPor}</p>
+                        {doc.fechaValidacion && (
+                          <p className="text-xs text-gray-400">{formatDate(doc.fechaValidacion)}</p>
+                        )}
+                      </div>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
                   <TableCell className="max-w-xs truncate text-sm text-gray-500">
                     {doc.notas || "-"}
                   </TableCell>
                   <TableCell className="text-center">
-                    {doc.urlArchivo && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => window.open(doc.urlArchivo!, "_blank")}
-                        title="Ver documento"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <div className="flex items-center justify-center gap-1">
+                      {doc.urlArchivo && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => window.open(doc.urlArchivo!, "_blank")}
+                          title="Ver documento"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {puedeSubir(doc.estatus) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => abrirModalSubida(doc)}
+                          className="gap-1"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          Subir
+                        </Button>
+                      )}
+                      {puedeValidar(doc.estatus) && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => abrirModalValidacion(doc, true)}
+                            className="gap-1 text-green-700 border-green-300 hover:bg-green-50"
+                            title="Aprobar documento"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            Validar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => abrirModalValidacion(doc, false)}
+                            className="gap-1 text-red-700 border-red-300 hover:bg-red-50"
+                            title="Rechazar documento"
+                          >
+                            <ShieldX className="w-3.5 h-3.5" />
+                            Rechazar
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -213,6 +398,195 @@ export function DocumentosPersonalesTab({ idEstudiante }: DocumentosPersonalesTa
           </Table>
         </CardContent>
       </Card>
+
+      {/* Modal de subida de documento */}
+      <Dialog open={modalType === "subir"} onOpenChange={(open) => { if (!open) cerrarModal(); }}>
+        <DialogContent className="sm:max-w-lg w-full">
+          <DialogHeader>
+            <DialogTitle>Subir Documento</DialogTitle>
+            <DialogDescription>
+              {docSeleccionado?.nombreDocumento} ({docSeleccionado?.claveDocumento})
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="archivo">Archivo</Label>
+              <Input
+                id="archivo"
+                ref={fileInputRef}
+                type="file"
+                accept={EXTENSIONES_PERMITIDAS}
+                onChange={handleFileChange}
+                disabled={subiendo}
+              />
+              <p className="text-xs text-gray-500">
+                Formatos: PDF, JPG, PNG, DOC, DOCX. Max {MAX_SIZE_MB} MB.
+              </p>
+            </div>
+
+            {archivo && (
+              <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+                <FileText className="w-4 h-4 shrink-0 text-blue-600" />
+                <span className="text-sm text-blue-800 truncate flex-1 min-w-0">{archivo.name}</span>
+                <span className="text-xs text-blue-600 shrink-0">
+                  {(archivo.size / 1024 / 1024).toFixed(2)} MB
+                </span>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="notas-subir">Notas (opcional)</Label>
+              <Textarea
+                id="notas-subir"
+                placeholder="Agregar notas o comentarios..."
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+                disabled={subiendo}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button variant="outline" onClick={cerrarModal} disabled={subiendo}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSubir}
+              disabled={!archivo || subiendo}
+              className="w-full sm:w-auto"
+              style={{ backgroundColor: "#14356F" }}
+            >
+              {subiendo ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Subiendo...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Subir Documento
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de validación/rechazo */}
+      <Dialog open={modalType === "validar"} onOpenChange={(open) => { if (!open) cerrarModal(); }}>
+        <DialogContent className="sm:max-w-lg w-full">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {accionValidar ? (
+                <ShieldCheck className="w-5 h-5 text-green-600" />
+              ) : (
+                <ShieldX className="w-5 h-5 text-red-600" />
+              )}
+              {accionValidar ? "Validar Documento" : "Rechazar Documento"}
+            </DialogTitle>
+            <DialogDescription>
+              {docSeleccionado?.nombreDocumento} ({docSeleccionado?.claveDocumento})
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {docSeleccionado?.urlArchivo && (
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md border">
+                <FileText className="w-5 h-5 shrink-0 text-blue-600" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Documento subido</p>
+                  <p className="text-xs text-gray-500 truncate">{docSeleccionado.urlArchivo}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(docSeleccionado.urlArchivo!, "_blank")}
+                >
+                  <ExternalLink className="w-3.5 h-3.5 mr-1" />
+                  Ver
+                </Button>
+              </div>
+            )}
+
+            {accionValidar ? (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-800">
+                  El documento sera marcado como <strong>VALIDADO</strong>. Esto confirma que cumple con los requisitos.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-800">
+                  El documento sera marcado como <strong>RECHAZADO</strong>. El estudiante podra volver a subir el documento.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="notas-validar">
+                {accionValidar ? "Notas (opcional)" : "Motivo del rechazo"}
+              </Label>
+              <Textarea
+                id="notas-validar"
+                placeholder={
+                  accionValidar
+                    ? "Agregar observaciones..."
+                    : "Indique el motivo del rechazo para que el estudiante pueda corregirlo..."
+                }
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+                disabled={procesando}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button variant="outline" onClick={cerrarModal} disabled={procesando}>
+              Cancelar
+            </Button>
+            {accionValidar ? (
+              <Button
+                onClick={handleValidar}
+                disabled={procesando}
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+              >
+                {procesando ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Validando...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    Confirmar Validacion
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleValidar}
+                disabled={procesando || !notas.trim()}
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white"
+              >
+                {procesando ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Rechazando...
+                  </>
+                ) : (
+                  <>
+                    <ShieldX className="w-4 h-4 mr-2" />
+                    Confirmar Rechazo
+                  </>
+                )}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

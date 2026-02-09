@@ -6,7 +6,10 @@ import {
   Building2,
   Calendar,
   CalendarRange,
+  ScrollText,
+  ClipboardList,
   DollarSign,
+  FileBarChart,
   FileSpreadsheet,
   FileText,
   GraduationCap,
@@ -30,6 +33,7 @@ export interface NavSubItem {
   newTab?: boolean;
   isNew?: boolean;
   requiredModule?: string;
+  badgeKey?: string;
 }
 
 export interface NavMainItem {
@@ -41,6 +45,7 @@ export interface NavMainItem {
   newTab?: boolean;
   isNew?: boolean;
   requiredModule?: string;
+  badgeKey?: string;
 }
 
 export interface NavGroup {
@@ -78,6 +83,13 @@ export const sidebarItems: NavGroup[] = [
         title: "Convenios",
         url: "/dashboard/convenios",
         icon: HandCoins,
+        requiredModule: "Admisiones",
+        isNew: true,
+      },
+      {
+        title: "Documentacion",
+        url: "/dashboard/documentacion-aspirantes",
+        icon: ClipboardList,
         requiredModule: "Admisiones",
         isNew: true,
       },
@@ -145,6 +157,14 @@ export const sidebarItems: NavGroup[] = [
         isNew: true,
       },
       {
+        title: "Panel de Solicitudes",
+        url: "/dashboard/documentos-solicitudes",
+        icon: ClipboardList,
+        requiredModule: "Estudiantes",
+        isNew: true,
+        badgeKey: "solicitudesDocumentos",
+      },
+      {
         title: "Importar Estudiantes",
         url: "/dashboard/importar-estudiantes",
         icon: FileSpreadsheet,
@@ -176,6 +196,13 @@ export const sidebarItems: NavGroup[] = [
           { title: "Horarios", url: "/dashboard/schedules", newTab: false, requiredModule: "Academico" },
           { title: "Profesores", url: "/dashboard/teachers", newTab: false, requiredModule: "Academico" },
         ],
+      },
+      {
+        title: "Reportes Académicos",
+        url: "/dashboard/reportes-academicos",
+        icon: FileBarChart,
+        requiredModule: "Academico",
+        isNew: true,
       },
     ],
   },
@@ -232,6 +259,13 @@ export const sidebarItems: NavGroup[] = [
         title: "Roles y Permisos",
         url: "/dashboard/roles",
         icon: Shield,
+        requiredModule: "Configuracion",
+        isNew: true,
+      },
+      {
+        title: "Bitácora",
+        url: "/dashboard/bitacora",
+        icon: ScrollText,
         requiredModule: "Configuracion",
         isNew: true,
       },

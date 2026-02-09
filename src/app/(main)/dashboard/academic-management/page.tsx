@@ -37,6 +37,15 @@ export default function AcademicManagementPage() {
     );
   }, [studyPlans, selectedCampusId]);
 
+  const selectedPlan = useMemo(() => {
+    return studyPlans.find(p => p.idPlanEstudios.toString() === selectedPlanId);
+  }, [studyPlans, selectedPlanId]);
+
+  const periodicidadLabel = useMemo(() => {
+    if (!selectedPlan?.periodicidad) return "Cuatrimestre";
+    return selectedPlan.periodicidad.toLowerCase().includes("semest") ? "Semestre" : "Cuatrimestre";
+  }, [selectedPlan]);
+
   useEffect(() => {
     loadInitialData();
   }, []);
@@ -133,7 +142,7 @@ export default function AcademicManagementPage() {
             Gestión Académica de Grupos
           </h1>
           <p className="text-muted-foreground mt-1">
-            Administra grupos por licenciatura y cuatrimestre
+            Administra grupos por licenciatura y {periodicidadLabel.toLowerCase()}
           </p>
         </div>
         <Button
@@ -265,7 +274,7 @@ export default function AcademicManagementPage() {
               <div>
                 <h2 className="text-xl font-bold" style={{ color: '#14356F' }}>{academicData.nombrePlan}</h2>
                 <p style={{ color: '#1e4a8f' }} className="text-sm">
-                  Duración: {academicData.duracionCuatrimestres} cuatrimestres
+                  Duración: {academicData.duracionCuatrimestres} {periodicidadLabel.toLowerCase()}s
                 </p>
               </div>
             </div>
@@ -286,6 +295,7 @@ export default function AcademicManagementPage() {
                 cuatrimestre={cuatrimestre}
                 idPlanEstudios={academicData.idPlanEstudios}
                 onUpdate={loadAcademicData}
+                periodicidadLabel={periodicidadLabel}
               />
             ))
           )}
@@ -306,6 +316,7 @@ export default function AcademicManagementPage() {
         idPlanEstudios={selectedPlanId ? parseInt(selectedPlanId) : undefined}
         defaultPeriodId={selectedPeriodId}
         onSuccess={loadAcademicData}
+        periodicidadLabel={periodicidadLabel}
       />
     </div>
   );

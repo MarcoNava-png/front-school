@@ -37,6 +37,7 @@ interface GroupSubjectsModalProps {
   idPlanEstudios?: number;
   codigoGrupo?: string;
   numeroCuatrimestre?: number;
+  periodicidadLabel?: string;
 }
 
 export function GroupSubjectsModal({
@@ -47,6 +48,7 @@ export function GroupSubjectsModal({
   idPlanEstudios,
   codigoGrupo,
   numeroCuatrimestre,
+  periodicidadLabel = "Cuatrimestre",
 }: GroupSubjectsModalProps) {
   const [subjects, setSubjects] = useState<GrupoMateria[]>([]);
   const [loading, setLoading] = useState(false);
@@ -125,7 +127,7 @@ export function GroupSubjectsModal({
     }
 
     if (!numeroCuatrimestreGrupo) {
-      toast.error("No se puede determinar el cuatrimestre del grupo");
+      toast.error(`No se puede determinar el ${periodicidadLabel.toLowerCase()} del grupo`);
       return;
     }
 
@@ -138,7 +140,7 @@ export function GroupSubjectsModal({
       const mattersForQuarter = allMatters.filter(m => m.cuatrimestre === numeroCuatrimestreGrupo);
 
       if (mattersForQuarter.length === 0) {
-        toast.info(`No hay materias definidas para el cuatrimestre ${numeroCuatrimestreGrupo}`);
+        toast.info(`No hay materias definidas para el ${periodicidadLabel.toLowerCase()} ${numeroCuatrimestreGrupo}`);
         return;
       }
 
@@ -148,7 +150,7 @@ export function GroupSubjectsModal({
       const mattersToAdd = mattersForQuarter.filter(m => !existingMatterIds.has(m.idMateriaPlan));
 
       if (mattersToAdd.length === 0) {
-        toast.info("El grupo ya tiene todas las materias del cuatrimestre");
+        toast.info(`El grupo ya tiene todas las materias del ${periodicidadLabel.toLowerCase()}`);
         return;
       }
 
@@ -405,6 +407,7 @@ export function GroupSubjectsModal({
         idGrupo={idGrupo}
         idPlanEstudios={idPlanEstudios}
         onSuccess={loadSubjects}
+        periodicidadLabel={periodicidadLabel}
       />
 
       <EditSubjectScheduleModal
@@ -429,7 +432,7 @@ export function GroupSubjectsModal({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Cargar materias automáticamente?</AlertDialogTitle>
             <AlertDialogDescription>
-              Se agregarán todas las materias del cuatrimestre {numeroCuatrimestre || (codigoGrupo ? codigoGrupo[0] : '?')} al grupo {nombreGrupo}.
+              Se agregarán todas las materias del {periodicidadLabel.toLowerCase()} {numeroCuatrimestre || (codigoGrupo ? codigoGrupo[0] : '?')} al grupo {nombreGrupo}.
               <br /><br />
               Las materias que ya existan en el grupo no se duplicarán.
               <br />

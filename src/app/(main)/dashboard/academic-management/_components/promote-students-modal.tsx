@@ -23,6 +23,7 @@ interface PromoteStudentsModalProps {
   idGrupo: number;
   nombreGrupo: string;
   onSuccess: () => void;
+  periodicidadLabel?: string;
 }
 
 export function PromoteStudentsModal({
@@ -31,6 +32,7 @@ export function PromoteStudentsModal({
   idGrupo,
   nombreGrupo,
   onSuccess,
+  periodicidadLabel = "Cuatrimestre",
 }: PromoteStudentsModalProps) {
   const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState("");
@@ -133,7 +135,7 @@ export function PromoteStudentsModal({
             Promover Estudiantes del Grupo {nombreGrupo}
           </DialogTitle>
           <DialogDescription>
-            Promueve automáticamente a los estudiantes al siguiente cuatrimestre
+            Promueve automáticamente a los estudiantes al siguiente {periodicidadLabel.toLowerCase()}
           </DialogDescription>
         </DialogHeader>
 
@@ -191,7 +193,7 @@ export function PromoteStudentsModal({
                     Crear grupo siguiente automáticamente
                   </label>
                   <p className="text-xs text-gray-600">
-                    Si el grupo del siguiente cuatrimestre no existe, se creará automáticamente
+                    Si el grupo del siguiente {periodicidadLabel.toLowerCase()} no existe, se creará automáticamente
                   </p>
                 </div>
               </div>
@@ -222,7 +224,7 @@ export function PromoteStudentsModal({
                 <div className="text-sm">
                   <p className="font-semibold text-yellow-800">Advertencia</p>
                   <p className="text-yellow-700">
-                    Esta acción promoverá a los estudiantes al siguiente cuatrimestre. Verifica los datos antes de
+                    Esta acción promoverá a los estudiantes al siguiente {periodicidadLabel.toLowerCase()}. Verifica los datos antes de
                     continuar.
                   </p>
                 </div>

@@ -13,9 +13,10 @@ interface CuatrimestreSectionProps {
   cuatrimestre: GruposPorCuatrimestre;
   idPlanEstudios?: number;
   onUpdate: () => void;
+  periodicidadLabel?: string;
 }
 
-export function CuatrimestreSection({ cuatrimestre, idPlanEstudios, onUpdate }: CuatrimestreSectionProps) {
+export function CuatrimestreSection({ cuatrimestre, idPlanEstudios, onUpdate, periodicidadLabel = "Cuatrimestre" }: CuatrimestreSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const totalEstudiantes = cuatrimestre.grupos.reduce((sum, g) => sum + g.totalEstudiantes, 0);
@@ -31,7 +32,7 @@ export function CuatrimestreSection({ cuatrimestre, idPlanEstudios, onUpdate }: 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h3 className="text-lg font-bold">
-              {cuatrimestre.numeroCuatrimestre}° Cuatrimestre
+              {cuatrimestre.numeroCuatrimestre}° {periodicidadLabel}
             </h3>
             <div className="flex items-center gap-4 text-sm">
               <span className="bg-white/20 px-3 py-1 rounded-full">
@@ -52,7 +53,7 @@ export function CuatrimestreSection({ cuatrimestre, idPlanEstudios, onUpdate }: 
         <div className="p-6">
           {cuatrimestre.grupos.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No hay grupos en este cuatrimestre
+              No hay grupos en este {periodicidadLabel.toLowerCase()}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -62,6 +63,7 @@ export function CuatrimestreSection({ cuatrimestre, idPlanEstudios, onUpdate }: 
                   grupo={{ ...grupo, idPlanEstudios }}
                   numeroCuatrimestre={cuatrimestre.numeroCuatrimestre}
                   onUpdate={onUpdate}
+                  periodicidadLabel={periodicidadLabel}
                 />
               ))}
             </div>

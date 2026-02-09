@@ -22,9 +22,10 @@ interface CreateGroupModalProps {
   idPlanEstudios?: number;
   defaultPeriodId?: string;
   onSuccess: () => void;
+  periodicidadLabel?: string;
 }
 
-export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPeriodId, onSuccess }: CreateGroupModalProps) {
+export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPeriodId, onSuccess, periodicidadLabel = "Cuatrimestre" }: CreateGroupModalProps) {
   const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [loading, setLoading] = useState(false);
@@ -133,7 +134,7 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
             Crear Nuevo Grupo
           </DialogTitle>
           <DialogDescription>
-            Crea un nuevo grupo y opcionalmente carga todas las materias del cuatrimestre automáticamente
+            Crea un nuevo grupo y opcionalmente carga todas las materias del {periodicidadLabel.toLowerCase()} automáticamente
           </DialogDescription>
         </DialogHeader>
 
@@ -166,7 +167,7 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="cuatrimestre" className="text-sm">
-                Número de Cuatrimestre *
+                Número de {periodicidadLabel} *
               </Label>
               <Input
                 id="cuatrimestre"
@@ -240,7 +241,7 @@ export function CreateGroupModal({ open, onOpenChange, idPlanEstudios, defaultPe
                 Cargar materias automáticamente
               </label>
               <p className="text-xs text-gray-600">
-                Agrega todas las materias del cuatrimestre al crear el grupo
+                Agrega todas las materias del {periodicidadLabel.toLowerCase()} al crear el grupo
               </p>
             </div>
           </div>

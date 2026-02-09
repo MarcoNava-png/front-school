@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
-import { Bell, CircleUser, LogOut } from "lucide-react";
+import { CircleUser, LogOut } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useLogout } from "@/hooks/use-logout";
 import { getInitials } from "@/lib/utils";
@@ -39,35 +33,6 @@ export function AccountSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative h-9 w-9 rounded-lg hover:bg-muted"
-          >
-            <Bell className="h-5 w-5 text-muted-foreground" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-80 p-0"
-          align="end"
-          sideOffset={8}
-        >
-          <div
-            className="px-4 py-3 border-b"
-            style={{ background: 'linear-gradient(to bottom right, rgba(20, 53, 111, 0.05), rgba(30, 74, 143, 0.1))' }}
-          >
-            <h4 className="font-semibold text-sm" style={{ color: '#14356F' }}>Notificaciones</h4>
-            <p className="text-xs text-muted-foreground">No tienes notificaciones nuevas</p>
-          </div>
-          <div className="py-8 text-center text-muted-foreground">
-            <Bell className="h-10 w-10 mx-auto mb-2 opacity-20" />
-            <p className="text-sm">Sin notificaciones</p>
-          </div>
-        </PopoverContent>
-      </Popover>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors cursor-pointer focus:outline-none">

@@ -43,9 +43,11 @@ const ROLES = [
   { value: "admin", label: "Administrador" },
   { value: "director", label: "Director" },
   { value: "coordinador", label: "Coordinador" },
+  { value: "controlescolar", label: "Control Escolar" },
+  { value: "finanzas", label: "Finanzas" },
+  { value: "admisiones", label: "Admisiones" },
   { value: "docente", label: "Docente/Profesor" },
   { value: "alumno", label: "Alumno/Estudiante" },
-  { value: "controlescolar", label: "Control Escolar" },
 ] as const;
 
 const formSchema = z.object({

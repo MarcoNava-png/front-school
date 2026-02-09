@@ -26,6 +26,7 @@ export interface UpdateUserRequest {
   email: string;
   telefono?: string;
   biografia?: string;
+  roles?: string[];
 }
 
 export interface UsersResponse {
